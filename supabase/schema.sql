@@ -77,6 +77,9 @@ create table public.messages (
   sender_id uuid references public.users on delete cascade not null,
   receiver_id uuid references public.users on delete cascade not null,
   content text not null,
+  is_whisper boolean default false not null,
+  image_url text,
+  read_at timestamp with time zone,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
