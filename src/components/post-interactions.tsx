@@ -1,6 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { Heart, MessageCircle, Send } from 'lucide-react'
+import { addReaction, addComment } from '@/app/(main)/actions'
 
 const EMOTIONAL_REACTIONS = [
   { id: 'blue_heart', emoji: '💙', label: 'Support' },

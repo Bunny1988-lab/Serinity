@@ -107,7 +107,14 @@ export default async function FeedPage() {
                             {post.mood}
                           </span>
                         )}
-                        {post.author.id === user.id && <PostMenu postId={post.id} allowComments={post.allow_comments} />}
+                        {post.author_id === user?.id && (
+                          <PostMenu 
+                            postId={post.id} 
+                            authorId={post.author_id} 
+                            currentUserId={user?.id || ''} 
+                            allowComments={post.allow_comments} 
+                          />
+                        )}
                       </div>
                     </div>
                     
@@ -134,10 +141,9 @@ export default async function FeedPage() {
                         <div className="pt-4">
                           <PostInteractions 
                             postId={post.id} 
-                            reactions={post.reactions} 
-                            comments={post.comments} 
+                            initialReactions={post.reactions} 
+                            initialComments={post.comments} 
                             allowComments={post.allow_comments}
-                            currentUserId={user.id}
                           />
                         </div>
                       </>
