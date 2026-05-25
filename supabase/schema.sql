@@ -169,6 +169,9 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
+-- ENABLE REALTIME BROADCASTING FOR INSTANT MESSAGES
+alter publication supabase_realtime add table public.messages;
+
 -- BACKFILL SCRIPT FOR EXISTING USERS (Run in Supabase SQL editor):
 -- insert into public.user_privacy_lookups (user_id, email_hash)
 -- select id, encode(digest(lower(email), 'sha256'), 'hex')
