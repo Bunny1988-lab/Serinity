@@ -75,7 +75,7 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [isSending, setIsSending] = useState(false)
 
-  const supabase = createClient()
+  const [supabase] = useState(() => createClient())
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -111,7 +111,7 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
       .subscribe()
 
     return () => { supabase.removeChannel(channel) }
-  }, [recipient.id])
+  }, [recipient.id, supabase, currentUserId])
 
   useEffect(() => {
     const el = scrollContainerRef.current
