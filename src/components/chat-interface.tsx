@@ -98,7 +98,25 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
           (msg.sender_id === recipient.id && msg.receiver_id === currentUserId) ||
           (msg.sender_id === currentUserId && msg.receiver_id === recipient.id)
         ) {
-          setMessages(prev => [...prev, msg])
+          setMessages(prev => {
+            // Prevent duplicates if already loaded
+            if (prev.some(m => m.id === msg.id)) return prev
+
+            // Find matching optimistic message to replace
+            const optIndex = prev.findIndex(m => 
+              m.id?.toString().startsWith('opt-') && 
+              m.content === msg.content && 
+              m.sender_id === msg.sender_id
+            )
+
+            if (optIndex !== -1) {
+              const updated = [...prev]
+              updated[optIndex] = msg
+              return updated
+            }
+
+            return [...prev, msg]
+          })
           if (msg.sender_id === recipient.id) markMessagesAsRead(recipient.id)
         }
       })
