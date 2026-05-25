@@ -1,7 +1,8 @@
 -- Schema for Privacy-focused Social Network
 
--- Enable UUID extension
+-- Enable UUID and pgcrypto extensions
 create extension if not exists "uuid-ossp";
+create extension if not exists "pgcrypto";
 
 -- 1. Users Profile (extends auth.users)
 create table public.users (
@@ -79,6 +80,13 @@ create table public.messages (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- 9. User Privacy Lookups (Privacy-first contact matching hashes)
+create table public.user_privacy_lookups (
+  user_id uuid references public.users(id) on delete cascade not null primary key,
+  email_hash text unique not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- ROW LEVEL SECURITY (RLS) --
 
 alter table public.users enable row level security;
@@ -89,6 +97,7 @@ alter table public.comments enable row level security;
 alter table public.reactions enable row level security;
 alter table public.journals enable row level security;
 alter table public.messages enable row level security;
+alter table public.user_privacy_lookups enable row level security;
 
 -- Users: Anyone can read basic profiles (can restrict later), users can update their own
 create policy "Public profiles are viewable by everyone." on public.users for select using (true);
@@ -128,6 +137,9 @@ create policy "Users can only see their own journal entries" on public.journals 
 create policy "Users can read their messages" on public.messages for select using (auth.uid() = sender_id or auth.uid() = receiver_id);
 create policy "Users can send messages" on public.messages for insert with check (auth.uid() = sender_id);
 
+-- User Privacy Lookups: Users can read their own mapping (Service Role handles bulk queries via Actions)
+create policy "Users can view their own privacy lookup" on public.user_privacy_lookups for select using (auth.uid() = user_id);
+
 -- Trigger to create a user profile automatically on signup
 create or replace function public.handle_new_user()
 returns trigger
@@ -135,8 +147,17 @@ language plpgsql
 security definer set search_path = public
 as $$
 begin
+  -- Create the public user profile
   insert into public.users (id, username, display_name)
   values (new.id, new.raw_user_meta_data->>'username', new.raw_user_meta_data->>'display_name');
+
+  -- Automatically insert SHA-256 hashed email into privacy lookups
+  if new.email is not null then
+    insert into public.user_privacy_lookups (user_id, email_hash)
+    values (new.id, encode(digest(lower(new.email), 'sha256'), 'hex'))
+    on conflict (user_id) do nothing;
+  end if;
+
   return new;
 end;
 $$;
@@ -144,3 +165,9 @@ $$;
 create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
+
+-- BACKFILL SCRIPT FOR EXISTING USERS (Run in Supabase SQL editor):
+-- insert into public.user_privacy_lookups (user_id, email_hash)
+-- select id, encode(digest(lower(email), 'sha256'), 'hex')
+-- from auth.users
+-- on conflict (user_id) do nothing;

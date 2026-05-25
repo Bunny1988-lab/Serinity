@@ -269,3 +269,39 @@ export async function deleteMessageForEveryone(messageId: string) {
     .eq('sender_id', user.id) // Only sender can delete
 }
 
+export async function matchContactHashes(hashes: string[]) {
+  if (!hashes || hashes.length === 0) return []
+  // Limit to 500 hashes per query to protect DB
+  const cleanedHashes = hashes.slice(0, 500)
+
+  const supabase = await createClient()
+  const { data, error } = await supabase
+    .from('user_privacy_lookups')
+    .select(`
+      user_id,
+      users:users!inner (
+        id,
+        username,
+        display_name,
+        avatar_url
+      )
+    `)
+    .in('email_hash', cleanedHashes)
+
+  if (error) {
+    console.error('Error matching contact hashes:', error)
+    return []
+  }
+
+  // Flatten and return the mapped user profiles
+  interface LookupResponse {
+    users: {
+      id: string
+      username: string
+      display_name: string | null
+      avatar_url: string | null
+    }
+  }
+  return (data as unknown as LookupResponse[]).map((d) => d.users) || []
+}
+
