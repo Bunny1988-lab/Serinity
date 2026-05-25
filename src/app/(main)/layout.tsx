@@ -40,7 +40,8 @@ export default async function MainLayout({ children }: { children: React.ReactNo
           {/* Desktop Sidebar */}
           <aside className="hidden md:flex w-64 flex-col border-r border-border/50 bg-background/50 backdrop-blur-xl">
             <div className="p-8">
-              <Link href="/feed" className="flex items-center gap-2">
+              <Link href="/feed" className="flex items-center gap-3 hover:opacity-95 transition-opacity">
+                <img src="/logo.png" alt="Serenity Logo" className="w-8 h-8 rounded-lg object-contain" />
                 <span className="text-sm font-medium tracking-[0.2em] text-foreground uppercase opacity-80">Serenity</span>
               </Link>
             </div>
