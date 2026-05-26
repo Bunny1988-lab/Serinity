@@ -17,10 +17,10 @@ export function GlobalRealtime({ userId }: { userId: string }) {
       .on('postgres_changes', { 
         event: '*', // Listen to both INSERT and UPDATE
         schema: 'public', 
-        table: 'messages',
-        filter: `receiver_id=eq.${userId}`
+        table: 'messages'
       }, (payload) => {
-        if (payload.eventType === 'INSERT') {
+        const msg = payload.new as any
+        if (payload.eventType === 'INSERT' && msg.receiver_id === userId) {
           playNotificationSound()
         }
         // Refresh the page data (updates unread counter in layout)
@@ -33,10 +33,10 @@ export function GlobalRealtime({ userId }: { userId: string }) {
       .on('postgres_changes', {
         event: '*', // Listen to both INSERT and UPDATE
         schema: 'public',
-        table: 'notifications',
-        filter: `user_id=eq.${userId}`
+        table: 'notifications'
       }, (payload) => {
-        if (payload.eventType === 'INSERT') {
+        const notif = payload.new as any
+        if (payload.eventType === 'INSERT' && notif.user_id === userId) {
           playNotificationSound()
         }
         // Refresh the page data (updates unread counter in layout)
