@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { SubmitButton } from '@/components/submit-button'
+import { AddMemberSearch } from '@/components/add-member-search'
 
 export default async function CircleDetailsPage({ params }: { params: Promise<{ id: string }> }) {
   const { id: circleId } = await params
@@ -208,39 +209,7 @@ export default async function CircleDetailsPage({ params }: { params: Promise<{ 
             <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/70 px-1">
               Add People
             </h3>
-
-            {!otherUsers || otherUsers.length === 0 ? (
-              <div className="text-center py-10 border border-dashed border-border/50 rounded-2xl">
-                <p className="text-sm text-muted-foreground font-light">Everyone is already in this circle.</p>
-              </div>
-            ) : (
-              <div className="bg-background/60 border border-border/40 rounded-2xl divide-y divide-border/30 overflow-hidden">
-                {otherUsers.map((u: any) => (
-                  <div key={u.id} className="flex items-center gap-3 p-4">
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center shrink-0">
-                      {u.avatar_url
-                        ? <img src={u.avatar_url} alt="" className="w-full h-full object-cover" />
-                        : <span className="text-sm font-semibold text-muted-foreground">{u.display_name?.[0]?.toUpperCase()}</span>
-                      }
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-foreground truncate">{u.display_name}</p>
-                      <p className="text-xs text-muted-foreground truncate">@{u.username}</p>
-                    </div>
-                    <form action={addMember}>
-                      <input type="hidden" name="userId" value={u.id} />
-                      <button
-                        type="submit"
-                        title="Add to circle"
-                        className="text-muted-foreground hover:text-primary transition-colors p-2 rounded-full hover:bg-primary/10"
-                      >
-                        <UserPlus size={16} strokeWidth={1.5} />
-                      </button>
-                    </form>
-                  </div>
-                ))}
-              </div>
-            )}
+            <AddMemberSearch circleId={circleId} excludeIds={excludeIds} />
           </section>
         )}
 
