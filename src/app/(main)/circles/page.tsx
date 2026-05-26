@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Users } from 'lucide-react'
 import Link from 'next/link'
+import { SubmitButton } from '@/components/submit-button'
 import { InviteButton } from '@/components/invite-button'
 
 export default async function CirclesPage() {
@@ -43,7 +44,7 @@ export default async function CirclesPage() {
               className="flex-1 bg-background border-border/50 rounded-full px-6 shadow-sm focus-visible:ring-primary/20 text-sm font-light"
               required 
             />
-            <Button type="submit" className="rounded-full px-8 shadow-sm font-medium">Create</Button>
+            <SubmitButton className="rounded-full px-8 shadow-sm font-medium">Create</SubmitButton>
           </form>
         </div>
 
