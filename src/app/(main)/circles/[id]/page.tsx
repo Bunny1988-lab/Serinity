@@ -78,65 +78,70 @@ export default async function CircleDetailsPage({ params }: { params: Promise<{ 
   }
 
   return (
-    <div className="pb-24 md:pb-0 min-h-screen bg-background">
+    <div className="pb-32 md:pb-8 min-h-screen bg-transparent relative overflow-hidden">
+      {/* Decorative Blur Background Circles */}
+      <div className="absolute top-[-10%] left-[10%] w-[500px] h-[300px] rounded-full bg-primary/3 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[20%] right-[-10%] w-[350px] h-[350px] rounded-full bg-amber-500/2 blur-[130px] pointer-events-none" />
 
       {/* Header */}
-      <header className="sticky top-0 z-20 bg-background/80 backdrop-blur-2xl border-b border-border/30 px-5 py-4 flex items-center gap-4">
+      <header className="sticky top-0 z-20 bg-background/30 backdrop-blur-2xl border-b border-border/20 px-6 py-4 flex items-center gap-4">
         <Link
           href="/circles"
-          className="text-muted-foreground hover:text-foreground transition-colors p-2 -ml-2 rounded-full hover:bg-muted/50"
+          className="text-muted-foreground hover:text-foreground transition-colors p-2.5 -ml-2 rounded-full hover:bg-muted/40 border border-transparent hover:border-border/30 shadow-2xs"
         >
-          <ArrowLeft size={20} strokeWidth={1.5} />
+          <ArrowLeft size={18} strokeWidth={1.75} />
         </Link>
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-light tracking-tight truncate">{circle.name}</h1>
-          <p className="text-xs text-muted-foreground font-light">
-            {members?.length || 0} member{members?.length !== 1 ? 's' : ''}
+          <h1 className="text-xl font-light tracking-tight text-foreground truncate">{circle.name}</h1>
+          <p className="text-[10px] text-muted-foreground/80 uppercase tracking-widest font-semibold mt-0.5">
+            {members?.length || 0} trusted member{members?.length !== 1 ? 's' : ''}
           </p>
         </div>
         {isAdmin && (
-          <span className="flex items-center gap-1.5 text-[11px] font-medium text-amber-500 bg-amber-500/10 border border-amber-500/20 px-3 py-1.5 rounded-full">
-            <Crown size={12} />
+          <span className="flex items-center gap-1.5 text-[10px] font-semibold tracking-wider text-amber-500 bg-amber-500/10 border border-amber-500/20 px-3.5 py-1.5 rounded-full uppercase shadow-2xs">
+            <Crown size={12} className="fill-amber-500/20" />
             Admin
           </span>
         )}
       </header>
 
-      <div className="max-w-xl mx-auto p-5 space-y-8">
+      <div className="max-w-2xl mx-auto p-6 md:p-8 space-y-8">
 
         {/* ── Admin Panel ─────────────────────────────── */}
         {isAdmin && (
-          <section className="bg-amber-500/5 border border-amber-500/15 rounded-3xl p-6 space-y-5">
-            <div className="flex items-center gap-2 text-amber-600">
-              <Shield size={16} strokeWidth={1.5} />
-              <h2 className="text-sm font-semibold tracking-wide uppercase">Admin Controls</h2>
+          <section className="bg-gradient-to-br from-amber-500/[0.04] via-background/40 to-background/20 backdrop-blur-md border border-amber-500/20 rounded-[2rem] p-6 space-y-6 shadow-xs relative overflow-hidden group">
+            <div className="absolute right-[-20px] top-[-20px] w-28 h-28 bg-amber-500/5 rounded-full blur-2xl group-hover:bg-amber-500/8 transition-colors duration-500" />
+            
+            <div className="flex items-center gap-2 text-amber-600 dark:text-amber-500">
+              <Shield size={16} strokeWidth={2} />
+              <h2 className="text-[10px] font-bold tracking-[0.25em] uppercase">Admin Controls</h2>
             </div>
 
             {/* Rename */}
             <div className="space-y-2">
-              <label className="text-xs text-muted-foreground font-medium uppercase tracking-wider">Rename Circle</label>
+              <label className="text-[10px] text-muted-foreground/60 font-bold uppercase tracking-wider">Rename Circle</label>
               <form action={renameCircle} className="flex gap-2">
                 <input
                   name="name"
                   defaultValue={circle.name}
                   required
-                  className="flex-1 h-10 bg-background border border-border/60 rounded-full px-4 text-sm font-light focus:outline-none focus:border-primary/50 transition-colors"
+                  className="flex-1 h-10 bg-background/50 border border-border/40 rounded-full px-4 text-xs font-light focus:outline-none focus:border-amber-500/40 focus:ring-1 focus:ring-amber-500/20 transition-all placeholder:text-muted-foreground/30"
                 />
-                <SubmitButton className="rounded-full px-5 h-10 text-sm">Save</SubmitButton>
+                <SubmitButton className="rounded-full px-5 h-10 text-xs bg-amber-500 hover:bg-amber-600 text-white font-medium hover:scale-105 active:scale-95 transition-all">Save</SubmitButton>
               </form>
             </div>
 
             {/* Delete */}
-            <div className="pt-2 border-t border-border/20">
-              <p className="text-xs text-muted-foreground font-light mb-3">
-                Permanently delete this circle and all its members. This cannot be undone.
+            <div className="pt-4 border-t border-border/20">
+              <p className="text-xs text-muted-foreground/80 font-light mb-4">
+                Permanently delete this circle and remove all its members. This action cannot be undone.
               </p>
               <form action={deleteCircle}>
                 <SubmitButton
-                  className="rounded-full px-5 h-10 text-sm bg-destructive/90 hover:bg-destructive text-destructive-foreground border-0"
+                  className="rounded-full px-5 h-10 text-xs font-medium bg-rose-500/10 hover:bg-rose-500 text-rose-500 hover:text-white border border-rose-500/20 hover:border-transparent hover:scale-105 active:scale-95 transition-all"
                   pendingText="Deleting..."
                 >
-                  <Trash2 size={14} className="mr-1.5" />
+                  <Trash2 size={13} className="mr-1.5" />
                   Delete Circle
                 </SubmitButton>
               </form>
@@ -145,55 +150,62 @@ export default async function CircleDetailsPage({ params }: { params: Promise<{ 
         )}
 
         {/* ── Current Members ──────────────────────────── */}
-        <section className="space-y-3">
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/70 px-1">
-            Members · {members?.length || 0}
-          </h3>
+        <section className="space-y-4">
+          <div className="flex items-center justify-between px-1">
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60">
+              Active Members ({members?.length || 0})
+            </h3>
+          </div>
 
           {members?.length === 0 ? (
-            <div className="text-center py-10 border border-dashed border-border/50 rounded-2xl">
-              <p className="text-sm text-muted-foreground font-light">No members yet. Add people below.</p>
+            <div className="text-center py-12 border border-dashed border-border/40 rounded-[2rem] bg-background/10 backdrop-blur-xs">
+              <p className="text-xs text-muted-foreground/60 font-light">No custom members inside this circle yet. Add users below.</p>
             </div>
           ) : (
-            <div className="bg-background/60 border border-border/40 rounded-2xl divide-y divide-border/30 overflow-hidden">
+            <div className="bg-background/25 backdrop-blur-md border border-border/30 rounded-[2rem] overflow-hidden shadow-2xs divide-y divide-border/20">
               {/* Admin (owner) row — always first */}
-              <div className="flex items-center gap-3 p-4 bg-amber-500/5">
-                <div className="relative w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-amber-400/30 to-amber-600/20 flex items-center justify-center shrink-0">
+              <div className="flex items-center gap-4 p-4.5 bg-amber-500/[0.03] transition-all">
+                <div className="relative w-11 h-11 rounded-full overflow-hidden bg-gradient-to-br from-amber-400/20 to-amber-600/10 border border-amber-500/20 flex items-center justify-center shrink-0">
                   {(circle.owner as any)?.avatar_url
                     ? <img src={(circle.owner as any).avatar_url} alt="" className="w-full h-full object-cover" />
                     : <span className="text-sm font-semibold text-amber-600">{(circle.owner as any)?.display_name?.[0]?.toUpperCase()}</span>
                   }
-                  <span className="absolute -bottom-0.5 -right-0.5 bg-amber-500 rounded-full p-0.5">
-                    <Crown size={8} className="text-white" />
+                  <span className="absolute bottom-0 right-0 bg-amber-500 rounded-full p-1 border border-background">
+                    <Crown size={8} className="text-white fill-white" />
                   </span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-foreground truncate">{(circle.owner as any)?.display_name} <span className="text-[11px] text-amber-600 font-semibold ml-1">Admin</span></p>
-                  <p className="text-xs text-muted-foreground truncate">@{(circle.owner as any)?.username}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-semibold text-foreground truncate">{(circle.owner as any)?.display_name}</p>
+                    <span className="text-[9px] font-bold text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full uppercase tracking-wider">Owner</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground/60 truncate">@{(circle.owner as any)?.username}</p>
                 </div>
               </div>
 
               {members?.map((member: any) => (
-                <div key={member.user_id} className="flex items-center gap-3 p-4">
-                  <div className="w-10 h-10 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0">
+                <div key={member.user_id} className="flex items-center gap-4 p-4.5 hover:bg-muted/20 transition-all duration-300">
+                  <div className="w-11 h-11 rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5 border border-border/40 flex items-center justify-center shrink-0">
                     {member.users?.avatar_url
                       ? <img src={member.users.avatar_url} alt="" className="w-full h-full object-cover" />
                       : <span className="text-sm font-semibold text-primary/60">{member.users?.display_name?.[0]?.toUpperCase()}</span>
                     }
                   </div>
+
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate">{member.users?.display_name}</p>
-                    <p className="text-xs text-muted-foreground truncate">@{member.users?.username}</p>
+                    <p className="text-sm font-semibold text-foreground truncate">{member.users?.display_name}</p>
+                    <p className="text-xs text-muted-foreground/60 truncate">@{member.users?.username}</p>
                   </div>
+                  
                   {isAdmin && (
                     <form action={removeMember}>
                       <input type="hidden" name="userId" value={member.user_id} />
                       <button
                         type="submit"
                         title="Remove from circle"
-                        className="text-muted-foreground hover:text-destructive transition-colors p-2 rounded-full hover:bg-destructive/10"
+                        className="text-muted-foreground/50 hover:text-rose-500 transition-colors p-2.5 rounded-full hover:bg-rose-500/10 border border-transparent hover:border-rose-500/20 shadow-2xs cursor-pointer"
                       >
-                        <UserMinus size={16} strokeWidth={1.5} />
+                        <UserMinus size={15} strokeWidth={1.75} />
                       </button>
                     </form>
                   )}
@@ -205,11 +217,13 @@ export default async function CircleDetailsPage({ params }: { params: Promise<{ 
 
         {/* ── Add People ───────────────────────────────── */}
         {isAdmin && (
-          <section className="space-y-3">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground/70 px-1">
-              Add People
+          <section className="space-y-4">
+            <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground/60 px-1">
+              Add Friends to Circle
             </h3>
-            <AddMemberSearch circleId={circleId} excludeIds={excludeIds} />
+            <div className="bg-background/20 backdrop-blur-md border border-border/30 rounded-[2rem] p-6 shadow-2xs">
+              <AddMemberSearch circleId={circleId} excludeIds={excludeIds} />
+            </div>
           </section>
         )}
 
