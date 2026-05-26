@@ -17,8 +17,10 @@ export function SubmitButton({
   
   return (
     <Button type="submit" disabled={pending} className={className}>
-      {pending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-      {pending ? (pendingText || children) : children}
+      {pending
+        ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />{pendingText || children}</>
+        : <span className="flex items-center">{children}</span>
+      }
     </Button>
   )
 }
