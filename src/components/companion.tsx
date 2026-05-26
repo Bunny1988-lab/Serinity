@@ -72,7 +72,16 @@ export function Companion({ userId }: { userId: string }) {
         body: JSON.stringify({ message: userMsg.content })
       })
 
-      if (!res.ok || !res.body) throw new Error('Failed to fetch')
+      if (!res.ok) {
+        const errText = await res.text()
+        setMessages(prev => [...prev, { 
+          id: 'err-' + Date.now(), 
+          role: 'assistant', 
+          content: `⚠️ ${errText || 'Something went wrong. Please try again.'}` 
+        }])
+        return
+      }
+      if (!res.body) throw new Error('Failed to fetch')
 
       const reader = res.body.getReader()
       const decoder = new TextDecoder()

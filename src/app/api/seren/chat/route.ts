@@ -4,11 +4,17 @@ import { GoogleGenAI } from '@google/genai'
 
 export async function POST(req: NextRequest) {
   try {
+    // Guard: ensure API key is configured
+    if (!process.env.GEMINI_API_KEY) {
+      return new NextResponse('Seren is not configured. GEMINI_API_KEY is missing.', { status: 503 })
+    }
+
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return new NextResponse('Unauthorized', { status: 401 })
 
-    const { message } = await req.json()
+    const body = await req.json().catch(() => ({}))
+    const { message } = body
 
     if (!message) return new NextResponse('Message is required', { status: 400 })
 
