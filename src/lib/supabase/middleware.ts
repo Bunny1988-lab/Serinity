@@ -41,6 +41,14 @@ export async function updateSession(request: NextRequest) {
     !request.nextUrl.pathname.startsWith('/signup') &&
     !request.nextUrl.pathname.startsWith('/auth')
   ) {
+    // For API requests, return 401 Unauthorized instead of redirecting to HTML login page
+    if (request.nextUrl.pathname.startsWith('/api/')) {
+      return new NextResponse(
+        JSON.stringify({ error: 'Unauthorized' }),
+        { status: 401, headers: { 'Content-Type': 'application/json' } }
+      )
+    }
+
     // no user, potentially respond by redirecting the user to the login page
     const url = request.nextUrl.clone()
     url.pathname = '/login'
