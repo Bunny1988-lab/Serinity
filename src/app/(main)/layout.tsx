@@ -8,6 +8,7 @@ import { MindfulPause } from '@/components/mindful-pause'
 import { Companion } from '@/components/companion'
 import { WallpaperProvider } from '@/components/wallpaper-provider'
 import { VaultProvider } from '@/components/vault-context'
+import { GlobalRealtime } from '@/components/global-realtime'
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -34,6 +35,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   return (
     <WallpaperProvider theme={profile?.wallpaper_theme || 'system'}>
       <VaultProvider>
+        <GlobalRealtime userId={user.id} />
         <div className="flex min-h-screen bg-transparent">
           <MindfulPause />
           <Companion userId={user.id} />

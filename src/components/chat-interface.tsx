@@ -99,21 +99,15 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
           (msg.sender_id === currentUserId && msg.receiver_id === recipient.id)
         ) {
           setMessages(prev => {
-            // Prevent duplicates if already loaded
-            if (prev.some(m => m.id === msg.id)) return prev
-
-            // Find matching optimistic message to replace
-            const optIndex = prev.findIndex(m => 
-              m.id?.toString().startsWith('opt-') && 
-              m.content === msg.content && 
-              m.sender_id === msg.sender_id
-            )
-
+            const optIndex = prev.findIndex(m => m.id === msg.id && m.is_optimistic)
             if (optIndex !== -1) {
               const updated = [...prev]
               updated[optIndex] = msg
               return updated
             }
+
+            // Prevent duplicates if already loaded
+            if (prev.some(m => m.id === msg.id)) return prev
 
             return [...prev, msg]
           })
@@ -183,7 +177,15 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
       setImagePreview(null)
     }
 
+    const messageId = typeof crypto !== 'undefined' && crypto.randomUUID
+      ? crypto.randomUUID()
+      : 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+          const r = Math.random() * 16 | 0
+          return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16)
+        })
+
     const msg = {
+      id: messageId,
       sender_id: currentUserId,
       receiver_id: recipient.id,
       content: text,
@@ -191,8 +193,7 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
       ...(image_url ? { image_url } : {})
     }
 
-    const optId = `opt-${Date.now()}`
-    setMessages(prev => [...prev, { ...msg, id: optId, created_at: new Date().toISOString() }])
+    setMessages(prev => [...prev, { ...msg, is_optimistic: true, created_at: new Date().toISOString() }])
     await supabase.from('messages').insert(msg)
     setIsSending(false)
     inputRef.current?.focus()
@@ -262,7 +263,7 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
               const samePrev = isSameAuthorAsPrev(msgs, i)
               const sameNext = isSameAuthorAsNext(msgs, i)
               const isLastRead = msg.id === lastReadMsg?.id
-              const isOpt = msg.id?.toString().startsWith('opt-')
+              const isOpt = msg.is_optimistic
 
               // Bubble shape: grouped bubbles lose their "tail"
               const bubbleRadius = isMe
