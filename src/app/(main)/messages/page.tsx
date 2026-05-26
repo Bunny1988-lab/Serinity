@@ -3,6 +3,7 @@ import { MessageSquare, UserCircle, PenSquare } from 'lucide-react'
 import Link from 'next/link'
 import { ChatInterface } from '@/components/chat-interface'
 import { redirect } from 'next/navigation'
+import { OnlineDot } from '@/components/presence'
 
 export default async function MessagesPage({ searchParams }: { searchParams: Promise<{ u?: string }> }) {
   const { u: recipientId } = await searchParams
@@ -132,11 +133,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
                           : <span className="text-lg font-medium text-primary/60">{partner.display_name?.[0]?.toUpperCase()}</span>
                         }
                       </div>
-                      {unreadCount > 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-primary text-primary-foreground text-[10px] font-bold rounded-full flex items-center justify-center px-1 ring-2 ring-background">
-                          {unreadCount > 9 ? '9+' : unreadCount}
-                        </span>
-                      )}
+                      <OnlineDot userId={partner.id} className="absolute bottom-0 right-0 w-3 h-3" />
                     </div>
 
                     {/* Content */}

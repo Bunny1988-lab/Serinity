@@ -6,6 +6,7 @@ import { Send, Ghost, ImagePlus, X, Trash2, ChevronDown, ArrowLeft, Check, Check
 import { motion, AnimatePresence } from 'framer-motion'
 import { markMessagesAsRead, deleteMessageForEveryone, deleteMessage } from '@/app/(main)/actions'
 import Link from 'next/link'
+import { OnlineDot, usePresence } from '@/components/presence'
 
 function formatTime(dateStr: string) {
   return new Date(dateStr).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
@@ -74,6 +75,7 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
   const [showScrollBtn, setShowScrollBtn] = useState(false)
   const [hoveredId, setHoveredId] = useState<string | null>(null)
   const [isSending, setIsSending] = useState(false)
+  const recipientOnline = usePresence(recipient.id)
 
   const [supabase] = useState(() => createClient())
   const messagesEndRef = useRef<HTMLDivElement>(null)
@@ -234,11 +236,17 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
           <ArrowLeft size={20} strokeWidth={1.5} />
         </Link>
 
-        <Avatar src={recipient.avatar_url} name={recipient.display_name} size={9} />
+        <div className="relative shrink-0">
+          <Avatar src={recipient.avatar_url} name={recipient.display_name} size={9} />
+          <OnlineDot userId={recipient.id} className="absolute bottom-0 right-0 w-2.5 h-2.5" />
+        </div>
 
         <div className="flex-1 min-w-0">
           <p className="font-semibold text-sm leading-tight text-foreground truncate">{recipient.display_name}</p>
-          <p className="text-xs text-muted-foreground/60 font-light">@{recipient.username}</p>
+          <p className="text-xs text-muted-foreground/60 font-light flex items-center gap-1">
+            <span className={`w-1.5 h-1.5 rounded-full inline-block ${recipientOnline ? 'bg-emerald-500' : 'bg-rose-400'}`} />
+            {recipientOnline ? 'Online' : 'Offline'}
+          </p>
         </div>
       </div>
 

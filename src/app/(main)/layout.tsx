@@ -9,6 +9,8 @@ import { Companion } from '@/components/companion'
 import { WallpaperProvider } from '@/components/wallpaper-provider'
 import { VaultProvider } from '@/components/vault-context'
 import { GlobalRealtime } from '@/components/global-realtime'
+import { PresenceProvider } from '@/components/presence'
+import { UnreadBadge, UnreadBadgeMobile } from '@/components/unread-badge'
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -36,6 +38,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
     <WallpaperProvider theme={profile?.wallpaper_theme || 'system'}>
       <VaultProvider>
         <GlobalRealtime userId={user.id} />
+        <PresenceProvider userId={user.id} />
         <div className="flex min-h-screen bg-transparent">
           <MindfulPause />
           <Companion userId={user.id} />
@@ -52,7 +55,9 @@ export default async function MainLayout({ children }: { children: React.ReactNo
           <NavItem href="/feed" icon={<Home size={22} strokeWidth={1.5} />} label="Home" />
           <NavItem href="/journal" icon={<BookHeart size={22} strokeWidth={1.5} />} label="Journal" />
           <NavItem href="/circles" icon={<Users size={22} strokeWidth={1.5} />} label="Circles" />
-          <NavItem href="/messages" icon={<MessageSquare size={22} strokeWidth={1.5} />} label="Messages" badge={unreadMessages || 0} />
+          <NavItem href="/messages" icon={<MessageSquare size={22} strokeWidth={1.5} />} label="Messages">
+            <UnreadBadge initialCount={unreadMessages || 0} userId={user.id} />
+          </NavItem>
           <NavItem href="/vault" icon={<LockKeyhole size={22} strokeWidth={1.5} />} label="Vault" />
           <NavItem href="/profile" icon={<UserCircle size={22} strokeWidth={1.5} />} label="Profile" />
         </nav>
@@ -81,7 +86,9 @@ export default async function MainLayout({ children }: { children: React.ReactNo
           <MobileNavItem href="/feed" icon={<Home size={24} strokeWidth={1.5} />} />
           <MobileNavItem href="/journal" icon={<BookHeart size={24} strokeWidth={1.5} />} />
           <MobileNavItem href="/circles" icon={<Users size={24} strokeWidth={1.5} />} />
-          <MobileNavItem href="/messages" icon={<MessageSquare size={24} strokeWidth={1.5} />} badge={unreadMessages || 0} />
+          <MobileNavItem href="/messages" icon={<MessageSquare size={24} strokeWidth={1.5} />}>
+            <UnreadBadgeMobile initialCount={unreadMessages || 0} userId={user.id} />
+          </MobileNavItem>
           <MobileNavItem href="/vault" icon={<LockKeyhole size={24} strokeWidth={1.5} />} />
           <MobileNavItem href="/profile" icon={<UserCircle size={24} strokeWidth={1.5} />} />
         </div>
@@ -92,29 +99,21 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   )
 }
 
-function NavItem({ href, icon, label, badge = 0 }: { href: string; icon: React.ReactNode; label: string; badge?: number }) {
+function NavItem({ href, icon, label, children }: { href: string; icon: React.ReactNode; label: string; children?: React.ReactNode }) {
   return (
     <Link href={href} className="relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:bg-muted/50 hover:text-foreground">
       {icon}
       <span>{label}</span>
-      {badge > 0 && (
-        <span className="ml-auto min-w-[18px] h-[18px] bg-primary text-primary-foreground text-[10px] font-medium rounded-full flex items-center justify-center px-1">
-          {badge > 9 ? '9+' : badge}
-        </span>
-      )}
+      {children}
     </Link>
   )
 }
 
-function MobileNavItem({ href, icon, badge = 0 }: { href: string; icon: React.ReactNode; badge?: number }) {
+function MobileNavItem({ href, icon, children }: { href: string; icon: React.ReactNode; children?: React.ReactNode }) {
   return (
     <Link href={href} className="relative p-2 text-muted-foreground hover:text-foreground transition-colors">
       {icon}
-      {badge > 0 && (
-        <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-medium rounded-full flex items-center justify-center">
-          {badge > 9 ? '9+' : badge}
-        </span>
-      )}
+      {children}
     </Link>
   )
 }
