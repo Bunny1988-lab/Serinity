@@ -73,7 +73,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 w-full max-w-2xl mx-auto md:ml-0 min-h-screen border-r border-border/30 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.05)]">
+      <main className="flex-1 w-full min-h-screen border-r border-border/30 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.05)]">
         {children}
       </main>
 

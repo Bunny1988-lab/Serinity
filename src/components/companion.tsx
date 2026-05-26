@@ -129,7 +129,7 @@ export function Companion({ userId }: { userId: string }) {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="bg-background/80 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-2xl w-[340px] h-[480px] sm:w-[380px] sm:h-[550px] flex flex-col overflow-hidden relative"
+            className="bg-background/80 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-2xl w-[90vw] max-w-[360px] h-[70vh] max-h-[560px] sm:w-[450px] sm:h-[660px] md:w-[480px] md:h-[700px] flex flex-col overflow-hidden relative"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-border/30 bg-primary/5">
