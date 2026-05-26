@@ -305,3 +305,59 @@ export async function matchContactHashes(hashes: string[]) {
   return (data as unknown as LookupResponse[]).map((d) => d.users) || []
 }
 
+export async function getCirclesWithOwner() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data } = await supabase
+    .from('circles')
+    .select('id, name')
+    .eq('owner_id', user.id)
+
+  return data || []
+}
+
+export async function addMemberToCircleGlobal(circleId: string, userId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Unauthorized' }
+
+  // Check if circle is owned by the user
+  const { data: circle } = await supabase
+    .from('circles')
+    .select('owner_id')
+    .eq('id', circleId)
+    .single()
+
+  if (!circle || circle.owner_id !== user.id) {
+    return { success: false, error: 'Unauthorized circle ownership' }
+  }
+
+  const { error } = await supabase
+    .from('circle_members')
+    .insert({ circle_id: circleId, user_id: userId })
+
+  if (error) {
+    if (error.code === '23505') {
+      return { success: true, message: 'Already a member' }
+    }
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath('/circles')
+  revalidatePath(`/circles/${circleId}`)
+  return { success: true }
+}
+
+export async function getMembershipsForUser(userId: string) {
+  const supabase = await createClient()
+  const { data } = await supabase
+    .from('circle_members')
+    .select('circle_id')
+    .eq('user_id', userId)
+
+  return data?.map(d => d.circle_id) || []
+}
+
+
