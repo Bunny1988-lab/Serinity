@@ -229,7 +229,10 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
   const lastReadMsg = [...messages].reverse().find(m => m.sender_id === currentUserId && m.read_at)
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-background">
+    <div className="flex flex-col h-full min-h-0 bg-background relative overflow-hidden">
+      {/* Dynamic ambient blur light glows */}
+      <div className="absolute top-[-10%] right-[-10%] w-[350px] h-[350px] rounded-full bg-primary/8 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[10%] left-[-10%] w-[300px] h-[300px] rounded-full bg-primary/4 blur-[100px] pointer-events-none" />
 
       {/* ── HEADER ───────────────────────────────────────── */}
       <div className="flex items-center gap-4 px-5 py-4 border-b border-border/10 bg-background/40 backdrop-blur-xl shrink-0 z-10">
@@ -262,10 +265,10 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
         {grouped.map(({ date, msgs }) => (
           <div key={date}>
             {/* Date separator */}
-            <div className="flex items-center gap-3 my-5">
-              <div className="flex-1 h-px bg-gradient-to-r from-transparent via-border/40 to-transparent" />
-              <span className="text-[10px] text-muted-foreground/40 font-medium tracking-wide uppercase">{date}</span>
-              <div className="flex-1 h-px bg-gradient-to-l from-transparent via-border/40 to-transparent" />
+            <div className="flex items-center justify-center my-6">
+              <span className="px-3.5 py-1 text-[9px] font-semibold tracking-widest text-muted-foreground/50 bg-white/[0.02] border border-white/[0.05] rounded-full backdrop-blur-md uppercase">
+                {date}
+              </span>
             </div>
 
             {msgs.map((msg, i) => {
@@ -317,10 +320,10 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
                         <WhisperBubble msg={msg} isMe={isMe} />
                       ) : (
                         <div className={`
-                          relative px-4.5 py-3 text-[14px] leading-relaxed select-text ${bubbleRadius}
+                          relative px-4.5 py-3 text-[14px] leading-relaxed select-text ${bubbleRadius} transition-all duration-300
                           ${isMe
-                            ? 'bg-gradient-to-br from-primary/95 via-primary/90 to-primary/80 text-primary-foreground border border-primary/20 shadow-[0_4px_12px_rgba(var(--primary-rgb),0.12)] font-light'
-                            : 'bg-muted/40 backdrop-blur-sm text-foreground border border-border/10 shadow-[0_2px_8px_rgba(0,0,0,0.02)] font-light'
+                            ? 'bg-gradient-to-tr from-primary via-indigo-600 to-violet-600 text-primary-foreground border border-primary/20 shadow-[0_4px_12px_rgba(99,102,241,0.2)] font-light'
+                            : 'bg-white/[0.03] backdrop-blur-md text-foreground border border-white/[0.08] shadow-[0_4px_12px_rgba(0,0,0,0.05)] font-light'
                           }
                           ${isOpt ? 'opacity-70' : ''}
                         `}>

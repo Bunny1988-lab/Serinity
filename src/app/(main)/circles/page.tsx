@@ -5,7 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Users } from 'lucide-react'
 import Link from 'next/link'
 import { SubmitButton } from '@/components/submit-button'
-import { InviteButton } from '@/components/invite-button'
+import { CircleConnections } from '@/components/circle-connections'
 
 export default async function CirclesPage() {
   const supabase = await createClient()
@@ -52,8 +52,8 @@ export default async function CirclesPage() {
               </p>
             </div>
             
-            <div className="pt-6 relative z-10">
-              <InviteButton />
+            <div className="pt-6 relative z-10 w-full">
+              {user && <CircleConnections userId={user.id} />}
             </div>
           </div>
 

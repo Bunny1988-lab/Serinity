@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { searchUsers, addMemberToCircleGlobal } from '@/app/(main)/actions'
-import { Search, Loader2, Plus, UserCircle } from 'lucide-react'
+import { Search, Loader2, Plus, UserCircle, ShieldCheck } from 'lucide-react'
+import { ContactImporter } from '@/components/contact-importer'
 
 interface Props {
   circleId: string
@@ -15,6 +16,7 @@ export function AddMemberSearch({ circleId, excludeIds: initialExcludeIds }: Pro
   const [isSearching, setIsSearching] = useState(false)
   const [excludeIds, setExcludeIds] = useState<string[]>(initialExcludeIds)
   const [loadingUserId, setLoadingUserId] = useState<string | null>(null)
+  const [importerOpen, setImporterOpen] = useState(false)
 
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -45,15 +47,27 @@ export function AddMemberSearch({ circleId, excludeIds: initialExcludeIds }: Pro
 
   return (
     <div className="space-y-4">
-      <div className="relative group">
-        <Search className="absolute left-4.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 transition-colors group-focus-within:text-primary" size={15} />
-        <input 
-          type="text" 
-          placeholder="Search registered users to add..." 
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          className="w-full h-11 bg-background/40 backdrop-blur-xs border border-border/40 rounded-full pl-11 pr-5 text-xs font-light outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 focus:bg-background/80 transition-all placeholder:text-muted-foreground/40 shadow-2xs"
-        />
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+        <div className="relative group flex-1">
+          <Search className="absolute left-4.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 transition-colors group-focus-within:text-primary" size={15} />
+          <input 
+            type="text" 
+            placeholder="Search registered users to add..." 
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            className="w-full h-11 bg-background/40 backdrop-blur-xs border border-border/40 rounded-full pl-11 pr-5 text-xs font-light outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 focus:bg-background/80 transition-all placeholder:text-muted-foreground/40 shadow-2xs"
+          />
+        </div>
+        
+        {/* Sync Contacts Button inside adding circles panel */}
+        <button
+          type="button"
+          onClick={() => setImporterOpen(true)}
+          className="h-11 px-5 rounded-full border border-border/10 bg-background/30 backdrop-blur-sm text-xs font-medium text-foreground hover:bg-muted/40 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-1.5 shrink-0 select-none cursor-pointer"
+        >
+          <ShieldCheck size={14} className="text-primary" />
+          Sync Contacts
+        </button>
       </div>
 
       {isSearching && (
@@ -106,6 +120,7 @@ export function AddMemberSearch({ circleId, excludeIds: initialExcludeIds }: Pro
           })}
         </div>
       )}
+      <ContactImporter isOpen={importerOpen} onClose={() => setImporterOpen(false)} />
     </div>
   )
 }
