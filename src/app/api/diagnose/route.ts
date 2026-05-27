@@ -38,6 +38,14 @@ export async function GET(req: NextRequest) {
     const { error: postsError } = await supabase.from('posts').select('id').limit(1)
     diagnostics.database.tables.posts = postsError ? 'ERROR: ' + postsError.message : 'OK'
 
+    // Check if unlock_date column exists in posts
+    const { error: unlockDateError } = await supabase.from('posts').select('unlock_date').limit(1)
+    diagnostics.database.tables.posts_unlock_date = unlockDateError ? 'ERROR: ' + unlockDateError.message : 'OK'
+
+    // Check notifications table
+    const { error: notificationsError } = await supabase.from('notifications').select('id').limit(1)
+    diagnostics.database.tables.notifications = notificationsError ? 'ERROR: ' + notificationsError.message : 'OK'
+
   } catch (err: any) {
     diagnostics.database.connection = 'CRASHED'
     diagnostics.database.error = err.message || err

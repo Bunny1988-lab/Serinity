@@ -41,6 +41,7 @@ create table public.posts (
   visibility text default 'all_friends' check (visibility in ('all_friends', 'circle', 'only_me')),
   circle_id uuid references public.circles on delete cascade,
   allow_comments boolean default true,
+  unlock_date timestamp with time zone,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -90,6 +91,17 @@ create table public.user_privacy_lookups (
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
+-- 10. Notifications
+create table public.notifications (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references public.users on delete cascade not null,
+  source_user_id uuid references public.users on delete cascade not null,
+  type text not null check (type in ('reaction', 'comment')),
+  post_id uuid references public.posts on delete cascade not null,
+  read boolean default false not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
 -- ROW LEVEL SECURITY (RLS) --
 
 alter table public.users enable row level security;
@@ -101,6 +113,7 @@ alter table public.reactions enable row level security;
 alter table public.journals enable row level security;
 alter table public.messages enable row level security;
 alter table public.user_privacy_lookups enable row level security;
+alter table public.notifications enable row level security;
 
 -- Users: Anyone can read basic profiles (can restrict later), users can update their own
 create policy "Public profiles are viewable by everyone." on public.users for select using (true);
@@ -143,11 +156,15 @@ create policy "Users can send messages" on public.messages for insert with check
 -- User Privacy Lookups: Users can read their own mapping (Service Role handles bulk queries via Actions)
 create policy "Users can view their own privacy lookup" on public.user_privacy_lookups for select using (auth.uid() = user_id);
 
+-- Notifications: users can read and update their own notifications
+create policy "Users can view their own notifications" on public.notifications for select using (auth.uid() = user_id);
+create policy "Users can update their own notifications" on public.notifications for update using (auth.uid() = user_id);
+
 -- Trigger to create a user profile automatically on signup
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
-security definer set search_path = public
+security definer set search_path = public, extensions
 as $$
 begin
   -- Create the public user profile
@@ -169,8 +186,59 @@ create trigger on_auth_user_created
   after insert on auth.users
   for each row execute procedure public.handle_new_user();
 
--- ENABLE REALTIME BROADCASTING FOR INSTANT MESSAGES
+-- Trigger for automating comment notifications
+create or replace function public.handle_new_comment_notification()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  post_author_id uuid;
+begin
+  -- Get the author of the post
+  select author_id into post_author_id from public.posts where id = new.post_id;
+  
+  -- Only notify if the commentator is not the post author
+  if post_author_id is not null and post_author_id != new.author_id then
+    insert into public.notifications (user_id, source_user_id, type, post_id)
+    values (post_author_id, new.author_id, 'comment', new.post_id);
+  end if;
+  return new;
+end;
+$$;
+
+create or replace trigger on_comment_created
+  after insert on public.comments
+  for each row execute procedure public.handle_new_comment_notification();
+
+-- Trigger for automating reaction notifications
+create or replace function public.handle_new_reaction_notification()
+returns trigger
+language plpgsql
+security definer set search_path = public
+as $$
+declare
+  post_author_id uuid;
+begin
+  -- Get the author of the post
+  select author_id into post_author_id from public.posts where id = new.post_id;
+  
+  -- Only notify if the reactor is not the post author
+  if post_author_id is not null and post_author_id != new.user_id then
+    insert into public.notifications (user_id, source_user_id, type, post_id)
+    values (post_author_id, new.user_id, 'reaction', new.post_id);
+  end if;
+  return new;
+end;
+$$;
+
+create or replace trigger on_reaction_created
+  after insert on public.reactions
+  for each row execute procedure public.handle_new_reaction_notification();
+
+-- ENABLE REALTIME BROADCASTING FOR INSTANT MESSAGES AND NOTIFICATIONS
 alter publication supabase_realtime add table public.messages;
+alter publication supabase_realtime add table public.notifications;
 
 -- BACKFILL SCRIPT FOR EXISTING USERS (Run in Supabase SQL editor):
 -- insert into public.user_privacy_lookups (user_id, email_hash)
