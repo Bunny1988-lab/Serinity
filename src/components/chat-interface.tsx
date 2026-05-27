@@ -15,10 +15,10 @@ function formatTime(dateStr: string) {
 function Avatar({ src, name, size = 9 }: { src?: string; name: string; size?: number }) {
   const sizeClass = `w-${size} h-${size}`
   return (
-    <div className={`${sizeClass} rounded-full overflow-hidden bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center shrink-0`}>
+    <div className={`${sizeClass} rounded-full overflow-hidden bg-muted flex items-center justify-center shrink-0 border border-border/20 shadow-2xs`}>
       {src
         ? <img src={src} alt={name} className="w-full h-full object-cover" />
-        : <span className="font-semibold text-primary/60" style={{ fontSize: size * 1.8 }}>{name?.[0]?.toUpperCase()}</span>
+        : <span className="font-light text-muted-foreground text-xs" style={{ fontSize: size * 1.5 }}>{name?.[0]?.toUpperCase()}</span>
       }
     </div>
   )
@@ -38,28 +38,24 @@ function WhisperBubble({ msg, isMe }: { msg: any; isMe: boolean }) {
   if (!revealed) {
     return (
       <motion.div
-        whileHover={{ scale: 1.03, boxShadow: '0 0 15px rgba(var(--primary-rgb), 0.15)' }}
-        whileTap={{ scale: 0.97 }}
+        whileHover={{ scale: 1.01 }}
+        whileTap={{ scale: 0.99 }}
         onClick={() => setRevealed(true)}
-        className="flex items-center gap-2.5 px-5 py-3.5 rounded-2xl border border-dashed border-primary/40 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 cursor-pointer text-sm text-primary shadow-[0_4px_12px_rgba(var(--primary-rgb),0.05)] transition-all duration-300 select-none animate-pulse"
+        className="flex items-center gap-2 px-4 py-3 rounded-2xl border border-primary/20 bg-primary/5 cursor-pointer text-xs text-primary/80 select-none transition-all duration-300 font-light"
       >
-        <Ghost size={16} className="shrink-0 text-primary/80" />
-        <span className="font-light tracking-wide">Tap to reveal private whisper</span>
+        <Ghost size={13} className="shrink-0 animate-pulse text-primary" />
+        <span className="tracking-wide">Reveal hidden whisper</span>
       </motion.div>
     )
   }
 
   return (
-    <div className={`relative px-4 py-3.5 rounded-2xl overflow-hidden text-sm leading-relaxed border transition-all duration-300 ${
-      isMe 
-        ? 'bg-gradient-to-br from-primary/95 via-primary/90 to-primary/80 text-primary-foreground border-primary/20 shadow-[0_4px_12px_rgba(var(--primary-rgb),0.15)]' 
-        : 'bg-muted/40 backdrop-blur-md text-foreground border-border/10 shadow-[0_4px_12px_rgba(0,0,0,0.03)]'
-    }`}>
-      <Ghost size={12} className="absolute top-2 right-2.5 opacity-30 text-primary animate-bounce" />
-      <p className="pr-3 break-words font-light">{msg.content}</p>
+    <div className="relative px-4 py-3 rounded-2xl text-[13px] leading-relaxed border border-rose-500/20 bg-rose-500/5 text-foreground/90 transition-all duration-300">
+      <Ghost size={11} className="absolute top-2.5 right-2.5 opacity-30 text-rose-500" />
+      <p className="pr-3 font-light break-words">{msg.content}</p>
       {!isMe && (
         <div
-          className="absolute bottom-0 left-0 h-[3px] bg-gradient-to-r from-destructive/60 to-destructive/90 rounded-full transition-all duration-1000 ease-linear shadow-[0_0_8px_rgba(239,68,68,0.5)]"
+          className="absolute bottom-0 left-0 h-[2px] bg-rose-500/40 rounded-full transition-all duration-1000 ease-linear"
           style={{ width: `${(timeLeft / 10) * 100}%` }}
         />
       )}
@@ -229,28 +225,24 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
   const lastReadMsg = [...messages].reverse().find(m => m.sender_id === currentUserId && m.read_at)
 
   return (
-    <div className="flex flex-col h-full min-h-0 bg-background relative overflow-hidden">
-      {/* Dynamic ambient blur light glows */}
-      <div className="absolute top-[-10%] right-[-10%] w-[350px] h-[350px] rounded-full bg-primary/8 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[10%] left-[-10%] w-[300px] h-[300px] rounded-full bg-primary/4 blur-[100px] pointer-events-none" />
-
+    <div className="flex flex-col h-full min-h-0 bg-transparent relative w-full">
       {/* ── HEADER ───────────────────────────────────────── */}
-      <div className="flex items-center gap-4 px-5 py-4 border-b border-border/10 bg-background/40 backdrop-blur-xl shrink-0 z-10">
+      <div className="flex items-center gap-4 px-6 py-4 border-b border-border/10 bg-background/30 backdrop-blur-xl shrink-0 z-10">
         {/* Back button on mobile */}
-        <Link href="/messages" className="md:hidden p-1.5 -ml-1.5 text-muted-foreground hover:text-foreground transition-all hover:scale-105">
-          <ArrowLeft size={20} strokeWidth={1.5} />
+        <Link href="/messages" className="md:hidden p-1.5 -ml-1 text-muted-foreground hover:text-foreground transition-all hover:scale-105">
+          <ArrowLeft size={18} strokeWidth={1.5} />
         </Link>
 
         <div className="relative shrink-0">
           <Avatar src={recipient.avatar_url} name={recipient.display_name} size={9} />
-          <OnlineDot userId={recipient.id} className="absolute bottom-0 right-0 w-2.5 h-2.5" />
+          <OnlineDot userId={recipient.id} className="absolute bottom-0 right-0 w-2.5 h-2.5 border border-background shadow-xs" />
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="font-medium text-sm leading-tight text-foreground truncate">{recipient.display_name}</p>
-          <p className="text-xs text-muted-foreground/60 font-light flex items-center gap-1.5 mt-0.5">
-            <span className={`w-1.5 h-1.5 rounded-full inline-block ${recipientOnline ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse' : 'bg-rose-400'}`} />
-            {recipientOnline ? 'Online' : 'Offline'}
+          <p className="font-light text-sm tracking-tight text-foreground truncate">{recipient.display_name}</p>
+          <p className="text-[10px] text-muted-foreground/60 font-light flex items-center gap-1.5 mt-0.5">
+            <span className={`w-1 h-1 rounded-full inline-block ${recipientOnline ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)] animate-pulse' : 'bg-muted-foreground/35'}`} />
+            {recipientOnline ? 'Active now' : 'Offline'}
           </p>
         </div>
       </div>
@@ -259,14 +251,14 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-4 py-6 space-y-0.5 scroll-smooth"
+        className="flex-1 overflow-y-auto px-6 py-6 space-y-0.5 scroll-smooth relative z-10 scrollbar-none"
         style={{ overscrollBehavior: 'contain' }}
       >
         {grouped.map(({ date, msgs }) => (
           <div key={date}>
             {/* Date separator */}
             <div className="flex items-center justify-center my-6">
-              <span className="px-3.5 py-1 text-[9px] font-semibold tracking-widest text-muted-foreground/50 bg-white/[0.02] border border-white/[0.05] rounded-full backdrop-blur-md uppercase">
+              <span className="text-[9px] font-light tracking-widest text-muted-foreground/40 uppercase">
                 {date}
               </span>
             </div>
@@ -278,26 +270,26 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
               const isLastRead = msg.id === lastReadMsg?.id
               const isOpt = msg.is_optimistic
 
-              // Bubble shape: grouped bubbles lose their "tail"
+              // Gorgeous minimalist shape logic for grouped messages
               const bubbleRadius = isMe
-                ? `rounded-2xl ${sameNext ? 'rounded-br-md' : 'rounded-br-sm'} ${samePrev ? 'rounded-tr-md' : ''}`
-                : `rounded-2xl ${sameNext ? 'rounded-bl-md' : 'rounded-bl-sm'} ${samePrev ? 'rounded-tl-md' : ''}`
+                ? `rounded-3xl ${sameNext ? 'rounded-br-xs' : 'rounded-br-3xl'} ${samePrev ? 'rounded-tr-xs' : ''}`
+                : `rounded-3xl ${sameNext ? 'rounded-bl-xs' : 'rounded-bl-3xl'} ${samePrev ? 'rounded-tl-xs' : ''}`
 
               return (
-                <div key={msg.id} className={`${samePrev ? 'mt-0.5' : 'mt-3'}`}>
+                <div key={msg.id} className={`${samePrev ? 'mt-0.5' : 'mt-4'}`}>
                   <motion.div
-                    initial={{ opacity: 0, y: 6, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    transition={{ duration: 0.18, ease: [0.25, 0.46, 0.45, 0.94] }}
-                    className={`flex items-end gap-2 ${isMe ? 'justify-end' : 'justify-start'}`}
+                    initial={{ opacity: 0, y: 3 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.15 }}
+                    className={`flex items-end gap-2.5 ${isMe ? 'justify-end' : 'justify-start'}`}
                     onMouseEnter={() => setHoveredId(msg.id)}
                     onMouseLeave={() => setHoveredId(null)}
                   >
                     {/* Other user's avatar - only show on last message in group */}
                     {!isMe && (
-                      <div className="w-7 shrink-0">
+                      <div className="w-7 shrink-0 flex justify-center">
                         {!sameNext && (
-                          <Avatar src={recipient.avatar_url} name={recipient.display_name} size={7} />
+                          <Avatar src={recipient.avatar_url} name={recipient.display_name} size={6} />
                         )}
                       </div>
                     )}
@@ -308,33 +300,35 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
                         initial={{ opacity: 0, scale: 0.8 }}
                         animate={{ opacity: 1, scale: 1 }}
                         onClick={() => handleDelete(msg.id)}
-                        className="p-1.5 rounded-full text-muted-foreground/50 hover:text-destructive hover:bg-destructive/10 transition-colors"
+                        className="p-1.5 rounded-full text-muted-foreground/30 hover:text-destructive hover:bg-destructive/5 transition-colors cursor-pointer"
                       >
-                        <Trash2 size={13} />
+                        <Trash2 size={12} strokeWidth={1.5} />
                       </motion.button>
                     )}
 
                     {/* Bubble */}
-                    <div className={`max-w-[70%] min-w-0`}>
+                    <div className={`max-w-[70%] md:max-w-[60%] min-w-0`}>
                       {msg.is_whisper ? (
                         <WhisperBubble msg={msg} isMe={isMe} />
                       ) : (
                         <div className={`
-                          relative px-4.5 py-3 text-[14px] leading-relaxed select-text ${bubbleRadius} transition-all duration-300
+                          relative px-4 py-2.5 text-[13px] leading-relaxed select-text ${bubbleRadius} transition-all duration-200
                           ${isMe
-                            ? 'bg-gradient-to-tr from-primary via-indigo-600 to-violet-600 text-primary-foreground border border-primary/20 shadow-[0_4px_12px_rgba(99,102,241,0.2)] font-light'
-                            : 'bg-white/[0.03] backdrop-blur-md text-foreground border border-white/[0.08] shadow-[0_4px_12px_rgba(0,0,0,0.05)] font-light'
+                            ? 'bg-neutral-950 text-neutral-50 dark:bg-neutral-800 dark:text-neutral-100 border border-black/[0.05] dark:border-white/[0.04] shadow-2xs font-light'
+                            : 'bg-white/40 dark:bg-white/[0.03] text-foreground/95 border border-black/[0.03] dark:border-white/[0.04] shadow-3xs font-light backdrop-blur-md'
                           }
-                          ${isOpt ? 'opacity-70' : ''}
+                          ${isOpt ? 'opacity-50 animate-pulse' : ''}
                         `}>
                           {msg.image_url && (
-                            <img
-                              src={msg.image_url}
-                              alt=""
-                              className="rounded-2xl mb-2 max-h-64 w-full object-cover shadow-sm border border-border/10"
-                            />
+                            <div className="rounded-2xl overflow-hidden mb-2 max-h-64 w-full bg-muted/20 border border-border/5">
+                              <img
+                                src={msg.image_url}
+                                alt=""
+                                className="w-full h-full object-cover"
+                              />
+                            </div>
                           )}
-                          {msg.content && <p className="break-words">{msg.content}</p>}
+                          {msg.content && <p className="break-words font-light tracking-wide">{msg.content}</p>}
                         </div>
                       )}
 
@@ -347,11 +341,11 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
                             exit={{ opacity: 0, height: 0 }}
                             className={`flex items-center gap-1 mt-1 ${isMe ? 'justify-end' : 'justify-start'}`}
                           >
-                            <span className="text-[10px] text-muted-foreground/40">{formatTime(msg.created_at)}</span>
+                            <span className="text-[9px] text-muted-foreground/35">{formatTime(msg.created_at)}</span>
                             {isMe && (
                               msg.read_at
-                                ? <CheckCheck size={12} className="text-primary/50" />
-                                : <Check size={12} className="text-muted-foreground/30" />
+                                ? <CheckCheck size={10} className="text-primary/60" />
+                                : <Check size={10} className="text-muted-foreground/25" />
                             )}
                           </motion.div>
                         )}
@@ -361,22 +355,22 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
 
                   {/* Seen label below last read message */}
                   {isLastRead && !hoveredId && (
-                    <p className="text-[10px] text-muted-foreground/40 text-right mt-1 pr-1 flex items-center justify-end gap-1">
-                      <CheckCheck size={11} className="text-primary/40" /> Seen
+                    <p className="text-[9px] text-muted-foreground/35 text-right mt-1 pr-1 flex items-center justify-end gap-1 font-light uppercase tracking-wider select-none">
+                      Seen
                     </p>
                   )}
                 </div>
-              )
+              );
             })}
           </div>
         ))}
 
         {messages.length === 0 && (
-          <div className="flex flex-col items-center justify-center gap-3 py-20 text-center">
-            <Avatar src={recipient.avatar_url} name={recipient.display_name} size={14} />
-            <div>
-              <p className="font-semibold text-foreground/70 text-sm">{recipient.display_name}</p>
-              <p className="text-xs text-muted-foreground/50 mt-1">Send a message to start the conversation 🌿</p>
+          <div className="flex flex-col items-center justify-center gap-4 py-28 text-center bg-transparent">
+            <Avatar src={recipient.avatar_url} name={recipient.display_name} size={12} />
+            <div className="space-y-1">
+              <p className="font-light text-sm text-foreground/80">{recipient.display_name}</p>
+              <p className="text-xs text-muted-foreground/45 font-light">Start a secure, end-to-end private talk 🌿</p>
             </div>
           </div>
         )}
@@ -392,9 +386,9 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.8 }}
             onClick={() => scrollToBottom()}
-            className="absolute bottom-24 right-5 w-9 h-9 bg-background/90 backdrop-blur-sm border border-border/50 shadow-lg rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors z-20"
+            className="absolute bottom-24 right-6 w-8 h-8 bg-background/80 border border-border/10 shadow-sm rounded-full flex items-center justify-center text-muted-foreground/75 hover:text-foreground transition-all duration-200 z-20 hover:scale-105 cursor-pointer backdrop-blur-md"
           >
-            <ChevronDown size={16} />
+            <ChevronDown size={14} />
           </motion.button>
         )}
       </AnimatePresence>
@@ -406,89 +400,90 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="px-4 pt-3 shrink-0 bg-background border-t border-border/20"
+            className="px-6 pt-2 shrink-0 bg-transparent"
           >
-            <div className="relative inline-block">
-              <img src={imagePreview} alt="preview" className="h-24 rounded-xl object-cover border border-border/30" />
+            <div className="relative inline-block bg-background/50 backdrop-blur-md p-1.5 rounded-2xl border border-border/15 shadow-sm">
+              <img src={imagePreview} alt="preview" className="h-20 rounded-xl object-cover border border-border/10" />
               <button
                 onClick={() => { setImageFile(null); setImagePreview(null) }}
-                className="absolute -top-2 -right-2 w-5 h-5 bg-background border border-border/50 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground"
+                className="absolute -top-1.5 -right-1.5 w-5 h-5 bg-background border border-border/15 shadow-sm rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground cursor-pointer transition-all duration-150 hover:scale-105"
               >
-                <X size={11} />
+                <X size={10} />
               </button>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* ── INPUT BAR ─────────────────────────────────────── */}
-      <div className="shrink-0 px-5 py-4 bg-background/40 backdrop-blur-xl border-t border-border/10">
-        {isWhisper && (
-          <motion.p
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-[11px] text-center text-primary/80 font-medium mb-3 flex items-center justify-center gap-1.5"
-          >
-            <Ghost size={12} className="animate-pulse" />
-            Whisper mode · self-destructs 10s after reading
-          </motion.p>
-        )}
+      {/* ── FLOATING INPUT BAR ─────────────────────────────── */}
+      <div className="shrink-0 px-6 pb-6 pt-2 bg-transparent z-20">
+        <div className="max-w-3xl mx-auto">
+          {isWhisper && (
+            <motion.p
+              initial={{ opacity: 0, y: 4 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-[9px] text-center text-primary/80 font-light mb-3 flex items-center justify-center gap-1.5 uppercase tracking-widest"
+            >
+              <Ghost size={12} className="text-primary animate-pulse" />
+              Whisper mode · self-destructs after 10s
+            </motion.p>
+          )}
 
-        <form onSubmit={handleSend} className="flex items-center gap-2">
-          <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
+          <form onSubmit={handleSend} className={`
+            flex items-center gap-2 p-1.5 rounded-full border transition-all duration-300
+            ${isWhisper
+              ? 'border-primary/40 bg-primary/5 shadow-[0_0_15px_rgba(var(--primary-rgb),0.05)]'
+              : 'border-border/30 bg-background/60 backdrop-blur-2xl shadow-sm focus-within:border-border/60 focus-within:shadow-md'
+            }
+          `}>
+            <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
 
-          {/* Image attach */}
-          <button
-            type="button"
-            onClick={() => fileInputRef.current?.click()}
-            className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-full transition-all shrink-0"
-          >
-            <ImagePlus size={18} strokeWidth={1.5} />
-          </button>
+            {/* Image attach */}
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              className="w-9 h-9 flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-muted/20 rounded-full transition-all shrink-0 cursor-pointer"
+            >
+              <ImagePlus size={16} strokeWidth={1.5} />
+            </button>
 
-          {/* Whisper toggle */}
-          <button
-            type="button"
-            onClick={() => setIsWhisper(!isWhisper)}
-            className={`w-10 h-10 flex items-center justify-center rounded-full transition-all shrink-0 ${
-              isWhisper
-                ? 'bg-primary/20 text-primary ring-1 ring-primary/40 shadow-[0_0_12px_rgba(var(--primary-rgb),0.1)]'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
-            }`}
-          >
-            <Ghost size={18} strokeWidth={1.5} />
-          </button>
+            {/* Whisper toggle */}
+            <button
+              type="button"
+              onClick={() => setIsWhisper(!isWhisper)}
+              className={`w-9 h-9 flex items-center justify-center rounded-full transition-all shrink-0 cursor-pointer ${
+                isWhisper
+                  ? 'bg-primary/20 text-primary border border-primary/30 shadow-xs'
+                  : 'text-muted-foreground/60 hover:text-foreground hover:bg-muted/20'
+              }`}
+            >
+              <Ghost size={16} strokeWidth={1.5} />
+            </button>
 
-          {/* Text input */}
-          <div className="flex-1 relative">
-            <input
-              ref={inputRef}
-              type="text"
-              value={newMessage}
-              onChange={e => setNewMessage(e.target.value)}
-              placeholder={isWhisper ? 'Whisper an encrypted secret...' : 'Write a reflection...'}
-              className={`
-                w-full px-5 py-3 pr-10 text-sm font-light rounded-full outline-none transition-all duration-300
-                bg-muted/20 border backdrop-blur-sm
-                ${isWhisper
-                  ? 'border-primary/40 focus:border-primary/60 focus:bg-primary/5 focus:shadow-[0_0_15px_rgba(var(--primary-rgb),0.06)] placeholder:text-primary/40 text-primary'
-                  : 'border-border/10 focus:border-border/30 focus:bg-muted/30 focus:shadow-[0_4px_16px_rgba(0,0,0,0.02)] placeholder:text-muted-foreground/40 text-foreground'
-                }
-              `}
-            />
-          </div>
+            {/* Text input */}
+            <div className="flex-1 relative min-w-0">
+              <input
+                ref={inputRef}
+                type="text"
+                value={newMessage}
+                onChange={e => setNewMessage(e.target.value)}
+                placeholder={isWhisper ? 'Type a self-destructing whisper...' : 'Type a message...'}
+                className="w-full px-3 py-1.5 text-[13px] font-light bg-transparent border-0 outline-none focus:ring-0 placeholder:text-muted-foreground/35 text-foreground"
+              />
+            </div>
 
-          {/* Send button */}
-          <motion.button
-            type="submit"
-            disabled={(!newMessage.trim() && !imageFile) || isSending}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="w-10 h-10 bg-gradient-to-tr from-primary to-primary/80 hover:shadow-lg hover:shadow-primary/20 text-primary-foreground rounded-full flex items-center justify-center disabled:opacity-30 transition-all shrink-0"
-          >
-            <Send size={15} />
-          </motion.button>
-        </form>
+            {/* Send button */}
+            <motion.button
+              type="submit"
+              disabled={(!newMessage.trim() && !imageFile) || isSending}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              className="w-9 h-9 bg-primary text-primary-foreground rounded-full flex items-center justify-center disabled:opacity-20 transition-all shrink-0 cursor-pointer shadow-xs hover:shadow-md hover:bg-primary/95"
+            >
+              <Send size={14} strokeWidth={1.5} />
+            </motion.button>
+          </form>
+        </div>
       </div>
     </div>
   )

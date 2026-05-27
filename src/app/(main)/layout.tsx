@@ -11,6 +11,8 @@ import { VaultProvider } from '@/components/vault-context'
 import { GlobalRealtime } from '@/components/global-realtime'
 import { PresenceProvider } from '@/components/presence'
 import { UnreadBadge, UnreadBadgeMobile } from '@/components/unread-badge'
+import { MobileNav } from '@/components/mobile-nav'
+import { Suspense } from 'react'
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -73,26 +75,14 @@ export default async function MainLayout({ children }: { children: React.ReactNo
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 w-full min-h-screen border-r border-border/30 shadow-[4px_0_24px_-12px_rgba(0,0,0,0.05)]">
+      <main className="flex-1 w-full min-h-screen overflow-hidden">
         {children}
       </main>
 
-      {/* Right margin space for balance on large screens */}
-      <div className="hidden lg:block flex-1 bg-transparent"></div>
-
       {/* Mobile Bottom Nav */}
-      <nav className="md:hidden fixed bottom-6 left-6 right-6 rounded-3xl border border-border/40 bg-background/70 backdrop-blur-2xl shadow-xl z-50 overflow-hidden">
-        <div className="flex justify-around p-2">
-          <MobileNavItem href="/feed" icon={<Home size={24} strokeWidth={1.5} />} />
-          <MobileNavItem href="/journal" icon={<BookHeart size={24} strokeWidth={1.5} />} />
-          <MobileNavItem href="/circles" icon={<Users size={24} strokeWidth={1.5} />} />
-          <MobileNavItem href="/messages" icon={<MessageSquare size={24} strokeWidth={1.5} />}>
-            <UnreadBadgeMobile initialCount={unreadMessages || 0} userId={user.id} />
-          </MobileNavItem>
-          <MobileNavItem href="/vault" icon={<LockKeyhole size={24} strokeWidth={1.5} />} />
-          <MobileNavItem href="/profile" icon={<UserCircle size={24} strokeWidth={1.5} />} />
-        </div>
-      </nav>
+      <Suspense fallback={null}>
+        <MobileNav unreadMessages={unreadMessages || 0} />
+      </Suspense>
         </div>
       </VaultProvider>
     </WallpaperProvider>
