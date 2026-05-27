@@ -38,26 +38,28 @@ function WhisperBubble({ msg, isMe }: { msg: any; isMe: boolean }) {
   if (!revealed) {
     return (
       <motion.div
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileHover={{ scale: 1.03, boxShadow: '0 0 15px rgba(var(--primary-rgb), 0.15)' }}
+        whileTap={{ scale: 0.97 }}
         onClick={() => setRevealed(true)}
-        className="flex items-center gap-2.5 px-4 py-3 rounded-2xl border border-dashed border-primary/30 bg-primary/5 cursor-pointer text-sm text-primary/70 select-none"
+        className="flex items-center gap-2.5 px-5 py-3.5 rounded-2xl border border-dashed border-primary/40 bg-gradient-to-r from-primary/10 via-primary/5 to-primary/10 cursor-pointer text-sm text-primary shadow-[0_4px_12px_rgba(var(--primary-rgb),0.05)] transition-all duration-300 select-none animate-pulse"
       >
-        <Ghost size={15} className="shrink-0" />
-        <span className="font-light">Tap to reveal whisper</span>
+        <Ghost size={16} className="shrink-0 text-primary/80" />
+        <span className="font-light tracking-wide">Tap to reveal private whisper</span>
       </motion.div>
     )
   }
 
   return (
-    <div className={`relative px-4 py-3 rounded-2xl overflow-hidden text-sm leading-relaxed ${
-      isMe ? 'bg-primary text-primary-foreground' : 'bg-muted/80 text-foreground'
+    <div className={`relative px-4 py-3.5 rounded-2xl overflow-hidden text-sm leading-relaxed border transition-all duration-300 ${
+      isMe 
+        ? 'bg-gradient-to-br from-primary/95 via-primary/90 to-primary/80 text-primary-foreground border-primary/20 shadow-[0_4px_12px_rgba(var(--primary-rgb),0.15)]' 
+        : 'bg-muted/40 backdrop-blur-md text-foreground border-border/10 shadow-[0_4px_12px_rgba(0,0,0,0.03)]'
     }`}>
-      <Ghost size={11} className="absolute top-2 right-2.5 opacity-20" />
-      <p>{msg.content}</p>
+      <Ghost size={12} className="absolute top-2 right-2.5 opacity-30 text-primary animate-bounce" />
+      <p className="pr-3 break-words font-light">{msg.content}</p>
       {!isMe && (
         <div
-          className="absolute bottom-0 left-0 h-[3px] bg-destructive/50 rounded-full transition-all duration-1000 ease-linear"
+          className="absolute bottom-0 left-0 h-[3px] bg-gradient-to-r from-destructive/60 to-destructive/90 rounded-full transition-all duration-1000 ease-linear shadow-[0_0_8px_rgba(239,68,68,0.5)]"
           style={{ width: `${(timeLeft / 10) * 100}%` }}
         />
       )}
@@ -230,9 +232,9 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
     <div className="flex flex-col h-full min-h-0 bg-background">
 
       {/* ── HEADER ───────────────────────────────────────── */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b border-border/30 bg-background/80 backdrop-blur-xl shrink-0 z-10">
+      <div className="flex items-center gap-4 px-5 py-4 border-b border-border/10 bg-background/40 backdrop-blur-xl shrink-0 z-10">
         {/* Back button on mobile */}
-        <Link href="/messages" className="md:hidden p-1.5 -ml-1.5 text-muted-foreground hover:text-foreground transition-colors">
+        <Link href="/messages" className="md:hidden p-1.5 -ml-1.5 text-muted-foreground hover:text-foreground transition-all hover:scale-105">
           <ArrowLeft size={20} strokeWidth={1.5} />
         </Link>
 
@@ -242,9 +244,9 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="font-semibold text-sm leading-tight text-foreground truncate">{recipient.display_name}</p>
-          <p className="text-xs text-muted-foreground/60 font-light flex items-center gap-1">
-            <span className={`w-1.5 h-1.5 rounded-full inline-block ${recipientOnline ? 'bg-emerald-500' : 'bg-rose-400'}`} />
+          <p className="font-medium text-sm leading-tight text-foreground truncate">{recipient.display_name}</p>
+          <p className="text-xs text-muted-foreground/60 font-light flex items-center gap-1.5 mt-0.5">
+            <span className={`w-1.5 h-1.5 rounded-full inline-block ${recipientOnline ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)] animate-pulse' : 'bg-rose-400'}`} />
             {recipientOnline ? 'Online' : 'Offline'}
           </p>
         </div>
@@ -315,10 +317,10 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
                         <WhisperBubble msg={msg} isMe={isMe} />
                       ) : (
                         <div className={`
-                          relative px-3.5 py-2.5 text-sm leading-relaxed select-text ${bubbleRadius}
+                          relative px-4.5 py-3 text-[14px] leading-relaxed select-text ${bubbleRadius}
                           ${isMe
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-muted/70 text-foreground border border-border/20'
+                            ? 'bg-gradient-to-br from-primary/95 via-primary/90 to-primary/80 text-primary-foreground border border-primary/20 shadow-[0_4px_12px_rgba(var(--primary-rgb),0.12)] font-light'
+                            : 'bg-muted/40 backdrop-blur-sm text-foreground border border-border/10 shadow-[0_2px_8px_rgba(0,0,0,0.02)] font-light'
                           }
                           ${isOpt ? 'opacity-70' : ''}
                         `}>
@@ -326,7 +328,7 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
                             <img
                               src={msg.image_url}
                               alt=""
-                              className="rounded-xl mb-2 max-h-64 w-full object-cover"
+                              className="rounded-2xl mb-2 max-h-64 w-full object-cover shadow-sm border border-border/10"
                             />
                           )}
                           {msg.content && <p className="break-words">{msg.content}</p>}
@@ -417,15 +419,15 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
       </AnimatePresence>
 
       {/* ── INPUT BAR ─────────────────────────────────────── */}
-      <div className="shrink-0 px-4 py-3 bg-background/80 backdrop-blur-xl border-t border-border/30">
+      <div className="shrink-0 px-5 py-4 bg-background/40 backdrop-blur-xl border-t border-border/10">
         {isWhisper && (
           <motion.p
             initial={{ opacity: 0, y: 4 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-[11px] text-center text-primary/60 font-medium mb-2 flex items-center justify-center gap-1.5"
+            className="text-[11px] text-center text-primary/80 font-medium mb-3 flex items-center justify-center gap-1.5"
           >
-            <Ghost size={11} />
-            Whisper mode · self-destructs after reading
+            <Ghost size={12} className="animate-pulse" />
+            Whisper mode · self-destructs 10s after reading
           </motion.p>
         )}
 
@@ -436,7 +438,7 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
           <button
             type="button"
             onClick={() => fileInputRef.current?.click()}
-            className="w-9 h-9 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 rounded-full transition-colors shrink-0"
+            className="w-10 h-10 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/40 rounded-full transition-all shrink-0"
           >
             <ImagePlus size={18} strokeWidth={1.5} />
           </button>
@@ -445,10 +447,10 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
           <button
             type="button"
             onClick={() => setIsWhisper(!isWhisper)}
-            className={`w-9 h-9 flex items-center justify-center rounded-full transition-all shrink-0 ${
+            className={`w-10 h-10 flex items-center justify-center rounded-full transition-all shrink-0 ${
               isWhisper
-                ? 'bg-primary/15 text-primary ring-1 ring-primary/30'
-                : 'text-muted-foreground hover:text-foreground hover:bg-muted/60'
+                ? 'bg-primary/20 text-primary ring-1 ring-primary/40 shadow-[0_0_12px_rgba(var(--primary-rgb),0.1)]'
+                : 'text-muted-foreground hover:text-foreground hover:bg-muted/40'
             }`}
           >
             <Ghost size={18} strokeWidth={1.5} />
@@ -461,13 +463,13 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
               type="text"
               value={newMessage}
               onChange={e => setNewMessage(e.target.value)}
-              placeholder={isWhisper ? 'Whisper a secret...' : 'Message...'}
+              placeholder={isWhisper ? 'Whisper an encrypted secret...' : 'Write a reflection...'}
               className={`
-                w-full px-4 py-2.5 pr-10 text-sm font-light rounded-full outline-none transition-all
-                bg-muted/40 border focus:bg-muted/60
+                w-full px-5 py-3 pr-10 text-sm font-light rounded-full outline-none transition-all duration-300
+                bg-muted/20 border backdrop-blur-sm
                 ${isWhisper
-                  ? 'border-primary/30 focus:border-primary/50 placeholder:text-primary/40'
-                  : 'border-border/30 focus:border-border/60 placeholder:text-muted-foreground/50'
+                  ? 'border-primary/40 focus:border-primary/60 focus:bg-primary/5 focus:shadow-[0_0_15px_rgba(var(--primary-rgb),0.06)] placeholder:text-primary/40 text-primary'
+                  : 'border-border/10 focus:border-border/30 focus:bg-muted/30 focus:shadow-[0_4px_16px_rgba(0,0,0,0.02)] placeholder:text-muted-foreground/40 text-foreground'
                 }
               `}
             />
@@ -479,7 +481,7 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
             disabled={(!newMessage.trim() && !imageFile) || isSending}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="w-9 h-9 bg-primary text-primary-foreground rounded-full flex items-center justify-center disabled:opacity-30 transition-opacity shrink-0 shadow-sm"
+            className="w-10 h-10 bg-gradient-to-tr from-primary to-primary/80 hover:shadow-lg hover:shadow-primary/20 text-primary-foreground rounded-full flex items-center justify-center disabled:opacity-30 transition-all shrink-0"
           >
             <Send size={15} />
           </motion.button>
