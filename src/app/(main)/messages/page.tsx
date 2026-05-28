@@ -64,7 +64,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
 
       {/* ── LEFT SIDEBAR ─────────────────────────────────────────── */}
       <div className={`
-        flex flex-col w-full md:w-[265px] shrink-0
+        flex flex-col w-full md:w-[300px] lg:w-[320px] shrink-0
         border-r border-border/10 bg-background/25 backdrop-blur-md
         ${selectedRecipient ? 'hidden md:flex' : 'flex'}
       `}>

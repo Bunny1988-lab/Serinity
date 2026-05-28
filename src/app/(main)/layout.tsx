@@ -45,15 +45,15 @@ export default async function MainLayout({ children }: { children: React.ReactNo
           <MindfulPause />
           <Companion userId={user.id} />
           {/* Desktop Sidebar */}
-          <aside className="hidden md:flex w-64 flex-col border-r border-border/50 bg-background/50 backdrop-blur-xl">
-            <div className="p-8">
+          <aside className="hidden md:flex w-56 lg:w-64 flex-col border-r border-border/50 bg-background/50 backdrop-blur-xl shrink-0">
+            <div className="p-6 lg:p-8">
               <Link href="/feed" className="flex items-center gap-3 hover:opacity-95 transition-opacity">
                 <img src="/logo.png" alt="Serenity Logo" className="w-8 h-8 rounded-lg object-contain" />
                 <span className="text-sm font-medium tracking-[0.2em] text-foreground uppercase opacity-80">Serenity</span>
               </Link>
             </div>
             
-            <nav className="flex-1 space-y-2 px-6 py-4">
+            <nav className="flex-1 space-y-1.5 px-4 py-4">
           <NavItem href="/feed" icon={<Home size={22} strokeWidth={1.5} />} label="Home" />
           <NavItem href="/journal" icon={<BookHeart size={22} strokeWidth={1.5} />} label="Journal" />
           <NavItem href="/circles" icon={<Users size={22} strokeWidth={1.5} />} label="Circles" />
@@ -64,7 +64,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
           <NavItem href="/profile" icon={<UserCircle size={22} strokeWidth={1.5} />} label="Profile" />
         </nav>
 
-        <div className="p-6">
+        <div className="p-4 lg:p-6">
           <form action={logout}>
             <button type="submit" className="flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-sm font-medium text-muted-foreground transition-all hover:bg-muted/50 hover:text-foreground">
               <LogOut size={20} strokeWidth={1.5} />
@@ -75,7 +75,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 w-full min-h-screen overflow-hidden">
+      <main className="flex-1 min-w-0 min-h-screen overflow-hidden">
         {children}
       </main>
 

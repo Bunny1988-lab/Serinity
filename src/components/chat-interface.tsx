@@ -247,11 +247,11 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
         </div>
       </div>
 
-      {/* ── MESSAGES ─────────────────────────────────────── */}
+      {/* ── MESSAGES ──────────────────────────────────────────── */}
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-6 py-6 space-y-0.5 scroll-smooth relative z-10 scrollbar-none"
+        className="flex-1 overflow-y-auto px-4 md:px-8 py-6 space-y-0.5 scroll-smooth relative z-10 scrollbar-none"
         style={{ overscrollBehavior: 'contain' }}
       >
         {grouped.map(({ date, msgs }) => (
@@ -307,7 +307,7 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
                     )}
 
                     {/* Bubble */}
-                    <div className={`max-w-[70%] md:max-w-[60%] min-w-0`}>
+                    <div className={`max-w-[85%] md:max-w-[75%] min-w-0`}>
                       {msg.is_whisper ? (
                         <WhisperBubble msg={msg} isMe={isMe} />
                       ) : (
@@ -415,9 +415,9 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
         )}
       </AnimatePresence>
 
-      {/* ── FLOATING INPUT BAR ─────────────────────────────── */}
-      <div className="shrink-0 px-6 pb-6 pt-2 bg-transparent z-20">
-        <div className="max-w-3xl mx-auto">
+      {/* ── FLOATING INPUT BAR ───────────────────────────────────── */}
+      <div className="shrink-0 px-4 md:px-8 pb-6 pt-2 bg-transparent z-20">
+        <div className="max-w-4xl mx-auto">
           {isWhisper && (
             <motion.p
               initial={{ opacity: 0, y: 4 }}
