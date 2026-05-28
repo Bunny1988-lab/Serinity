@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
-import { Home, Users, UserCircle, BookHeart, LockKeyhole, MessageSquare, UserPlus2 } from 'lucide-react'
+import { Home, Users, UserCircle, LockKeyhole, MessageSquare, UserPlus2 } from 'lucide-react'
 import { UnreadBadgeMobile } from '@/components/unread-badge'
+import { JournalIcon } from '@/components/journal-icon'
 
 export function MobileNav({
   unreadMessages,
@@ -23,7 +24,7 @@ export function MobileNav({
     <nav className="md:hidden fixed bottom-4 left-4 right-4 rounded-3xl border border-border/40 bg-background/75 backdrop-blur-2xl shadow-xl z-50 overflow-hidden">
       <div className="flex justify-around items-center px-1 py-1.5">
         <MobileNavItem href="/feed"        active={pathname === '/feed'}              icon={<Home      size={20} strokeWidth={1.5} />} />
-        <MobileNavItem href="/journal"     active={pathname === '/journal'}           icon={<BookHeart size={20} strokeWidth={1.5} />} />
+        <MobileNavItem href="/journal"     active={pathname === '/journal'}           icon={<JournalIcon size={20} strokeWidth={1.5} />} />
         <MobileNavItem href="/circles"     active={pathname === '/circles'}           icon={<Users     size={20} strokeWidth={1.5} />} />
         <MobileNavItem href="/people"      active={pathname.startsWith('/people')}   icon={<UserPlus2 size={20} strokeWidth={1.5} />} />
         <MobileNavItem href="/messages"    active={pathname.startsWith('/messages')} icon={<MessageSquare size={20} strokeWidth={1.5} />}>

@@ -1,10 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Home, Users, UserCircle, BookHeart, LogOut, LockKeyhole, MessageSquare, UserPlus2 } from 'lucide-react'
+import { Home, Users, UserCircle, LogOut, LockKeyhole, MessageSquare, UserPlus2 } from 'lucide-react'
 import { logout } from '@/app/auth/actions'
 
 import { MindfulPause } from '@/components/mindful-pause'
+import { JournalIcon } from '@/components/journal-icon'
 import { Companion } from '@/components/companion'
 import { WallpaperProvider } from '@/components/wallpaper-provider'
 import { VaultProvider } from '@/components/vault-context'
@@ -55,7 +56,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
             
             <nav className="flex-1 space-y-1.5 px-4 py-4">
           <NavItem href="/feed"     icon={<Home          size={22} strokeWidth={1.5} />} label="Home" />
-          <NavItem href="/journal"  icon={<BookHeart     size={22} strokeWidth={1.5} />} label="Journal" />
+          <NavItem href="/journal"  icon={<JournalIcon   size={22} strokeWidth={1.5} />} label="Journal" />
           <NavItem href="/circles"  icon={<Users         size={22} strokeWidth={1.5} />} label="Circles" />
           <NavItem href="/people"   icon={<UserPlus2     size={22} strokeWidth={1.5} />} label="People" />
           <NavItem href="/messages" icon={<MessageSquare size={22} strokeWidth={1.5} />} label="Messages">

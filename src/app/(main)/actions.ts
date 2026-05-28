@@ -257,6 +257,19 @@ export async function markMessagesAsRead(senderId: string) {
     .is('read_at', null)
 }
 
+export async function deleteChatWithUser(partnerId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  await supabase
+    .from('messages')
+    .delete()
+    .or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`)
+
+  revalidatePath('/messages')
+}
+
 export async function deleteMessageForEveryone(messageId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()

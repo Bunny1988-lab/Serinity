@@ -45,6 +45,20 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
   const newPeople = allUsers?.filter(u => !partnerIds.includes(u.id)) || []
   const selectedRecipient = allUsers?.find(u => u.id === recipientId)
 
+  let areFriends = false
+  if (selectedRecipient) {
+    const { data: friendship } = await supabase
+      .from('friend_requests')
+      .select('status')
+      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${selectedRecipient.id}),and(sender_id.eq.${selectedRecipient.id},receiver_id.eq.${user.id})`)
+      .eq('status', 'accepted')
+      .maybeSingle()
+    
+    if (friendship) {
+      areFriends = true
+    }
+  }
+
   function timeAgo(d: string) {
     const diff = Date.now() - new Date(d).getTime()
     const m = Math.floor(diff / 60000)
@@ -200,7 +214,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
       {/* ── MAIN CHAT PANEL ──────────────────────────────────────── */}
       <div className={`flex-1 min-w-0 ${!selectedRecipient ? 'hidden md:flex items-center justify-center bg-background/5' : 'flex flex-col'}`}>
         {selectedRecipient ? (
-          <ChatInterface currentUserId={user.id} recipient={selectedRecipient} />
+          <ChatInterface currentUserId={user.id} recipient={selectedRecipient} areFriends={areFriends} />
         ) : (
           <div className="flex flex-col items-center gap-6 text-center px-8 max-w-sm">
             <div className="w-20 h-20 rounded-full bg-primary/5 flex items-center justify-center text-primary/45 border border-primary/10 shadow-3xs">

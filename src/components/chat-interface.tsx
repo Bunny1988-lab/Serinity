@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Send, Ghost, ImagePlus, X, Trash2, ChevronDown, ArrowLeft, Check, CheckCheck } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { markMessagesAsRead, deleteMessageForEveryone, deleteMessage } from '@/app/(main)/actions'
+import { markMessagesAsRead, deleteMessageForEveryone, deleteMessage, deleteChatWithUser } from '@/app/(main)/actions'
 import Link from 'next/link'
 import { OnlineDot, usePresence } from '@/components/presence'
 
@@ -63,7 +63,7 @@ function WhisperBubble({ msg, isMe }: { msg: any; isMe: boolean }) {
   )
 }
 
-export function ChatInterface({ currentUserId, recipient }: { currentUserId: string; recipient: any }) {
+export function ChatInterface({ currentUserId, recipient, areFriends }: { currentUserId: string; recipient: any; areFriends?: boolean }) {
   const [messages, setMessages] = useState<any[]>([])
   const [newMessage, setNewMessage] = useState('')
   const [isWhisper, setIsWhisper] = useState(false)
@@ -204,6 +204,13 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
     await deleteMessageForEveryone(msgId)
   }
 
+  const handleDeleteChat = async () => {
+    if (confirm('Are you sure you want to delete this entire chat? This cannot be undone.')) {
+      await deleteChatWithUser(recipient.id)
+      setMessages([])
+    }
+  }
+
   // Group messages by date
   const grouped: { date: string; msgs: any[] }[] = []
   messages.forEach(msg => {
@@ -245,6 +252,14 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
             {recipientOnline ? 'Active now' : 'Offline'}
           </p>
         </div>
+
+        <button
+          onClick={handleDeleteChat}
+          className="p-2 text-muted-foreground/40 hover:text-destructive hover:bg-destructive/10 rounded-full transition-all shrink-0 cursor-pointer"
+          title="Delete chat"
+        >
+          <Trash2 size={16} strokeWidth={1.5} />
+        </button>
       </div>
 
       {/* ── MESSAGES ──────────────────────────────────────────── */}
@@ -429,60 +444,66 @@ export function ChatInterface({ currentUserId, recipient }: { currentUserId: str
             </motion.p>
           )}
 
-          <form onSubmit={handleSend} className={`
-            flex items-center gap-2 p-1.5 rounded-full border transition-all duration-300
-            ${isWhisper
-              ? 'border-primary/40 bg-primary/5 shadow-[0_0_15px_rgba(var(--primary-rgb),0.05)]'
-              : 'border-border/30 bg-background/60 backdrop-blur-2xl shadow-sm focus-within:border-border/60 focus-within:shadow-md'
-            }
-          `}>
-            <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
-
-            {/* Image attach */}
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="w-9 h-9 flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-muted/20 rounded-full transition-all shrink-0 cursor-pointer"
-            >
-              <ImagePlus size={16} strokeWidth={1.5} />
-            </button>
-
-            {/* Whisper toggle */}
-            <button
-              type="button"
-              onClick={() => setIsWhisper(!isWhisper)}
-              className={`w-9 h-9 flex items-center justify-center rounded-full transition-all shrink-0 cursor-pointer ${
-                isWhisper
-                  ? 'bg-primary/20 text-primary border border-primary/30 shadow-xs'
-                  : 'text-muted-foreground/60 hover:text-foreground hover:bg-muted/20'
-              }`}
-            >
-              <Ghost size={16} strokeWidth={1.5} />
-            </button>
-
-            {/* Text input */}
-            <div className="flex-1 relative min-w-0">
-              <input
-                ref={inputRef}
-                type="text"
-                value={newMessage}
-                onChange={e => setNewMessage(e.target.value)}
-                placeholder={isWhisper ? 'Type a self-destructing whisper...' : 'Type a message...'}
-                className="w-full px-3 py-1.5 text-[13px] font-light bg-transparent border-0 outline-none focus:ring-0 placeholder:text-muted-foreground/35 text-foreground"
-              />
+          {areFriends === false ? (
+            <div className="flex items-center justify-center py-3 px-4 bg-muted/20 border border-border/10 rounded-2xl">
+              <p className="text-xs font-light text-muted-foreground">You should be friends before messaging.</p>
             </div>
+          ) : (
+            <form onSubmit={handleSend} className={`
+              flex items-center gap-2 p-1.5 rounded-full border transition-all duration-300
+              ${isWhisper
+                ? 'border-primary/40 bg-primary/5 shadow-[0_0_15px_rgba(var(--primary-rgb),0.05)]'
+                : 'border-border/30 bg-background/60 backdrop-blur-2xl shadow-sm focus-within:border-border/60 focus-within:shadow-md'
+              }
+            `}>
+              <input type="file" accept="image/*" ref={fileInputRef} onChange={handleImageChange} className="hidden" />
 
-            {/* Send button */}
-            <motion.button
-              type="submit"
-              disabled={(!newMessage.trim() && !imageFile) || isSending}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="w-9 h-9 bg-primary text-primary-foreground rounded-full flex items-center justify-center disabled:opacity-20 transition-all shrink-0 cursor-pointer shadow-xs hover:shadow-md hover:bg-primary/95"
-            >
-              <Send size={14} strokeWidth={1.5} />
-            </motion.button>
-          </form>
+              {/* Image attach */}
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-9 h-9 flex items-center justify-center text-muted-foreground/60 hover:text-foreground hover:bg-muted/20 rounded-full transition-all shrink-0 cursor-pointer"
+              >
+                <ImagePlus size={16} strokeWidth={1.5} />
+              </button>
+
+              {/* Whisper toggle */}
+              <button
+                type="button"
+                onClick={() => setIsWhisper(!isWhisper)}
+                className={`w-9 h-9 flex items-center justify-center rounded-full transition-all shrink-0 cursor-pointer ${
+                  isWhisper
+                    ? 'bg-primary/20 text-primary border border-primary/30 shadow-xs'
+                    : 'text-muted-foreground/60 hover:text-foreground hover:bg-muted/20'
+                }`}
+              >
+                <Ghost size={16} strokeWidth={1.5} />
+              </button>
+
+              {/* Text input */}
+              <div className="flex-1 relative min-w-0">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={newMessage}
+                  onChange={e => setNewMessage(e.target.value)}
+                  placeholder={isWhisper ? 'Type a self-destructing whisper...' : 'Type a message...'}
+                  className="w-full px-3 py-1.5 text-[13px] font-light bg-transparent border-0 outline-none focus:ring-0 placeholder:text-muted-foreground/35 text-foreground"
+                />
+              </div>
+
+              {/* Send button */}
+              <motion.button
+                type="submit"
+                disabled={(!newMessage.trim() && !imageFile) || isSending}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-9 h-9 bg-primary text-primary-foreground rounded-full flex items-center justify-center disabled:opacity-20 transition-all shrink-0 cursor-pointer shadow-xs hover:shadow-md hover:bg-primary/95"
+              >
+                <Send size={14} strokeWidth={1.5} />
+              </motion.button>
+            </form>
+          )}
         </div>
       </div>
     </div>
