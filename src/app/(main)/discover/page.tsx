@@ -1,171 +1,179 @@
 import { createClient } from '@/lib/supabase/server'
-import { PostCreator } from '@/components/post-creator'
-import { Heart, MessageCircle } from 'lucide-react'
-
-import { PostInteractions } from '@/components/post-interactions'
-import { PostMenu } from '@/components/post-menu'
-import { Lock, BookHeart } from 'lucide-react'
+import { Search, Settings, ChevronLeft, Sprout, PenTool, TrendingUp, BookOpen, Handshake } from 'lucide-react'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
-export default async function FeedPage() {
+export default async function DiscoverPage() {
   const supabase = await createClient()
-  
-  // Fetch user's circles for the post creator
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: circles } = await supabase.from('circles').select('id, name').eq('owner_id', user?.id)
-  
-  // Fetch chronologically ordered posts from last 48 hours
-  const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
-  
-  const { data: posts } = await supabase
-    .from('posts')
-    .select(`
-      id,
-      content,
-      image_url,
-      mood,
-      created_at,
-      author_id,
-      allow_comments,
-      unlock_date,
-      author:users(username, display_name, avatar_url),
-      reactions ( user_id, type ),
-      comments ( id, content, created_at, author:users(display_name) )
-    `)
-    .gte('created_at', twoDaysAgo)
-    .order('created_at', { ascending: false })
-
-  const REFLECTION_PROMPTS = [
-    "What made you smile today?",
-    "Want to reflect for a moment?",
-    "What's on your mind today?",
-    "One thing you're grateful for?",
-    "How are you really feeling right now?"
-  ]
-  const randomPrompt = REFLECTION_PROMPTS[Math.floor(Math.random() * REFLECTION_PROMPTS.length)]
+  if (!user) redirect('/login')
 
   return (
-    <div className="pb-32 md:pb-0 min-h-screen bg-background/50">
-      <header className="sticky top-0 z-10 bg-background/80 px-6 py-6 backdrop-blur-2xl border-b border-border/30">
-        <h1 className="text-2xl font-light tracking-tight text-foreground">Home</h1>
+    <div className="h-[100dvh] flex flex-col bg-[#E0F2F1] overflow-hidden">
+      {/* Header */}
+      <header className="px-5 pt-6 pb-4 flex items-center justify-between shrink-0">
+        <Link href="/feed" className="p-2 -ml-2 rounded-full hover:bg-teal-900/5 text-slate-700 transition-colors">
+          <ChevronLeft size={24} strokeWidth={1.5} />
+        </Link>
+        <h1 className="text-lg font-medium text-slate-800">Discover Friends</h1>
+        <button className="p-2 -mr-2 rounded-full hover:bg-teal-900/5 text-slate-700 transition-colors">
+          <Settings size={22} strokeWidth={1.5} />
+        </button>
       </header>
-      
-      <div className="p-6 space-y-12 max-w-xl mx-auto">
+
+      {/* Search Bar */}
+      <div className="px-5 mb-6 shrink-0">
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+            <Search size={18} className="text-slate-400" strokeWidth={2} />
+          </div>
+          <input
+            type="text"
+            placeholder="Search"
+            className="w-full pl-11 pr-4 py-3 bg-white/70 border border-white/50 backdrop-blur-md rounded-2xl text-sm text-slate-700 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-white shadow-sm transition-all"
+          />
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto pb-24 scrollbar-none px-5 space-y-8">
         
-        {/* Daily Reflection Prompt */}
-        <div className="bg-primary/5 rounded-3xl p-6 flex items-center justify-between transition-transform hover:scale-[1.01]">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-              <BookHeart size={24} strokeWidth={1.5} />
+        {/* Suggested Matches */}
+        <section>
+          <div className="mb-4">
+            <h2 className="text-[17px] font-semibold text-slate-800 tracking-tight">Suggested Matches</h2>
+            <p className="text-xs text-slate-600 mt-0.5">Connections for shared growth</p>
+          </div>
+          <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 -mx-5 px-5">
+            {/* Match 1 */}
+            <div className="w-28 shrink-0 bg-white/60 border border-teal-100/50 backdrop-blur-sm rounded-[24px] p-3 flex flex-col items-center text-center shadow-sm">
+              <div className="w-16 h-16 rounded-full bg-teal-50 border-4 border-[#E0F2F1] shadow-sm mb-2 overflow-hidden">
+                <img src="https://i.pravatar.cc/150?u=sarah" alt="Sarah M." className="w-full h-full object-cover" />
+              </div>
+              <p className="text-[13px] font-bold text-slate-800 mb-0.5">Sarah M.</p>
+              <p className="text-[10px] text-teal-700 font-medium bg-teal-100/50 px-2 py-0.5 rounded-full mb-3">Mindful</p>
+              <button className="w-full py-1.5 bg-teal-800 text-white text-[11px] font-semibold rounded-full shadow-sm hover:bg-teal-700 transition-colors">
+                Connect
+              </button>
             </div>
-            <div>
-              <p className="font-medium text-sm">Reflection</p>
-              <p className="text-sm text-muted-foreground font-light">{randomPrompt}</p>
+            
+            {/* Match 2 */}
+            <div className="w-28 shrink-0 bg-white/60 border border-teal-100/50 backdrop-blur-sm rounded-[24px] p-3 flex flex-col items-center text-center shadow-sm">
+              <div className="w-16 h-16 rounded-full bg-teal-50 border-4 border-[#E0F2F1] shadow-sm mb-2 overflow-hidden">
+                <img src="https://i.pravatar.cc/150?u=jumy" alt="Jumy B." className="w-full h-full object-cover" />
+              </div>
+              <p className="text-[13px] font-bold text-slate-800 mb-0.5">Jumy B.</p>
+              <p className="text-[10px] text-slate-600 font-medium bg-slate-200/50 px-2 py-0.5 rounded-full mb-3">Journaler</p>
+              <button className="w-full py-1.5 bg-white border border-teal-200 text-teal-800 text-[11px] font-semibold rounded-full shadow-sm hover:bg-teal-50 transition-colors">
+                Connect
+              </button>
+            </div>
+
+            {/* Match 3 */}
+            <div className="w-28 shrink-0 bg-white/60 border border-teal-100/50 backdrop-blur-sm rounded-[24px] p-3 flex flex-col items-center text-center shadow-sm">
+              <div className="w-16 h-16 rounded-full bg-teal-50 border-4 border-[#E0F2F1] shadow-sm mb-2 overflow-hidden">
+                <img src="https://i.pravatar.cc/150?u=vvitsa" alt="Vvitsa R." className="w-full h-full object-cover" />
+              </div>
+              <p className="text-[13px] font-bold text-slate-800 mb-0.5">Vvitsa R.</p>
+              <p className="text-[10px] text-slate-600 font-medium bg-slate-200/50 px-2 py-0.5 rounded-full mb-3 w-full truncate">Growth Circle</p>
+              <button className="w-full py-1.5 bg-white border border-teal-200 text-teal-800 text-[11px] font-semibold rounded-full shadow-sm hover:bg-teal-50 transition-colors">
+                Connect
+              </button>
+            </div>
+            
+            {/* Match 4 */}
+            <div className="w-28 shrink-0 bg-white/60 border border-teal-100/50 backdrop-blur-sm rounded-[24px] p-3 flex flex-col items-center text-center shadow-sm">
+              <div className="w-16 h-16 rounded-full bg-teal-50 border-4 border-[#E0F2F1] shadow-sm mb-2 overflow-hidden flex items-center justify-center">
+                <span className="text-xl font-medium text-teal-800">Se</span>
+              </div>
+              <p className="text-[13px] font-bold text-slate-800 mb-0.5">Sean K.</p>
+              <p className="text-[10px] text-slate-600 font-medium bg-slate-200/50 px-2 py-0.5 rounded-full mb-3 w-full truncate">Growth Circle</p>
+              <button className="w-full py-1.5 bg-white border border-teal-200 text-teal-800 text-[11px] font-semibold rounded-full shadow-sm hover:bg-teal-50 transition-colors">
+                Connect
+              </button>
             </div>
           </div>
-          <Link href="/journal">
-            <button className="px-5 py-2.5 bg-background shadow-sm rounded-full text-xs font-medium hover:bg-muted transition-colors">
-              Write
-            </button>
-          </Link>
-        </div>
+        </section>
 
-        <PostCreator circles={circles || []} />
-        
-        <div className="space-y-16 mt-8">
-          {posts?.length === 0 ? (
-            <div className="text-center text-muted-foreground py-20">
-              <p className="text-lg font-light">Quiet here today 🌿</p>
-            </div>
-          ) : (
-            <>
-              {posts?.map((post: any) => {
-                const isLocked = post.unlock_date && new Date(post.unlock_date) > new Date();
-
-                return (
-                  <article key={post.id} className="relative space-y-4">
-                    <div className="flex items-center justify-between pb-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-medium overflow-hidden">
-                          {post.author.avatar_url ? (
-                            <img src={post.author.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                          ) : (
-                            post.author.display_name?.[0]
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-base font-medium text-foreground">{post.author.display_name}</p>
-                          <p className="text-xs text-muted-foreground font-light">
-                            {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            {post.circle?.name && ` • ${post.circle.name}`}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {post.mood && (
-                          <span className="text-xs font-medium uppercase tracking-widest text-primary/70">
-                            {post.mood}
-                          </span>
-                        )}
-                        {post.author_id === user?.id && (
-                          <PostMenu 
-                            postId={post.id} 
-                            authorId={post.author_id} 
-                            currentUserId={user?.id || ''} 
-                            allowComments={post.allow_comments} 
-                          />
-                        )}
-                      </div>
-                    </div>
-                    
-                    {isLocked ? (
-                      <div className="bg-primary/5 rounded-3xl p-8 text-center space-y-3 relative overflow-hidden backdrop-blur-md">
-                        <Lock className="mx-auto text-primary/40" size={32} strokeWidth={1} />
-                        <p className="font-medium text-foreground">Time Capsule</p>
-                        <p className="text-sm text-muted-foreground font-light">Unlocks on {new Date(post.unlock_date).toLocaleDateString()}</p>
-                      </div>
-                    ) : (
-                      <>
-                        {post.content && (
-                          <p className="text-foreground text-lg leading-relaxed font-light whitespace-pre-wrap pl-1">
-                            {post.content}
-                          </p>
-                        )}
-
-                        {post.image_url && (
-                          <div className="mt-6 rounded-3xl overflow-hidden bg-muted/20">
-                            <img src={post.image_url} alt="Post attachment" className="w-full h-auto object-cover max-h-[600px]" />
-                          </div>
-                        )}
-
-                        <div className="pt-4">
-                          <PostInteractions 
-                            postId={post.id} 
-                            initialReactions={post.reactions} 
-                            initialComments={post.comments} 
-                            allowComments={post.allow_comments}
-                          />
-                        </div>
-                      </>
-                    )}
-                  </article>
-                );
-              })}
-              
-              <div className="py-20 text-center space-y-4">
-                <p className="text-xl font-light text-foreground/60 italic">That's all for now 🌿</p>
-                <p className="text-sm text-muted-foreground font-light max-w-xs mx-auto">
-                  You're all caught up. Why not take a moment to reflect in your journal?
-                </p>
-                <Link href="/journal" className="inline-block mt-4">
-                  <button className="px-6 py-2 rounded-full border border-border/50 text-sm font-medium hover:bg-muted/50 transition-colors">
-                    Go to Journal
-                  </button>
-                </Link>
+        {/* Growth Interests */}
+        <section>
+          <div className="mb-4">
+            <h2 className="text-[17px] font-semibold text-slate-800 tracking-tight">Growth Interests</h2>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Card 1 */}
+            <div className="bg-white/60 border border-teal-100/50 backdrop-blur-sm rounded-2xl p-3.5 shadow-sm">
+              <div className="flex items-center gap-1.5 mb-2">
+                <Sprout size={16} className="text-green-600" />
+                <p className="text-xs font-bold text-slate-800">Mindful Living 🌿</p>
               </div>
-            </>
-          )}
-        </div>
+              <p className="text-[10px] text-slate-600 leading-snug">Popular interest groups, Mindful Living</p>
+            </div>
+
+            {/* Card 2 */}
+            <div className="bg-white/60 border border-teal-100/50 backdrop-blur-sm rounded-2xl p-3.5 shadow-sm">
+              <div className="flex items-center gap-1.5 mb-2">
+                <PenTool size={16} className="text-amber-600" />
+                <p className="text-xs font-bold text-slate-800">Collaborative Journaling ✍️</p>
+              </div>
+              <p className="text-[10px] text-slate-600 leading-snug">Popular interest groups</p>
+            </div>
+
+            {/* Card 3 */}
+            <div className="bg-white/60 border border-teal-100/50 backdrop-blur-sm rounded-2xl p-3.5 shadow-sm col-span-2">
+              <div className="flex items-center gap-1.5 mb-2">
+                <TrendingUp size={16} className="text-blue-600" />
+                <p className="text-xs font-bold text-slate-800">Growth Strategy 📈</p>
+              </div>
+              <p className="text-[10px] text-slate-600 leading-snug">Popular interest groups, Growth, Strategy, Collaborative...</p>
+            </div>
+          </div>
+        </section>
+
+        {/* Shared Reflections */}
+        <section>
+          <div className="flex flex-col gap-3">
+            <div className="bg-white/60 border border-teal-100/50 backdrop-blur-sm rounded-[20px] p-3 flex items-center justify-between shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-teal-50 border border-white shrink-0">
+                  <img src="https://i.pravatar.cc/150?u=1" alt="User" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800 flex items-center gap-1">Shared Reflections <BookOpen size={12} className="text-slate-500" /></p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <div className="w-5 h-3.5 bg-slate-200/60 rounded flex items-center justify-center">
+                      <span className="text-[8px]">💬</span>
+                    </div>
+                    <p className="text-[10px] font-medium text-slate-600">Say Hi</p>
+                  </div>
+                </div>
+              </div>
+              <button className="px-4 py-1.5 bg-[#E0F2F1] text-teal-900 text-[11px] font-semibold rounded-full hover:bg-teal-100 transition-colors">
+                Connect
+              </button>
+            </div>
+
+            <div className="bg-white/60 border border-teal-100/50 backdrop-blur-sm rounded-[20px] p-3 flex items-center justify-between shadow-sm">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-teal-50 border border-white shrink-0">
+                  <img src="https://i.pravatar.cc/150?u=2" alt="User" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-slate-800 flex items-center gap-1">Team Perspective <Handshake size={12} className="text-amber-500" /></p>
+                  <div className="flex items-center gap-1 mt-0.5">
+                    <div className="w-5 h-3.5 bg-slate-200/60 rounded flex items-center justify-center">
+                      <span className="text-[8px]">💬</span>
+                    </div>
+                    <p className="text-[10px] font-medium text-slate-600">Say Hi</p>
+                  </div>
+                </div>
+              </div>
+              <button className="px-4 py-1.5 bg-[#E0F2F1] text-teal-900 text-[11px] font-semibold rounded-full hover:bg-teal-100 transition-colors">
+                Connect
+              </button>
+            </div>
+          </div>
+        </section>
+
       </div>
     </div>
   )

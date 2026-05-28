@@ -168,6 +168,13 @@ export default async function HomeDashboard() {
         </div>
 
       </div>
+
+      {/* AI Friend FAB */}
+      <div className="fixed bottom-24 md:bottom-10 right-6 md:right-10 z-20">
+        <Link href="/ai-friend" className="w-14 h-14 bg-amber-400 hover:bg-amber-300 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 border border-amber-300">
+          <span className="text-2xl">✨</span>
+        </Link>
+      </div>
     </div>
   )
 }
