@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Home, Users, UserCircle, LogOut, LockKeyhole, MessageSquare, UserPlus2 } from 'lucide-react'
+import { Home, Users, UserCircle, LogOut, LockKeyhole, MessageSquare, UserPlus2, Compass } from 'lucide-react'
+import { DesktopNavItem } from '@/components/desktop-nav-item'
 import { logout } from '@/app/auth/actions'
 
 import { MindfulPause } from '@/components/mindful-pause'
@@ -42,29 +43,27 @@ export default async function MainLayout({ children }: { children: React.ReactNo
       <VaultProvider>
         <GlobalRealtime userId={user.id} />
         <PresenceProvider userId={user.id} />
-        <div className="flex min-h-screen bg-transparent">
+        <div className="flex min-h-screen bg-[#E0F2F1]">
           <MindfulPause />
           <Companion userId={user.id} />
           {/* Desktop Sidebar */}
-          <aside className="hidden md:flex w-56 lg:w-64 flex-col border-r border-border/50 bg-background/50 backdrop-blur-xl shrink-0">
+          <aside className="hidden md:flex w-56 lg:w-64 flex-col border-r border-teal-900/10 bg-[#E0F2F1]/80 backdrop-blur-xl shrink-0">
             <div className="p-6 lg:p-8">
               <Link href="/feed" className="flex items-center gap-3 hover:opacity-95 transition-opacity">
                 <img src="/logo.png" alt="Serenity Logo" className="w-8 h-8 rounded-lg object-contain" />
-                <span className="text-sm font-medium tracking-[0.2em] text-foreground uppercase opacity-80">Serenity</span>
+                <span className="text-sm font-medium tracking-[0.2em] text-slate-800 uppercase opacity-90">Serenity</span>
               </Link>
             </div>
             
             <nav className="flex-1 space-y-1.5 px-4 py-4">
-          <NavItem href="/feed"     icon={<Home          size={22} strokeWidth={1.5} />} label="Home" />
-          <NavItem href="/journal"  icon={<JournalIcon   size={22} strokeWidth={1.5} />} label="Journal" />
-          <NavItem href="/circles"  icon={<Users         size={22} strokeWidth={1.5} />} label="Circles" />
-          <NavItem href="/people"   icon={<UserPlus2     size={22} strokeWidth={1.5} />} label="People" />
-          <NavItem href="/messages" icon={<MessageSquare size={22} strokeWidth={1.5} />} label="Messages">
-            <UnreadBadge initialCount={unreadMessages || 0} userId={user.id} />
-          </NavItem>
-          <NavItem href="/vault"   icon={<LockKeyhole size={22} strokeWidth={1.5} />} label="Vault" />
-          <NavItem href="/profile" icon={<UserCircle  size={22} strokeWidth={1.5} />} label="Profile" />
-        </nav>
+              <DesktopNavItem href="/feed"     icon={<Home          size={22} strokeWidth={1.5} />} label="Home" />
+              <DesktopNavItem href="/messages" icon={<MessageSquare size={22} strokeWidth={1.5} />} label="Chats">
+                <UnreadBadge initialCount={unreadMessages || 0} userId={user.id} />
+              </DesktopNavItem>
+              <DesktopNavItem href="/discover" icon={<Compass       size={22} strokeWidth={1.5} />} label="Discover" />
+              <DesktopNavItem href="/journal"  icon={<JournalIcon   size={22} strokeWidth={1.5} />} label="Journal" />
+              <DesktopNavItem href="/profile"  icon={<UserCircle    size={22} strokeWidth={1.5} />} label="Profile" />
+            </nav>
 
         <div className="p-4 lg:p-6">
           <form action={logout}>
@@ -91,21 +90,3 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   )
 }
 
-function NavItem({ href, icon, label, children }: { href: string; icon: React.ReactNode; label: string; children?: React.ReactNode }) {
-  return (
-    <Link href={href} className="relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-all hover:bg-muted/50 hover:text-foreground">
-      {icon}
-      <span>{label}</span>
-      {children}
-    </Link>
-  )
-}
-
-function MobileNavItem({ href, icon, children }: { href: string; icon: React.ReactNode; children?: React.ReactNode }) {
-  return (
-    <Link href={href} className="relative p-2 text-muted-foreground hover:text-foreground transition-colors">
-      {icon}
-      {children}
-    </Link>
-  )
-}

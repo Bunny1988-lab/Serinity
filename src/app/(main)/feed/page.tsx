@@ -1,171 +1,172 @@
 import { createClient } from '@/lib/supabase/server'
-import { PostCreator } from '@/components/post-creator'
-import { Heart, MessageCircle } from 'lucide-react'
-
-import { PostInteractions } from '@/components/post-interactions'
-import { PostMenu } from '@/components/post-menu'
-import { Lock, BookHeart } from 'lucide-react'
+import { Calendar, Moon, Plus } from 'lucide-react'
 import Link from 'next/link'
+import { redirect } from 'next/navigation'
+import { NotificationBell } from '@/components/notification-bell'
 
-export default async function FeedPage() {
+export default async function HomeDashboard() {
   const supabase = await createClient()
-  
-  // Fetch user's circles for the post creator
   const { data: { user } } = await supabase.auth.getUser()
-  const { data: circles } = await supabase.from('circles').select('id, name').eq('owner_id', user?.id)
-  
-  // Fetch chronologically ordered posts from last 48 hours
-  const twoDaysAgo = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString()
-  
-  const { data: posts } = await supabase
-    .from('posts')
-    .select(`
-      id,
-      content,
-      image_url,
-      mood,
-      created_at,
-      author_id,
-      allow_comments,
-      unlock_date,
-      author:users(username, display_name, avatar_url),
-      reactions ( user_id, type ),
-      comments ( id, content, created_at, author:users(display_name) )
-    `)
-    .gte('created_at', twoDaysAgo)
-    .order('created_at', { ascending: false })
+  if (!user) {
+    redirect('/login')
+  }
 
-  const REFLECTION_PROMPTS = [
-    "What made you smile today?",
-    "Want to reflect for a moment?",
-    "What's on your mind today?",
-    "One thing you're grateful for?",
-    "How are you really feeling right now?"
+  const { data: profile } = await supabase
+    .from('users')
+    .select('display_name, avatar_url')
+    .eq('id', user.id)
+    .single()
+
+  // For the Quick Connect, let's just get some friends or recent users
+  // Mocking this query for now since we're building UI
+  const mockFriends = [
+    { id: '1', display_name: 'Alex', avatar_url: null, status: 'Active' },
+    { id: '2', display_name: 'Maya', avatar_url: null, status: 'Status' },
+    { id: '3', display_name: 'David', avatar_url: null, status: 'Status' },
+    { id: '4', display_name: 'Chloe', avatar_url: null, status: 'Unnoticed' },
   ]
-  const randomPrompt = REFLECTION_PROMPTS[Math.floor(Math.random() * REFLECTION_PROMPTS.length)]
+
+  const firstName = profile?.display_name?.split(' ')[0] || 'There'
 
   return (
-    <div className="pb-32 md:pb-0 min-h-screen bg-background/50">
-      <header className="sticky top-0 z-10 bg-background/80 px-6 py-6 backdrop-blur-2xl border-b border-border/30">
-        <h1 className="text-2xl font-light tracking-tight text-foreground">Home</h1>
-      </header>
-      
-      <div className="p-6 space-y-12 max-w-xl mx-auto">
-        
-        {/* Daily Reflection Prompt */}
-        <div className="bg-primary/5 rounded-3xl p-6 flex items-center justify-between transition-transform hover:scale-[1.01]">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-              <BookHeart size={24} strokeWidth={1.5} />
-            </div>
-            <div>
-              <p className="font-medium text-sm">Reflection</p>
-              <p className="text-sm text-muted-foreground font-light">{randomPrompt}</p>
-            </div>
-          </div>
-          <Link href="/journal">
-            <button className="px-5 py-2.5 bg-background shadow-sm rounded-full text-xs font-medium hover:bg-muted transition-colors">
-              Write
-            </button>
-          </Link>
-        </div>
-
-        <PostCreator circles={circles || []} />
-        
-        <div className="space-y-16 mt-8">
-          {posts?.length === 0 ? (
-            <div className="text-center text-muted-foreground py-20">
-              <p className="text-lg font-light">Quiet here today 🌿</p>
-            </div>
+    <div className="min-h-screen bg-[#E0F2F1] pb-32 md:pb-0 relative">
+      {/* Header */}
+      <header className="px-6 py-6 flex items-center justify-between sticky top-0 z-10 bg-[#E0F2F1]/80 backdrop-blur-md">
+        <div className="w-10 h-10 rounded-full bg-white/50 border border-white/60 overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
+          {profile?.avatar_url ? (
+            <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
           ) : (
-            <>
-              {posts?.map((post: any) => {
-                const isLocked = post.unlock_date && new Date(post.unlock_date) > new Date();
-
-                return (
-                  <article key={post.id} className="relative space-y-4">
-                    <div className="flex items-center justify-between pb-2">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground font-medium overflow-hidden">
-                          {post.author.avatar_url ? (
-                            <img src={post.author.avatar_url} alt="Avatar" className="w-full h-full object-cover" />
-                          ) : (
-                            post.author.display_name?.[0]
-                          )}
-                        </div>
-                        <div>
-                          <p className="text-base font-medium text-foreground">{post.author.display_name}</p>
-                          <p className="text-xs text-muted-foreground font-light">
-                            {new Date(post.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            {post.circle?.name && ` • ${post.circle.name}`}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {post.mood && (
-                          <span className="text-xs font-medium uppercase tracking-widest text-primary/70">
-                            {post.mood}
-                          </span>
-                        )}
-                        {post.author_id === user?.id && (
-                          <PostMenu 
-                            postId={post.id} 
-                            authorId={post.author_id} 
-                            currentUserId={user?.id || ''} 
-                            allowComments={post.allow_comments} 
-                          />
-                        )}
-                      </div>
-                    </div>
-                    
-                    {isLocked ? (
-                      <div className="bg-primary/5 rounded-3xl p-8 text-center space-y-3 relative overflow-hidden backdrop-blur-md">
-                        <Lock className="mx-auto text-primary/40" size={32} strokeWidth={1} />
-                        <p className="font-medium text-foreground">Time Capsule</p>
-                        <p className="text-sm text-muted-foreground font-light">Unlocks on {new Date(post.unlock_date).toLocaleDateString()}</p>
-                      </div>
-                    ) : (
-                      <>
-                        {post.content && (
-                          <p className="text-foreground text-lg leading-relaxed font-light whitespace-pre-wrap pl-1">
-                            {post.content}
-                          </p>
-                        )}
-
-                        {post.image_url && (
-                          <div className="mt-6 rounded-3xl overflow-hidden bg-muted/20">
-                            <img src={post.image_url} alt="Post attachment" className="w-full h-auto object-cover max-h-[600px]" />
-                          </div>
-                        )}
-
-                        <div className="pt-4">
-                          <PostInteractions 
-                            postId={post.id} 
-                            initialReactions={post.reactions} 
-                            initialComments={post.comments} 
-                            allowComments={post.allow_comments}
-                          />
-                        </div>
-                      </>
-                    )}
-                  </article>
-                );
-              })}
-              
-              <div className="py-20 text-center space-y-4">
-                <p className="text-xl font-light text-foreground/60 italic">That's all for now 🌿</p>
-                <p className="text-sm text-muted-foreground font-light max-w-xs mx-auto">
-                  You're all caught up. Why not take a moment to reflect in your journal?
-                </p>
-                <Link href="/journal" className="inline-block mt-4">
-                  <button className="px-6 py-2 rounded-full border border-border/50 text-sm font-medium hover:bg-muted/50 transition-colors">
-                    Go to Journal
-                  </button>
-                </Link>
-              </div>
-            </>
+            <span className="text-sm font-medium text-teal-800">{profile?.display_name?.[0]}</span>
           )}
         </div>
+        
+        <h1 className="text-xl font-medium tracking-wide text-slate-800">Serenity</h1>
+        
+        <NotificationBell />
+      </header>
+
+      <div className="px-5 space-y-6 max-w-xl mx-auto">
+        {/* Welcome Section */}
+        <div className="bg-[#CFE8E7] rounded-3xl p-5 shadow-[inset_0_1px_1px_rgba(255,255,255,0.4)] border border-white/30">
+          <h2 className="text-xl font-semibold text-slate-800">Welcome Back, {firstName}!</h2>
+          <p className="text-slate-600 font-light mt-1">Your Calm Space awaits. 🌙</p>
+        </div>
+
+        {/* Streak Card */}
+        <div className="bg-white/60 backdrop-blur-md rounded-[2rem] p-5 shadow-sm border border-white/80 flex items-center gap-4 relative overflow-hidden">
+          <div className="w-24 h-24 shrink-0 flex items-center justify-center translate-y-2">
+            <img src="/dog_mascot.png" alt="Mascot" className="w-full h-full object-contain" />
+          </div>
+          <div className="flex-1 space-y-3 z-10">
+            <div className="flex items-center justify-between">
+              <h3 className="font-semibold text-slate-800 flex items-center gap-1.5">
+                Login Streak: 21 Days! <span className="text-lg">🔥</span>
+              </h3>
+            </div>
+            
+            {/* Streak dots */}
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 hide-scrollbar">
+              {[...Array(11)].map((_, i) => (
+                <div key={i} className={`w-5 h-5 rounded-full shrink-0 flex items-center justify-center text-[10px] font-bold ${i < 7 ? 'bg-amber-400 text-white shadow-sm' : 'bg-slate-200/50 text-slate-400'}`}>
+                  {i < 7 ? '✓' : ''}
+                </div>
+              ))}
+            </div>
+
+            <button className="bg-white/80 hover:bg-white text-teal-700 text-xs font-semibold px-4 py-2 rounded-full shadow-sm transition-all border border-white">
+              Login Rewards
+            </button>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 gap-4">
+          <button className="bg-white/70 hover:bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-sm border border-white/60 flex flex-col gap-2 transition-all text-left">
+            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 mb-1">
+              <Calendar size={16} strokeWidth={2} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-800">Upcoming Event</p>
+              <p className="text-xs text-slate-500">11h - 3 pm</p>
+            </div>
+          </button>
+          
+          <button className="bg-white/70 hover:bg-white/90 backdrop-blur-md p-4 rounded-3xl shadow-sm border border-white/60 flex flex-col gap-2 transition-all text-left">
+            <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center text-slate-700 mb-1">
+              <Moon size={16} strokeWidth={2} />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-800">Meditation</p>
+              <p className="text-xs text-slate-500">Sessions</p>
+            </div>
+          </button>
+        </div>
+
+        {/* Quick Connect */}
+        <div className="space-y-3">
+          <div className="flex items-end justify-between">
+            <div>
+              <h3 className="font-semibold text-slate-800">Quick Connect</h3>
+              <p className="text-xs text-slate-500">Active friends in status.</p>
+            </div>
+            <Link href="/people" className="text-xs font-medium text-teal-700 hover:underline">See All</Link>
+          </div>
+          
+          <div className="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
+            {mockFriends.map(friend => (
+              <Link href={`/messages`} key={friend.id} className="flex flex-col items-center gap-1.5 shrink-0">
+                <div className="relative">
+                  <div className="w-14 h-14 rounded-full bg-white/60 border border-white/80 flex items-center justify-center shadow-sm overflow-hidden">
+                    {friend.avatar_url ? (
+                      <img src={friend.avatar_url} alt={friend.display_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-slate-600 font-medium">{friend.display_name[0]}</span>
+                    )}
+                  </div>
+                  {friend.status === 'Active' && (
+                    <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#E0F2F1] rounded-full"></span>
+                  )}
+                </div>
+                <div className="text-center">
+                  <p className="text-xs font-medium text-slate-800">{friend.display_name}</p>
+                  <p className="text-[10px] text-slate-500">{friend.status}</p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+
+        {/* Wellness Journey */}
+        <div className="space-y-3 relative pb-10">
+          <h3 className="font-semibold text-slate-800">Your Wellness Journey</h3>
+          
+          <div className="bg-white/80 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-white/80 flex items-center gap-4 relative">
+            {/* Chart Graphic mock */}
+            <div className="w-16 h-12 flex items-end justify-between gap-0.5 opacity-60">
+              {[4, 6, 3, 7, 5, 8, 4, 9].map((h, i) => (
+                <div key={i} className="w-1.5 bg-teal-500 rounded-t-sm" style={{ height: `${h * 10}%` }}></div>
+              ))}
+            </div>
+            
+            <div className="flex-1 space-y-2">
+              <div>
+                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">Today's Focus:</p>
+                <p className="text-sm font-semibold text-slate-800">Gratitude Journal</p>
+              </div>
+              <Link href="/journal">
+                <button className="bg-teal-700 hover:bg-teal-800 text-white text-xs font-medium px-4 py-2 rounded-full shadow-sm transition-colors w-max">
+                  Start Session
+                </button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Floating Action Button (+). Overlaps bottom right */}
+          <button className="absolute -bottom-2 right-4 w-14 h-14 bg-[#2C6E6E] hover:bg-[#235858] text-white rounded-[1.25rem] flex items-center justify-center shadow-lg transition-transform hover:scale-105 active:scale-95 cursor-pointer z-10">
+            <Plus size={24} strokeWidth={2} />
+          </button>
+        </div>
+
       </div>
     </div>
   )
