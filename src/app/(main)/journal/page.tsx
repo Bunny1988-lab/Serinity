@@ -1,7 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, Check, PenLine, BookOpen } from 'lucide-react'
+import { ChevronLeft, Check, BookOpen } from 'lucide-react'
+import { JournalInput } from '@/components/journal-input'
 
 export default async function JournalPage() {
   const supabase = await createClient()
@@ -9,6 +10,17 @@ export default async function JournalPage() {
   if (!user) redirect('/login')
 
   const todayStr = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  
+  const { data: existing } = await supabase
+    .from('journal_entries')
+    .select('*')
+    .eq('user_id', user.id)
+    .gte('created_at', todayStart.toISOString())
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
 
   return (
     <div className="h-[100dvh] flex flex-col bg-[#E0F2F1] overflow-hidden">
@@ -30,22 +42,16 @@ export default async function JournalPage() {
         <div className="max-w-xl mx-auto w-full relative">
           
           {/* Document Card */}
-          <div className="bg-white/80 backdrop-blur-md border border-white/60 shadow-sm rounded-[32px] p-6 pb-8 relative z-10">
+          <div className="bg-white/80 backdrop-blur-md border border-white/60 shadow-sm rounded-[32px] p-6 pb-8 relative z-10 min-h-[300px]">
             <div className="mb-4">
               <p className="text-[14px] font-bold text-slate-800">[Today's Date: {todayStr}]</p>
-              <p className="text-[14px] font-bold text-slate-800">Title: Reflecting on Project Progress and Clarity</p>
+              <p className="text-[14px] font-bold text-slate-800">Title: Daily Reflection</p>
             </div>
             
-            <div className="text-[14px] text-slate-800 leading-relaxed font-medium space-y-4">
-              <p>
-                A blank slate for my thoughts today. After the conversation with Sarah and the AI, I feel much more grounded. The overwhelm is lifting.
-              </p>
-              <p>
-                I've broken down the project into five key sub-tasks as suggested, and now I can actually see the path forward. Focusing on the sub-tasks first is such a smart approach. I'll make time each morning to prioritize them.
-              </p>
-              <p>
-                It's amazing how a different perspective can make all the difference. I'm feeling a sense of accomplishment just for having a plan. Onwards!
-              </p>
+            <div className="text-[14px] text-slate-800 leading-relaxed font-medium space-y-4 whitespace-pre-wrap">
+              {existing?.content || (
+                <span className="text-slate-400 italic">No entries yet today. Start writing...</span>
+              )}
             </div>
           </div>
 
@@ -59,17 +65,7 @@ export default async function JournalPage() {
       {/* Input Area */}
       <div className="px-5 pb-6 pt-2 shrink-0 bg-[#E0F2F1]">
         <div className="max-w-xl mx-auto">
-          <div className="bg-white/90 backdrop-blur-md border border-white shadow-sm rounded-full flex items-center px-4 py-2">
-            <input 
-              type="text" 
-              placeholder="Keep writing your thoughts..." 
-              className="flex-1 bg-transparent py-1 text-[13px] font-medium text-slate-700 placeholder:text-slate-400 focus:outline-none"
-              disabled
-            />
-            <button className="p-2 ml-2 rounded-full hover:bg-teal-50 text-amber-600 transition-colors">
-              <PenLine size={18} strokeWidth={2} />
-            </button>
-          </div>
+          <JournalInput />
         </div>
       </div>
     </div>

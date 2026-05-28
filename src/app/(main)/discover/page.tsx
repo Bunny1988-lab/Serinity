@@ -2,11 +2,22 @@ import { createClient } from '@/lib/supabase/server'
 import { Search, Settings, ChevronLeft, Sprout, PenTool, TrendingUp, BookOpen, Handshake } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { ConnectButton } from '@/components/connect-button'
 
-export default async function DiscoverPage() {
+export default async function DiscoverPage({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  const { q } = await searchParams
+  
+  // Fetch suggested users (excluding current user)
+  let query = supabase.from('users').select('*').neq('id', user.id).limit(10)
+  if (q) {
+    query = query.ilike('display_name', `%${q}%`)
+  }
+  
+  const { data: suggestedUsers } = await query
 
   return (
     <div className="h-[100dvh] flex flex-col bg-[#E0F2F1] overflow-hidden">
@@ -44,53 +55,24 @@ export default async function DiscoverPage() {
             <p className="text-xs text-slate-600 mt-0.5">Connections for shared growth</p>
           </div>
           <div className="flex gap-3 overflow-x-auto hide-scrollbar pb-2 -mx-5 px-5">
-            {/* Match 1 */}
-            <div className="w-28 shrink-0 bg-white/60 border border-teal-100/50 backdrop-blur-sm rounded-[24px] p-3 flex flex-col items-center text-center shadow-sm">
-              <div className="w-16 h-16 rounded-full bg-teal-50 border-4 border-[#E0F2F1] shadow-sm mb-2 overflow-hidden">
-                <img src="https://i.pravatar.cc/150?u=sarah" alt="Sarah M." className="w-full h-full object-cover" />
-              </div>
-              <p className="text-[13px] font-bold text-slate-800 mb-0.5">Sarah M.</p>
-              <p className="text-[10px] text-teal-700 font-medium bg-teal-100/50 px-2 py-0.5 rounded-full mb-3">Mindful</p>
-              <button className="w-full py-1.5 bg-teal-800 text-white text-[11px] font-semibold rounded-full shadow-sm hover:bg-teal-700 transition-colors">
-                Connect
-              </button>
-            </div>
-            
-            {/* Match 2 */}
-            <div className="w-28 shrink-0 bg-white/60 border border-teal-100/50 backdrop-blur-sm rounded-[24px] p-3 flex flex-col items-center text-center shadow-sm">
-              <div className="w-16 h-16 rounded-full bg-teal-50 border-4 border-[#E0F2F1] shadow-sm mb-2 overflow-hidden">
-                <img src="https://i.pravatar.cc/150?u=jumy" alt="Jumy B." className="w-full h-full object-cover" />
-              </div>
-              <p className="text-[13px] font-bold text-slate-800 mb-0.5">Jumy B.</p>
-              <p className="text-[10px] text-slate-600 font-medium bg-slate-200/50 px-2 py-0.5 rounded-full mb-3">Journaler</p>
-              <button className="w-full py-1.5 bg-white border border-teal-200 text-teal-800 text-[11px] font-semibold rounded-full shadow-sm hover:bg-teal-50 transition-colors">
-                Connect
-              </button>
-            </div>
-
-            {/* Match 3 */}
-            <div className="w-28 shrink-0 bg-white/60 border border-teal-100/50 backdrop-blur-sm rounded-[24px] p-3 flex flex-col items-center text-center shadow-sm">
-              <div className="w-16 h-16 rounded-full bg-teal-50 border-4 border-[#E0F2F1] shadow-sm mb-2 overflow-hidden">
-                <img src="https://i.pravatar.cc/150?u=vvitsa" alt="Vvitsa R." className="w-full h-full object-cover" />
-              </div>
-              <p className="text-[13px] font-bold text-slate-800 mb-0.5">Vvitsa R.</p>
-              <p className="text-[10px] text-slate-600 font-medium bg-slate-200/50 px-2 py-0.5 rounded-full mb-3 w-full truncate">Growth Circle</p>
-              <button className="w-full py-1.5 bg-white border border-teal-200 text-teal-800 text-[11px] font-semibold rounded-full shadow-sm hover:bg-teal-50 transition-colors">
-                Connect
-              </button>
-            </div>
-            
-            {/* Match 4 */}
-            <div className="w-28 shrink-0 bg-white/60 border border-teal-100/50 backdrop-blur-sm rounded-[24px] p-3 flex flex-col items-center text-center shadow-sm">
-              <div className="w-16 h-16 rounded-full bg-teal-50 border-4 border-[#E0F2F1] shadow-sm mb-2 overflow-hidden flex items-center justify-center">
-                <span className="text-xl font-medium text-teal-800">Se</span>
-              </div>
-              <p className="text-[13px] font-bold text-slate-800 mb-0.5">Sean K.</p>
-              <p className="text-[10px] text-slate-600 font-medium bg-slate-200/50 px-2 py-0.5 rounded-full mb-3 w-full truncate">Growth Circle</p>
-              <button className="w-full py-1.5 bg-white border border-teal-200 text-teal-800 text-[11px] font-semibold rounded-full shadow-sm hover:bg-teal-50 transition-colors">
-                Connect
-              </button>
-            </div>
+            {suggestedUsers && suggestedUsers.length > 0 ? (
+              suggestedUsers.map((u: any) => (
+                <div key={u.id} className="w-28 shrink-0 bg-white/60 border border-teal-100/50 backdrop-blur-sm rounded-[24px] p-3 flex flex-col items-center text-center shadow-sm">
+                  <div className="w-16 h-16 rounded-full bg-teal-50 border-4 border-[#E0F2F1] shadow-sm mb-2 overflow-hidden flex items-center justify-center">
+                    {u.avatar_url ? (
+                      <img src={u.avatar_url} alt={u.display_name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className="text-xl font-medium text-teal-800">{u.display_name?.substring(0, 2).toUpperCase()}</span>
+                    )}
+                  </div>
+                  <p className="text-[13px] font-bold text-slate-800 mb-0.5 truncate w-full">{u.display_name}</p>
+                  <p className="text-[10px] text-teal-700 font-medium bg-teal-100/50 px-2 py-0.5 rounded-full mb-3 truncate w-full">Mindful</p>
+                  <ConnectButton targetUserId={u.id} />
+                </div>
+              ))
+            ) : (
+              <div className="text-sm text-slate-500 italic py-4">No users found to suggest.</div>
+            )}
           </div>
         </section>
 

@@ -224,6 +224,40 @@ export async function createJournalEntry(formData: FormData) {
   revalidatePath('/journal')
 }
 
+export async function appendDailyJournal(content: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user || !content.trim()) return
+
+  // Check if there's an entry for today
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  
+  const { data: existing } = await supabase
+    .from('journal_entries')
+    .select('*')
+    .eq('user_id', user.id)
+    .gte('created_at', todayStart.toISOString())
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (existing) {
+    // Append to existing
+    await supabase.from('journal_entries').update({
+      content: existing.content + '\n\n' + content
+    }).eq('id', existing.id)
+  } else {
+    // Create new
+    await supabase.from('journal_entries').insert({
+      user_id: user.id,
+      content,
+    })
+  }
+
+  revalidatePath('/journal')
+}
+
 export async function updateProfileSettings(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
