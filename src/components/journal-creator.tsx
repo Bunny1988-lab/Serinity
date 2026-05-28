@@ -62,7 +62,7 @@ export function JournalCreator() {
   }
 
   return (
-    <div className="bg-background/60 backdrop-blur-sm border border-border/50 rounded-2xl p-4 shadow-sm">
+    <div className="bg-background/60 backdrop-blur-sm border border-border/50 rounded-2xl p-4 shadow-sm overflow-hidden">
       <form onSubmit={handleSubmit}>
         <textarea
           className="w-full bg-transparent resize-none outline-none text-foreground placeholder:text-muted-foreground min-h-[100px] text-lg font-light"
@@ -109,8 +109,8 @@ export function JournalCreator() {
           </div>
         )}
         
-        <div className="flex items-center justify-between pt-4 border-t border-border/30">
-          <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center justify-between pt-4 border-t border-border/30 gap-y-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <input 
               type="file" 
               accept="image/*" 
@@ -154,9 +154,11 @@ export function JournalCreator() {
           <Button 
             type="submit" 
             disabled={(!content.trim() && !file) || isUploading}
-            className="rounded-full px-6 transition-all shadow-sm"
+            className="rounded-full px-3 sm:px-5 transition-all shadow-sm shrink-0 gap-1.5"
           >
-            {isUploading ? <Loader2 size={16} className="animate-spin" /> : <><span className="mr-2">Save Privately</span><Lock size={14} /></>}
+            {isUploading
+              ? <Loader2 size={15} className="animate-spin" />
+              : <><span className="hidden sm:inline text-sm">Save</span><Lock size={14} /></>}
           </Button>
         </div>
       </form>

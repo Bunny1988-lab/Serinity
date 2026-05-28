@@ -360,4 +360,68 @@ export async function getMembershipsForUser(userId: string) {
   return data?.map(d => d.circle_id) || []
 }
 
+// ─── FRIEND REQUESTS ──────────────────────────────────────────────────────────
 
+export async function sendFriendRequest(receiverId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Unauthorized' }
+
+  const { data, error } = await supabase
+    .from('friend_requests')
+    .insert({ sender_id: user.id, receiver_id: receiverId })
+    .select('id')
+    .single()
+
+  if (error) {
+    if (error.code === '23505') return { success: false, error: 'Request already sent' }
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath('/people')
+  return { success: true, requestId: data?.id }
+}
+
+export async function acceptFriendRequest(requestId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false }
+
+  await supabase
+    .from('friend_requests')
+    .update({ status: 'accepted' })
+    .eq('id', requestId)
+    .eq('receiver_id', user.id)
+
+  revalidatePath('/people')
+  revalidatePath('/messages')
+  return { success: true }
+}
+
+export async function declineFriendRequest(requestId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false }
+
+  await supabase
+    .from('friend_requests')
+    .update({ status: 'declined' })
+    .eq('id', requestId)
+    .eq('receiver_id', user.id)
+
+  revalidatePath('/people')
+  return { success: true }
+}
+
+export async function getAllFriendRequestsForUser() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  const { data } = await supabase
+    .from('friend_requests')
+    .select('id, sender_id, receiver_id, status')
+    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+
+  return data || []
+}

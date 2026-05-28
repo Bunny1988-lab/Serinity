@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Home, Users, UserCircle, BookHeart, LogOut, LockKeyhole, MessageSquare } from 'lucide-react'
+import { Home, Users, UserCircle, BookHeart, LogOut, LockKeyhole, MessageSquare, UserPlus2 } from 'lucide-react'
 import { logout } from '@/app/auth/actions'
 
 import { MindfulPause } from '@/components/mindful-pause'
@@ -54,14 +54,15 @@ export default async function MainLayout({ children }: { children: React.ReactNo
             </div>
             
             <nav className="flex-1 space-y-1.5 px-4 py-4">
-          <NavItem href="/feed" icon={<Home size={22} strokeWidth={1.5} />} label="Home" />
-          <NavItem href="/journal" icon={<BookHeart size={22} strokeWidth={1.5} />} label="Journal" />
-          <NavItem href="/circles" icon={<Users size={22} strokeWidth={1.5} />} label="Circles" />
+          <NavItem href="/feed"     icon={<Home          size={22} strokeWidth={1.5} />} label="Home" />
+          <NavItem href="/journal"  icon={<BookHeart     size={22} strokeWidth={1.5} />} label="Journal" />
+          <NavItem href="/circles"  icon={<Users         size={22} strokeWidth={1.5} />} label="Circles" />
+          <NavItem href="/people"   icon={<UserPlus2     size={22} strokeWidth={1.5} />} label="People" />
           <NavItem href="/messages" icon={<MessageSquare size={22} strokeWidth={1.5} />} label="Messages">
             <UnreadBadge initialCount={unreadMessages || 0} userId={user.id} />
           </NavItem>
-          <NavItem href="/vault" icon={<LockKeyhole size={22} strokeWidth={1.5} />} label="Vault" />
-          <NavItem href="/profile" icon={<UserCircle size={22} strokeWidth={1.5} />} label="Profile" />
+          <NavItem href="/vault"   icon={<LockKeyhole size={22} strokeWidth={1.5} />} label="Vault" />
+          <NavItem href="/profile" icon={<UserCircle  size={22} strokeWidth={1.5} />} label="Profile" />
         </nav>
 
         <div className="p-4 lg:p-6">
@@ -81,7 +82,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
 
       {/* Mobile Bottom Nav */}
       <Suspense fallback={null}>
-        <MobileNav unreadMessages={unreadMessages || 0} />
+        <MobileNav unreadMessages={unreadMessages || 0} userId={user.id} />
       </Suspense>
         </div>
       </VaultProvider>
