@@ -1,5 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
-import { MessageSquare, PenSquare, Search, Users } from 'lucide-react'
+import { MessageSquare, Users } from 'lucide-react'
 import Link from 'next/link'
 import { ChatInterface } from '@/components/chat-interface'
 import { redirect } from 'next/navigation'
@@ -45,7 +45,6 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
     .filter(Boolean)
     .sort((a, b) => (b?.lastMessage?.created_at || '').localeCompare(a?.lastMessage?.created_at || ''))
 
-  const newPeople = allUsers?.filter(u => !partnerIds.includes(u.id)) || []
   const selectedRecipient = allUsers?.find(u => u.id === recipientId)
 
   let areFriends = false
@@ -71,36 +70,36 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
   const activeFriends = validConvos.slice(0, 4).map(c => c?.partner)
 
   return (
-    <div className="h-[100dvh] flex overflow-hidden bg-[#E0F2F1]">
+    <div className="h-[100dvh] flex overflow-hidden bg-transparent text-foreground">
       {/* ── LEFT SIDEBAR ─────────────────────────────────────────── */}
       <div className={`
         flex flex-col w-full md:w-[380px] shrink-0
-        border-r border-teal-900/10 bg-[#E0F2F1]
+        border-r border-border/40 bg-background/60 backdrop-blur-xl
         ${selectedRecipient ? 'hidden md:flex' : 'flex'}
       `}>
         {/* Header */}
-        <header className="px-6 py-4 flex items-center justify-between shrink-0 sticky top-0 bg-[#E0F2F1]/80 backdrop-blur-md z-10">
-          <div className="w-10 h-10 rounded-full bg-white/50 border border-white/60 overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
+        <header className="px-6 py-4 flex items-center justify-between shrink-0 sticky top-0 bg-background/60 backdrop-blur-md z-10 border-b border-border/40">
+          <div className="w-10 h-10 rounded-full bg-secondary border border-border/50 overflow-hidden flex items-center justify-center shrink-0 shadow-sm">
             {profile?.avatar_url ? (
               <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-sm font-medium text-teal-800">{profile?.display_name?.[0]}</span>
+              <span className="text-sm font-medium text-primary">{profile?.display_name?.[0]}</span>
             )}
           </div>
           
-          <h1 className="text-xl font-medium tracking-wide text-slate-800">Messages</h1>
+          <h1 className="text-xl font-light tracking-wide text-foreground">Chats</h1>
           
           <NotificationBell />
         </header>
 
         <div className="flex-1 overflow-y-auto pb-24 md:pb-6 scrollbar-none px-5">
           {/* Hero Greeting */}
-          <div className="flex items-center gap-3 mt-2 mb-6">
-            <div className="w-20 h-20 shrink-0">
+          <div className="flex items-center gap-3 mt-4 mb-6">
+            <div className="w-16 h-16 shrink-0">
               <img src="/dog_mascot.png" alt="Mascot" className="w-full h-full object-contain" />
             </div>
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 shadow-sm border border-white/80">
-              <p className="text-sm font-medium text-slate-800">Hi {firstName}, you have new messages!</p>
+            <div className="bg-card/60 backdrop-blur-md rounded-2xl rounded-tl-none p-4 shadow-sm border border-border/50">
+              <p className="text-sm font-medium text-foreground">Hi {firstName}, ready to connect? 🌿</p>
             </div>
           </div>
 
@@ -108,10 +107,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
           {activeFriends.length > 0 && (
             <div className="mb-6">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-semibold text-slate-800 text-sm">Active Now</h3>
-                <span className="text-[10px] text-green-600 flex items-center gap-1 font-medium uppercase tracking-wider">
-                  <span className="w-1.5 h-1.5 bg-green-500 rounded-full"></span> active
-                </span>
+                <h3 className="font-medium text-foreground text-sm">Active Now</h3>
               </div>
               <div className="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
                 {activeFriends.map(friend => {
@@ -119,16 +115,16 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
                   return (
                     <Link href={`/messages?u=${friend.id}`} key={friend.id} className="flex flex-col items-center gap-1.5 shrink-0">
                       <div className="relative">
-                        <div className="w-14 h-14 rounded-full bg-white/60 border border-white/80 flex items-center justify-center shadow-sm overflow-hidden">
+                        <div className="w-14 h-14 rounded-full bg-secondary border border-border/50 flex items-center justify-center shadow-sm overflow-hidden hover:scale-105 transition-transform">
                           {friend.avatar_url ? (
                             <img src={friend.avatar_url} alt={friend.display_name} className="w-full h-full object-cover" />
                           ) : (
-                            <span className="text-slate-600 font-medium">{friend.display_name[0]}</span>
+                            <span className="text-muted-foreground font-medium">{friend.display_name[0]}</span>
                           )}
                         </div>
-                        <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-[#E0F2F1] rounded-full"></span>
+                        <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-primary/60 border-2 border-background rounded-full"></span>
                       </div>
-                      <p className="text-xs font-medium text-slate-800">{friend.display_name}</p>
+                      <p className="text-xs font-medium text-foreground">{friend.display_name}</p>
                     </Link>
                   )
                 })}
@@ -137,7 +133,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
           )}
 
           {/* Conversations List */}
-          <div className="space-y-3 mb-8">
+          <div className="space-y-2 mb-8">
             {validConvos.map(conv => {
               if (!conv) return null
               const { partner, lastMessage, unreadCount } = conv
@@ -153,40 +149,38 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
                   href={`/messages?u=${partner.id}`}
                   className={`flex items-center gap-3 p-3 rounded-2xl transition-all duration-200 border
                     ${isActive
-                      ? 'bg-white/80 border-white shadow-sm'
-                      : 'bg-transparent border-transparent hover:bg-white/40'
+                      ? 'bg-card border-border/50 shadow-sm'
+                      : 'bg-transparent border-transparent hover:bg-card/40'
                     }
                   `}
                 >
                   <div className="relative shrink-0">
-                    <div className="w-12 h-12 rounded-full overflow-hidden bg-white/60 flex items-center justify-center border border-white shadow-sm">
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-secondary flex items-center justify-center border border-border/40 shadow-sm">
                       {partner.avatar_url
                         ? <img src={partner.avatar_url} alt="" className="w-full h-full object-cover" />
-                        : <span className="text-sm font-medium text-slate-600">{partner.display_name?.[0]?.toUpperCase()}</span>
+                        : <span className="text-sm font-medium text-muted-foreground">{partner.display_name?.[0]?.toUpperCase()}</span>
                       }
                     </div>
                   </div>
 
                   <div className="flex-1 min-w-0 flex flex-col justify-center">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-[15px] font-semibold text-slate-800 truncate">
+                      <p className="text-[15px] font-medium text-foreground truncate">
                         {partner.display_name}
                       </p>
                       {lastMessage && (
-                        <span className="text-[10px] text-slate-500 font-medium whitespace-nowrap ml-2">
+                        <span className="text-[10px] text-muted-foreground font-light whitespace-nowrap ml-2">
                           {formatTime(lastMessage.created_at)}
                         </span>
                       )}
                     </div>
                     <div className="flex items-center justify-between gap-2">
-                      <p className={`text-[13px] truncate flex-1 ${unreadCount > 0 ? 'text-slate-800 font-medium' : 'text-slate-500'}`}>
-                        {isFromMe && <span className="text-slate-400">You: </span>}
+                      <p className={`text-[13px] font-light truncate flex-1 ${unreadCount > 0 ? 'text-foreground font-medium' : 'text-muted-foreground'}`}>
+                        {isFromMe && <span className="text-muted-foreground/60">You: </span>}
                         {lastText}
                       </p>
                       {unreadCount > 0 && (
-                        <span className="w-5 h-5 rounded-full bg-amber-400 text-[10px] font-bold text-white flex items-center justify-center shrink-0 shadow-sm">
-                          {unreadCount}
-                        </span>
+                        <span className="w-2 h-2 rounded-full bg-primary/60 shrink-0"></span>
                       )}
                     </div>
                   </div>
@@ -197,24 +191,24 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
 
           {/* Your Chat Rooms */}
           <div>
-            <h3 className="font-semibold text-slate-800 text-sm mb-3">Your Chat Rooms</h3>
+            <h3 className="font-medium text-foreground text-sm mb-3">Your Chat Rooms</h3>
             <div className="grid grid-cols-2 gap-3">
-              <Link href="/circles" className="bg-white/60 hover:bg-white/80 border border-white/80 rounded-2xl p-3 flex flex-col gap-2 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-teal-100/50 flex items-center justify-center text-teal-700">
-                  <MessageSquare size={14} strokeWidth={2} />
+              <Link href="/circles" className="bg-card/40 hover:bg-card/60 border border-border/50 rounded-2xl p-4 flex flex-col gap-3 transition-colors">
+                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-primary">
+                  <MessageSquare size={18} strokeWidth={1.5} />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-800">Team Huddle</p>
-                  <p className="text-[10px] text-slate-500">Private chats</p>
+                  <p className="text-sm font-medium text-foreground">Team Huddle</p>
+                  <p className="text-[11px] text-muted-foreground font-light mt-0.5">Private chats</p>
                 </div>
               </Link>
-              <Link href="/circles" className="bg-white/60 hover:bg-white/80 border border-white/80 rounded-2xl p-3 flex flex-col gap-2 transition-colors">
-                <div className="w-8 h-8 rounded-full bg-amber-100/50 flex items-center justify-center text-amber-600">
-                  <Users size={14} strokeWidth={2} />
+              <Link href="/circles" className="bg-card/40 hover:bg-card/60 border border-border/50 rounded-2xl p-4 flex flex-col gap-3 transition-colors">
+                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-primary">
+                  <Users size={18} strokeWidth={1.5} />
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-800">Mindful Chat</p>
-                  <p className="text-[10px] text-slate-500">Group chats</p>
+                  <p className="text-sm font-medium text-foreground">Mindful Chat</p>
+                  <p className="text-[11px] text-muted-foreground font-light mt-0.5">Group chats</p>
                 </div>
               </Link>
             </div>
@@ -224,7 +218,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
       </div>
 
       {/* ── MAIN CHAT PANEL ──────────────────────────────────────── */}
-      <div className={`flex-1 min-w-0 ${!selectedRecipient ? 'hidden md:flex items-center justify-center bg-white/30' : 'flex flex-col'}`}>
+      <div className={`flex-1 min-w-0 ${!selectedRecipient ? 'hidden md:flex items-center justify-center bg-transparent' : 'flex flex-col'}`}>
         {selectedRecipient ? (
           <ChatInterface currentUserId={user.id} recipient={selectedRecipient} areFriends={areFriends} />
         ) : (
@@ -232,9 +226,9 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
             <div className="w-24 h-24">
               <img src="/dog_mascot.png" alt="Mascot" className="w-full h-full object-contain opacity-50 grayscale" />
             </div>
-            <p className="font-medium text-lg text-slate-800">Your Private Sanctuary</p>
-            <p className="text-sm text-slate-500">
-              Select a conversation to begin chatting.
+            <p className="font-light text-xl tracking-wide text-foreground">Your Private Sanctuary</p>
+            <p className="text-sm text-muted-foreground font-light">
+              Select a conversation to begin your mindful exchange.
             </p>
           </div>
         )}

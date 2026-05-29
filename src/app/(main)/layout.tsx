@@ -43,20 +43,20 @@ export default async function MainLayout({ children }: { children: React.ReactNo
       <VaultProvider>
         <GlobalRealtime userId={user.id} />
         <PresenceProvider userId={user.id} />
-        <div className="flex min-h-screen bg-[#E0F2F1]">
+        <div className="flex min-h-screen bg-transparent text-foreground">
           <MindfulPause />
           <Companion userId={user.id} />
           {/* Desktop Sidebar */}
-          <aside className="hidden md:flex w-56 lg:w-64 flex-col border-r border-teal-900/10 bg-[#E0F2F1]/80 backdrop-blur-xl shrink-0">
+          <aside className="hidden md:flex w-56 lg:w-64 flex-col border-r border-border/40 bg-background/60 backdrop-blur-xl shrink-0">
             <div className="p-6 lg:p-8">
-              <Link href="/feed" className="flex items-center gap-3 hover:opacity-95 transition-opacity">
+              <Link href="/home" className="flex items-center gap-3 hover:opacity-95 transition-opacity">
                 <img src="/logo.png" alt="Serenity Logo" className="w-8 h-8 rounded-lg object-contain" />
                 <span className="text-sm font-medium tracking-[0.2em] text-slate-800 uppercase opacity-90">Serenity</span>
               </Link>
             </div>
             
             <nav className="flex-1 space-y-1.5 px-4 py-4">
-              <DesktopNavItem href="/feed"     icon={<Home          size={22} strokeWidth={1.5} />} label="Home" />
+              <DesktopNavItem href="/home"     icon={<Home          size={22} strokeWidth={1.5} />} label="Home" />
               <DesktopNavItem href="/messages" icon={<MessageSquare size={22} strokeWidth={1.5} />} label="Chats">
                 <UnreadBadge initialCount={unreadMessages || 0} userId={user.id} />
               </DesktopNavItem>

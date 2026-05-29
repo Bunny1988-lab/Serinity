@@ -6,7 +6,7 @@ import { motion } from 'framer-motion'
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen bg-[#E0F2F1] relative overflow-hidden flex-col items-center justify-center p-6">
+    <div className="flex min-h-screen bg-background relative overflow-hidden flex-col items-center justify-center p-6">
       
       {/* Background ambient effect */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">

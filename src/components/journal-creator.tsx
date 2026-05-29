@@ -62,7 +62,7 @@ export function JournalCreator() {
   }
 
   return (
-    <div className="bg-background/60 backdrop-blur-sm border border-border/50 rounded-2xl p-4 shadow-sm overflow-hidden">
+    <div className="bg-card/30 backdrop-blur-md border border-border/50 rounded-[2rem] p-5 shadow-sm overflow-hidden">
       <form onSubmit={handleSubmit}>
         <textarea
           className="w-full bg-transparent resize-none outline-none text-foreground placeholder:text-muted-foreground min-h-[100px] text-lg font-light"
@@ -95,7 +95,7 @@ export function JournalCreator() {
         )}
 
         {showMoods && (
-          <div className="flex flex-wrap gap-2 mb-4 p-3 bg-muted/30 rounded-xl border border-border/50">
+          <div className="flex flex-wrap gap-2 mb-4 p-4 bg-secondary/50 rounded-2xl border border-border/40">
             {MOODS.map(m => (
               <button 
                 key={m} 
@@ -154,11 +154,11 @@ export function JournalCreator() {
           <Button 
             type="submit" 
             disabled={(!content.trim() && !file) || isUploading}
-            className="rounded-full px-3 sm:px-5 transition-all shadow-sm shrink-0 gap-1.5"
+            className="rounded-full px-5 h-10 transition-all shadow-sm shrink-0 gap-1.5 bg-primary text-primary-foreground hover:bg-primary/90"
           >
             {isUploading
               ? <Loader2 size={15} className="animate-spin" />
-              : <><span className="hidden sm:inline text-sm">Save</span><Lock size={14} /></>}
+              : <><span className="text-sm">Reflect</span><Lock size={14} /></>}
           </Button>
         </div>
       </form>

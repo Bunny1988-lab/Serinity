@@ -8,17 +8,11 @@ import { useTheme } from 'next-themes'
 
 const THEMES = [
   { id: 'system', name: 'System Auto', class: 'bg-background', type: 'all' },
-  { id: 'ivory-mesh', name: 'Ivory Mesh', class: 'bg-[#faf9f6]', type: 'light' },
-  { id: 'sage-mist', name: 'Sage Mist', class: 'bg-[#f7f9f8]', type: 'light' },
-  { id: 'dusty-blue', name: 'Dusty Blue', class: 'bg-[#f0f4f8]', type: 'light' },
-  { id: 'lavender-glow', name: 'Lavender Glow', class: 'bg-[#f5f3fa]', type: 'light' },
-  { id: 'warm-beige', name: 'Warm Beige', class: 'bg-[#fdfbf7]', type: 'light' },
+  { id: 'light-serenity', name: 'Light Serenity', class: 'bg-[#FAFBF9]', type: 'light' },
+  { id: 'sage-serenity', name: 'Sage Serenity', class: 'bg-[#F4F7F5]', type: 'light' },
   
-  { id: 'graphite-ambient', name: 'Graphite Ambient', class: 'bg-[#121214]', type: 'dark' },
-  { id: 'charcoal-mist', name: 'Charcoal Mist', class: 'bg-[#18181b]', type: 'dark' },
-  { id: 'midnight-blue', name: 'Midnight Blue', class: 'bg-[#0d0f14]', type: 'dark' },
-  { id: 'deep-aurora', name: 'Deep Aurora', class: 'bg-[#0b0c10]', type: 'dark' },
-  { id: 'smoky-glass', name: 'Smoky Glass', class: 'bg-[#1c1c1f]', type: 'dark' },
+  { id: 'midnight-serenity', name: 'Midnight Serenity', class: 'bg-[#0B100D]', type: 'dark' },
+  { id: 'aurora-serenity', name: 'Aurora Serenity', class: 'bg-[#0B0F0C]', type: 'dark' },
 ]
 
 export function ThemeSelector({ currentTheme = 'system' }: { currentTheme?: string }) {

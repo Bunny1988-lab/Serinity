@@ -45,7 +45,7 @@ export function UnreadBadge({ initialCount, userId }: Props) {
   if (count <= 0) return null
 
   return (
-    <span className="ml-auto min-w-[18px] h-[18px] bg-primary text-primary-foreground text-[10px] font-medium rounded-full flex items-center justify-center px-1">
+    <span className="ml-auto min-w-[16px] h-[16px] bg-secondary border border-border/50 text-muted-foreground text-[9px] font-medium rounded-full flex items-center justify-center px-1 opacity-80">
       {count > 9 ? '9+' : count}
     </span>
   )
@@ -78,8 +78,7 @@ export function UnreadBadgeMobile({ initialCount, userId }: Props) {
   if (count <= 0) return null
 
   return (
-    <span className="absolute top-1 right-1 w-4 h-4 bg-primary text-primary-foreground text-[9px] font-medium rounded-full flex items-center justify-center">
-      {count > 9 ? '9+' : count}
+    <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary/60 border border-background rounded-full">
     </span>
   )
 }

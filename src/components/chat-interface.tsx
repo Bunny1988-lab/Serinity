@@ -50,12 +50,12 @@ function WhisperBubble({ msg, isMe }: { msg: any; isMe: boolean }) {
   }
 
   return (
-    <div className="relative px-4 py-3 rounded-2xl text-[13px] leading-relaxed border border-rose-500/20 bg-rose-500/5 text-foreground/90 transition-all duration-300">
-      <Ghost size={11} className="absolute top-2.5 right-2.5 opacity-30 text-rose-500" />
+    <div className="relative px-4 py-3 rounded-2xl text-[13px] leading-relaxed border border-border/40 bg-secondary/30 text-foreground/90 transition-all duration-300">
+      <Ghost size={11} className="absolute top-2.5 right-2.5 opacity-30 text-muted-foreground" />
       <p className="pr-3 font-light break-words">{msg.content}</p>
       {!isMe && (
         <div
-          className="absolute bottom-0 left-0 h-[2px] bg-rose-500/40 rounded-full transition-all duration-1000 ease-linear"
+          className="absolute bottom-0 left-0 h-[2px] bg-primary/20 rounded-full transition-all duration-1000 ease-linear"
           style={{ width: `${(timeLeft / 10) * 100}%` }}
         />
       )}
@@ -248,7 +248,7 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
         <div className="flex-1 min-w-0">
           <p className="font-light text-sm tracking-tight text-foreground truncate">{recipient.display_name}</p>
           <p className="text-[10px] text-muted-foreground/60 font-light flex items-center gap-1.5 mt-0.5">
-            <span className={`w-1 h-1 rounded-full inline-block ${recipientOnline ? 'bg-emerald-500 shadow-[0_0_6px_rgba(16,185,129,0.4)] animate-pulse' : 'bg-muted-foreground/35'}`} />
+            <span className={`w-1.5 h-1.5 rounded-full inline-block ${recipientOnline ? 'bg-primary/50' : 'bg-muted-foreground/35'}`} />
             {recipientOnline ? 'Active now' : 'Offline'}
           </p>
         </div>
@@ -329,8 +329,8 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
                         <div className={`
                           relative px-4 py-2.5 text-[13px] leading-relaxed select-text ${bubbleRadius} transition-all duration-200
                           ${isMe
-                            ? 'bg-neutral-950 text-neutral-50 dark:bg-neutral-800 dark:text-neutral-100 border border-black/[0.05] dark:border-white/[0.04] shadow-2xs font-light'
-                            : 'bg-white/40 dark:bg-white/[0.03] text-foreground/95 border border-black/[0.03] dark:border-white/[0.04] shadow-3xs font-light backdrop-blur-md'
+                            ? 'bg-secondary/60 text-foreground border border-border/50 shadow-sm font-light'
+                            : 'bg-card/40 text-foreground border border-border/40 shadow-sm font-light backdrop-blur-md'
                           }
                           ${isOpt ? 'opacity-50 animate-pulse' : ''}
                         `}>
