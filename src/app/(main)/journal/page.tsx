@@ -1,110 +1,57 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { ChevronLeft, PenTool, BarChart3, Star, Zap, Smile, Book } from 'lucide-react'
-import { JournalCreator } from '@/components/journal-creator'
-
-const JOURNAL_TYPES = [
-  { id: 'daily', name: 'Daily Reflection', icon: Book, color: 'text-blue-500', bg: 'bg-blue-500/10' },
-  { id: 'gratitude', name: 'Gratitude Journal', icon: Star, color: 'text-amber-500', bg: 'bg-amber-500/10' },
-  { id: 'growth', name: 'Growth Journal', icon: Zap, color: 'text-emerald-500', bg: 'bg-emerald-500/10' },
-  { id: 'mood', name: 'Mood Journal', icon: Smile, color: 'text-purple-500', bg: 'bg-purple-500/10' },
-  { id: 'free', name: 'Free Writing', icon: PenTool, color: 'text-slate-500', bg: 'bg-slate-500/10' },
-]
+import { ChevronLeft, Check, Pen } from 'lucide-react'
 
 export default async function JournalPage() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: recentEntries } = await supabase
-    .from('journal_entries')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false })
-    .limit(3)
-
   return (
-    <div className="min-h-[100dvh] flex flex-col bg-transparent text-foreground relative pb-32 md:pb-0">
+    <div className="min-h-[100dvh] flex flex-col bg-transparent text-foreground pb-20 md:pb-0">
       {/* Header */}
-      <header className="px-6 pt-8 pb-6 flex items-center justify-between shrink-0 bg-background/60 backdrop-blur-xl border-b border-border/40 sticky top-0 z-10">
-        <div className="flex items-center gap-3">
-          <Link href="/home" className="p-2 -ml-2 rounded-full hover:bg-secondary text-muted-foreground transition-colors">
-            <ChevronLeft size={24} strokeWidth={1.5} />
-          </Link>
-          <h1 className="text-2xl font-light tracking-wide text-foreground">
-            Journal
-          </h1>
-        </div>
+      <header className="px-4 pt-12 pb-4 flex items-center justify-between shrink-0 bg-transparent z-10">
+        <Link href="/home" className="p-2 -ml-2 rounded-full hover:bg-black/5 transition-colors">
+          <ChevronLeft size={24} strokeWidth={2} className="text-foreground" />
+        </Link>
+        <h1 className="text-[17px] font-bold text-foreground tracking-tight">
+          My Daily Journal ✍️
+        </h1>
+        <button className="p-2 -mr-2 rounded-full hover:bg-black/5 transition-colors">
+          <Check size={24} strokeWidth={2} className="text-[#659e72]" />
+        </button>
       </header>
       
-      <div className="flex-1 overflow-y-auto px-6 py-8 hide-scrollbar">
-        <div className="max-w-2xl mx-auto space-y-10">
+      {/* Journal Content Area */}
+      <div className="flex-1 overflow-y-auto px-4 pt-2 pb-6 relative">
+        <div className="bg-card shadow-[0_4px_20px_rgba(0,0,0,0.02)] rounded-[32px] p-6 min-h-[60vh] relative border border-border/50">
+          <div className="text-[15px] font-medium text-foreground leading-relaxed whitespace-pre-wrap">
+            <p className="font-bold mb-1">[Today's Date: Oct 28, 2023]</p>
+            <p className="font-bold mb-4">Title: Reflecting on Project Progress and Clarity</p>
+            <p>
+              A blank slate for my thoughts today. After the conversation with Sarah and the AI, I feel much more grounded. The overwhelm is lifting. I've broken down the project into five key sub-tasks as suggested, and now I can actually see the path forward. Focusing on the sub-tasks first is such a smart approach. I'll make time each morning to prioritize them. It's amazing how a different perspective can make all the difference. I'm feeling a sense of accomplishment just for having a plan. Onwards!
+            </p>
+          </div>
           
-          {/* Write New Entry */}
-          <section className="space-y-4">
-            <h2 className="text-lg font-medium text-foreground">New Entry</h2>
-            <JournalCreator />
-          </section>
+          {/* Floating book icon */}
+          <div className="absolute -bottom-4 -left-3 text-4xl transform -rotate-12 drop-shadow-md">
+            📖
+          </div>
+        </div>
+      </div>
 
-          {/* Journal Types */}
-          <section className="space-y-4">
-            <h2 className="text-lg font-medium text-foreground">Journal Types</h2>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-              {JOURNAL_TYPES.map(type => (
-                <button key={type.id} className="p-4 rounded-2xl bg-card/40 hover:bg-card/60 backdrop-blur-md border border-border/50 text-left transition-colors flex flex-col gap-3 group">
-                  <div className={`w-10 h-10 rounded-full ${type.bg} flex items-center justify-center`}>
-                    <type.icon size={20} className={type.color} />
-                  </div>
-                  <span className="text-sm font-medium text-foreground">{type.name}</span>
-                </button>
-              ))}
-            </div>
-          </section>
-
-          {/* Journal Analytics */}
-          <section className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-foreground flex items-center gap-2">
-                <BarChart3 size={20} className="text-primary" />
-                Your Insights
-              </h2>
-              <span className="text-xs text-muted-foreground uppercase tracking-widest">Private Only</span>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="bg-card/40 backdrop-blur-md rounded-3xl p-5 border border-border/50">
-                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Writing Frequency</p>
-                <p className="text-3xl font-light">12 <span className="text-sm font-medium text-muted-foreground">days this month</span></p>
-              </div>
-              <div className="bg-card/40 backdrop-blur-md rounded-3xl p-5 border border-border/50">
-                <p className="text-xs text-muted-foreground uppercase tracking-widest mb-1">Top Mood</p>
-                <p className="text-3xl font-light flex items-center gap-2">Calm <span className="text-xl">🌿</span></p>
-              </div>
-            </div>
-          </section>
-
-          {/* Recent Entries */}
-          <section className="space-y-4 pb-8">
-            <h2 className="text-lg font-medium text-foreground">Recent Reflections</h2>
-            <div className="space-y-3">
-              {recentEntries && recentEntries.length > 0 ? (
-                recentEntries.map(entry => (
-                  <div key={entry.id} className="bg-card/30 backdrop-blur-sm p-4 rounded-2xl border border-border/40">
-                    <p className="text-xs text-muted-foreground mb-2">
-                      {new Date(entry.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    </p>
-                    <p className="text-sm font-light text-foreground line-clamp-3 leading-relaxed">
-                      {entry.content}
-                    </p>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-muted-foreground italic">No entries yet. Start your journey today.</p>
-              )}
-            </div>
-          </section>
-
+      {/* Sticky Input Area */}
+      <div className="px-4 pb-6 pt-2 shrink-0 bg-transparent relative z-20">
+        <div className="bg-card border border-border/50 rounded-full flex items-center pr-1.5 pl-4 py-1.5 shadow-[0_4px_12px_rgba(0,0,0,0.03)] h-[52px]">
+          <input 
+            type="text"
+            placeholder="Keep writing your thoughts..." 
+            className="flex-1 bg-transparent px-2 text-[15px] font-medium placeholder:text-foreground/50 focus:outline-none"
+          />
+          <button className="w-[38px] h-[38px] rounded-full bg-[#f4e8cc] text-[#c1684c] flex items-center justify-center shrink-0 shadow-sm border border-[#e8d5a7]">
+            <Pen size={18} strokeWidth={2.5} className="ml-0.5" />
+          </button>
         </div>
       </div>
     </div>
