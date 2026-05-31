@@ -196,8 +196,8 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Pro
         )}
 
         <div className="mt-20">
-          <h2 className="font-headline-sm text-[24px] text-primary mb-2">Community Connections</h2>
-          <p className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-8">Discover quiet profiles</p>
+          <h2 className="font-headline-sm text-[24px] text-primary mb-2">Community Members</h2>
+          <p className="text-on-surface-variant text-xs font-bold uppercase tracking-widest mb-8">Meet people in the community</p>
           
           {listUsers.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -292,13 +292,15 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Pro
                       initialStatus={targetFriendshipStatus}
                       requestId={targetRequestId}
                     />
-                    <Link 
-                      href={`/messages?u=${targetProfile.id}`}
-                      className="py-2.5 px-6 bg-surface-container border-[0.5px] border-outline-variant hover:bg-surface-container-high text-[10px] font-label-caps uppercase tracking-[0.2em] font-bold text-primary flex items-center justify-center gap-2 transition-all active:scale-98"
-                    >
-                      <MessageSquare size={12} />
-                      Message
-                    </Link>
+                    {targetFriendshipStatus === 'accepted' && (
+                      <Link 
+                        href={`/messages?u=${targetProfile.id}`}
+                        className="py-2.5 px-6 bg-surface-container border-[0.5px] border-outline-variant hover:bg-surface-container-high text-[10px] font-label-caps uppercase tracking-[0.2em] font-bold text-primary flex items-center justify-center gap-2 transition-all active:scale-98"
+                      >
+                        <MessageSquare size={12} />
+                        Message
+                      </Link>
+                    )}
                     <ShareProfileButton targetProfileId={targetProfile.id} />
                   </div>
                 </div>

@@ -59,7 +59,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
       .eq('sender_id', user.id)
       .eq('receiver_id', selectedRecipient.id)
       .eq('status', 'accepted')
-      .maybeSingle()
+      .limit(1)
 
     const { data: fr2 } = await supabase
       .from('friend_requests')
@@ -67,9 +67,9 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
       .eq('sender_id', selectedRecipient.id)
       .eq('receiver_id', user.id)
       .eq('status', 'accepted')
-      .maybeSingle()
+      .limit(1)
 
-    if (fr1 || fr2) {
+    if ((fr1 && fr1.length > 0) || (fr2 && fr2.length > 0)) {
       areFriends = true
     }
   }
