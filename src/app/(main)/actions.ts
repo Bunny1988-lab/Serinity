@@ -78,6 +78,18 @@ export async function addReaction(formData: FormData) {
     user_id: user.id,
     type
   }).select().single()
+
+  // Notify the post author
+  const { data: post } = await supabase.from('posts').select('author_id').eq('id', postId).single()
+  if (post && post.author_id !== user.id) {
+    await supabase.from('notifications').insert({
+      user_id: post.author_id,
+      source_user_id: user.id,
+      post_id: postId,
+      type: 'reaction'
+    })
+  }
+
   // No revalidation needed if we rely on optimistic UI, but safe to do:
   revalidatePath('/feed')
 }
@@ -97,6 +109,17 @@ export async function addComment(formData: FormData) {
     author_id: user.id,
     content
   })
+
+  // Notify the post author
+  const { data: post } = await supabase.from('posts').select('author_id').eq('id', postId).single()
+  if (post && post.author_id !== user.id) {
+    await supabase.from('notifications').insert({
+      user_id: post.author_id,
+      source_user_id: user.id,
+      post_id: postId,
+      type: 'comment'
+    })
+  }
 
   revalidatePath('/feed')
 }

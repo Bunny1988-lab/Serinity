@@ -93,7 +93,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
       `}>
         <MessagesSidebar
           conversations={validConvos as any}
-          friends={allUsers as any}
+          friends={allUsers || []}
           currentUserId={user.id}
           selectedUserId={recipientId}
         >
