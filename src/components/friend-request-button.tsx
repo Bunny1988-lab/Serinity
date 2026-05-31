@@ -30,6 +30,8 @@ export function FriendRequestButton({ targetUserId, initialStatus, requestId: in
     if (result?.success) {
       setStatus('pending_sent')
       if (result.requestId) setRequestId(result.requestId)
+    } else {
+      alert(`Failed to send request: ${result?.error || 'Unknown error'}`)
     }
     setLoading(false)
   }

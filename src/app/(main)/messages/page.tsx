@@ -28,6 +28,17 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
   const { data: allUsers } = await supabase
     .from('users').select('id, username, display_name, avatar_url, intention_text, intention_expires_at').neq('id', user.id)
 
+  // Fetch accepted friend requests for the user
+  const { data: sentReqs } = await supabase.from('friend_requests').select('receiver_id').eq('sender_id', user.id).eq('status', 'accepted')
+  const { data: recReqs } = await supabase.from('friend_requests').select('sender_id').eq('receiver_id', user.id).eq('status', 'accepted')
+
+  const friendIds = new Set([
+    ...(sentReqs || []).map(r => r.receiver_id),
+    ...(recReqs || []).map(r => r.sender_id),
+  ])
+
+  const actualFriends = allUsers?.filter(u => friendIds.has(u.id)) || []
+
   const conversations = await Promise.all(
     partnerIds.map(async (partnerId) => {
       const partner = allUsers?.find(u => u.id === partnerId)
@@ -93,7 +104,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
       `}>
         <MessagesSidebar
           conversations={validConvos as any}
-          friends={allUsers || []}
+          friends={actualFriends}
           currentUserId={user.id}
           selectedUserId={recipientId}
         >

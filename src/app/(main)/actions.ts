@@ -504,7 +504,7 @@ export async function sendFriendRequest(receiverId: string) {
 
   const { data, error } = await supabase
     .from('friend_requests')
-    .insert({ sender_id: user.id, receiver_id: receiverId })
+    .insert({ sender_id: user.id, receiver_id: receiverId, status: 'pending' })
     .select('id')
     .single()
 
