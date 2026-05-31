@@ -6,7 +6,6 @@ import { ChevronLeft } from 'lucide-react'
 import { DesktopNavItem } from '@/components/desktop-nav-item'
 import { logout } from '@/app/auth/actions'
 import { MindfulPause } from '@/components/mindful-pause'
-import { Companion } from '@/components/companion'
 import { WallpaperProvider } from '@/components/wallpaper-provider'
 import { VaultProvider } from '@/components/vault-context'
 import { GlobalRealtime } from '@/components/global-realtime'
@@ -65,7 +64,6 @@ export function LayoutShell({ children, unreadMessages, userId, profile }: Layou
         
         <div className="flex min-h-screen bg-background relative overflow-hidden">
           <MindfulPause />
-          <Companion userId={userId} />
 
           {/* ── DESKTOP SIDEBAR (Slideable & Collapsible) ────────────────────────────── */}
           <nav className={`fixed left-0 top-0 h-full border-r-[0.5px] border-outline-variant bg-white/40 backdrop-blur-md z-50 hidden md:flex flex-col py-16 transition-all duration-300 ease-in-out shadow-[0_0_30px_rgba(0,0,0,0.04)] group/sidebar ${sidebarWidthClass}`}>
