@@ -193,6 +193,19 @@ export async function markNotificationsRead() {
   revalidatePath('/notifications')
 }
 
+export async function markNotificationRead(notificationId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  await supabase
+    .from('notifications')
+    .update({ read: true })
+    .eq('id', notificationId)
+    .eq('user_id', user.id)
+}
+
+
 export async function deleteMessage(messageId: string) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
