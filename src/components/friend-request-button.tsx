@@ -1,25 +1,28 @@
 'use client'
 
 import { useState } from 'react'
-import { UserPlus, Clock, UserCheck, X, Check, Loader2 } from 'lucide-react'
+import { UserCheck, Clock, Check, X, Loader2 } from 'lucide-react'
 import {
   sendFriendRequest,
   acceptFriendRequest,
   declineFriendRequest,
+  cancelFriendRequest,
 } from '@/app/(main)/actions'
 
 export type FriendStatus = 'none' | 'pending_sent' | 'pending_received' | 'accepted' | 'declined'
 
 interface Props {
   targetUserId: string
-  initialStatus: FriendStatus
+  initialStatus: string | null
   requestId?: string
+  compact?: boolean
 }
 
-export function FriendRequestButton({ targetUserId, initialStatus, requestId: initReqId }: Props) {
-  const [status, setStatus] = useState<FriendStatus>(initialStatus)
+export function FriendRequestButton({ targetUserId, initialStatus, requestId: initReqId, compact }: Props) {
+  const [status, setStatus] = useState<FriendStatus>((initialStatus as FriendStatus) || 'none')
   const [requestId, setRequestId] = useState<string | undefined>(initReqId)
   const [loading, setLoading] = useState(false)
+  const [showCancel, setShowCancel] = useState(false)
 
   async function handleSend() {
     setLoading(true)
@@ -28,6 +31,16 @@ export function FriendRequestButton({ targetUserId, initialStatus, requestId: in
       setStatus('pending_sent')
       if (result.requestId) setRequestId(result.requestId)
     }
+    setLoading(false)
+  }
+
+  async function handleCancel() {
+    if (!requestId) return
+    setLoading(true)
+    await cancelFriendRequest(requestId)
+    setStatus('none')
+    setRequestId(undefined)
+    setShowCancel(false)
     setLoading(false)
   }
 
@@ -47,68 +60,67 @@ export function FriendRequestButton({ targetUserId, initialStatus, requestId: in
     setLoading(false)
   }
 
+  // Already friends
   if (status === 'accepted') {
     return (
-      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 select-none">
-        <UserCheck size={12} strokeWidth={2} />
-        Friends
+      <span className="flex items-center justify-center gap-1.5 px-6 py-2.5 text-[10px] font-label-caps uppercase tracking-[0.2em] font-bold text-primary bg-surface-container-low border-[0.5px] border-outline-variant select-none">
+        <UserCheck size={12} strokeWidth={2.5} />
+        Connected
       </span>
     )
   }
 
+  // Request sent — show grayed "Connect" + "Cancel" button
   if (status === 'pending_sent') {
     return (
-      <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium text-muted-foreground bg-muted/40 border border-border/40 select-none">
-        <Clock size={12} strokeWidth={1.5} />
-        Pending
-      </span>
-    )
-  }
-
-  if (status === 'pending_received') {
-    return (
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-2">
+        <span className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] font-label-caps uppercase tracking-[0.2em] font-bold text-on-surface-variant bg-transparent border-[0.5px] border-outline-variant select-none cursor-not-allowed opacity-60">
+          Pending
+        </span>
         <button
-          onClick={handleAccept}
+          onClick={handleCancel}
           disabled={loading}
-          className="flex items-center gap-1 px-3 py-1.5 rounded-full text-[11px] font-medium bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-50 transition-all cursor-pointer"
+          className="flex items-center justify-center gap-1 px-4 py-2.5 text-[10px] font-label-caps uppercase tracking-[0.2em] font-bold text-error bg-transparent border-[0.5px] border-error hover:bg-error hover:text-white disabled:opacity-50 transition-all cursor-pointer"
+          title="Cancel request"
         >
-          {loading ? <Loader2 size={11} className="animate-spin" /> : <Check size={11} strokeWidth={2.5} />}
-          Accept
-        </button>
-        <button
-          onClick={handleDecline}
-          disabled={loading}
-          className="flex items-center gap-1 px-2.5 py-1.5 rounded-full text-[11px] font-medium text-muted-foreground hover:bg-muted/40 border border-border/40 disabled:opacity-50 transition-all cursor-pointer"
-        >
-          <X size={11} strokeWidth={2} />
+          {loading ? <Loader2 size={12} className="animate-spin" /> : <X size={12} strokeWidth={2.5} />}
+          Cancel
         </button>
       </div>
     )
   }
 
-  if (status === 'declined') {
+  // Received a request — accept or decline
+  if (status === 'pending_received') {
     return (
-      <button
-        onClick={handleSend}
-        disabled={loading}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 disabled:opacity-50 transition-all cursor-pointer"
-      >
-        {loading ? <Loader2 size={11} className="animate-spin" /> : <UserPlus size={12} strokeWidth={1.75} />}
-        Add Friend
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={handleAccept}
+          disabled={loading}
+          className="flex items-center gap-1.5 px-6 py-2.5 text-[10px] font-label-caps uppercase tracking-[0.2em] font-bold text-white bg-primary hover:opacity-90 disabled:opacity-50 transition-all cursor-pointer"
+        >
+          {loading ? <Loader2 size={12} className="animate-spin" /> : <Check size={12} strokeWidth={2.5} />}
+          Accept
+        </button>
+        <button
+          onClick={handleDecline}
+          disabled={loading}
+          className="flex items-center justify-center px-4 py-2.5 text-[10px] font-label-caps uppercase tracking-[0.2em] font-bold text-on-surface-variant bg-transparent border-[0.5px] border-outline-variant hover:text-primary transition-all cursor-pointer disabled:opacity-50"
+        >
+          <X size={12} strokeWidth={2.5} />
+        </button>
+      </div>
     )
   }
 
-  // status === 'none'
+  // Default: status === 'none' or 'declined'
   return (
     <button
       onClick={handleSend}
       disabled={loading}
-      className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-medium text-primary bg-primary/10 hover:bg-primary/20 border border-primary/20 disabled:opacity-50 transition-all cursor-pointer"
+      className="flex items-center justify-center px-6 py-2.5 text-[10px] font-label-caps uppercase tracking-[0.2em] font-bold text-primary bg-transparent border-[0.5px] border-primary hover:bg-primary hover:text-white disabled:opacity-50 transition-all cursor-pointer"
     >
-      {loading ? <Loader2 size={11} className="animate-spin" /> : <UserPlus size={12} strokeWidth={1.75} />}
-      {loading ? 'Sending…' : 'Add Friend'}
+      {loading ? <Loader2 size={12} className="animate-spin" /> : 'Connect'}
     </button>
   )
 }

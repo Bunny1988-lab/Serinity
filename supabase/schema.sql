@@ -80,8 +80,22 @@ create table public.messages (
   content text not null,
   is_whisper boolean default false not null,
   image_url text,
+  audio_url text,
+  reply_to_id uuid references public.messages on delete set null,
+  shared_post_id uuid references public.posts on delete set null,
+  is_unsent boolean default false not null,
   read_at timestamp with time zone,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
+);
+
+-- 8a. Message Reactions
+create table public.message_reactions (
+  id uuid default uuid_generate_v4() primary key,
+  message_id uuid references public.messages on delete cascade not null,
+  user_id uuid references public.users on delete cascade not null,
+  emoji text not null,
+  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
+  unique (message_id, user_id)
 );
 
 -- 9. User Privacy Lookups (Privacy-first contact matching hashes)
@@ -159,6 +173,13 @@ create policy "Users can view their own privacy lookup" on public.user_privacy_l
 -- Notifications: users can read and update their own notifications
 create policy "Users can view their own notifications" on public.notifications for select using (auth.uid() = user_id);
 create policy "Users can update their own notifications" on public.notifications for update using (auth.uid() = user_id);
+
+-- Message Reactions: Users can see reactions on messages they are part of
+create policy "Users can view message reactions" on public.message_reactions for select using (
+  exists (select 1 from public.messages m where m.id = message_id and (m.sender_id = auth.uid() or m.receiver_id = auth.uid()))
+);
+create policy "Users can insert message reactions" on public.message_reactions for insert with check (auth.uid() = user_id);
+create policy "Users can delete their own message reactions" on public.message_reactions for delete using (auth.uid() = user_id);
 
 -- Trigger to create a user profile automatically on signup
 create or replace function public.handle_new_user()
@@ -239,9 +260,139 @@ create or replace trigger on_reaction_created
 -- ENABLE REALTIME BROADCASTING FOR INSTANT MESSAGES AND NOTIFICATIONS
 alter publication supabase_realtime add table public.messages;
 alter publication supabase_realtime add table public.notifications;
+alter publication supabase_realtime add table public.message_reactions;
+
+-- 11. Instagram Mindful Features Additions
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS intention_text VARCHAR(60);
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS intention_expires_at TIMESTAMP WITH TIME ZONE;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS quiet_mode_enabled BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS quiet_mode_start TIME DEFAULT '22:00:00';
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS quiet_mode_end TIME DEFAULT '07:00:00';
+ALTER TABLE public.users ADD COLUMN IF NOT EXISTS quiet_mode_auto_reply TEXT DEFAULT 'Practicing quiet focus. Messages will be read mindfully.';
+
+ALTER TABLE public.messages ADD COLUMN IF NOT EXISTS is_vanish BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.messages ADD COLUMN IF NOT EXISTS is_view_once BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.messages ADD COLUMN IF NOT EXISTS shared_profile_id UUID REFERENCES public.users(id) ON DELETE SET NULL;
+
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS audio_url TEXT;
 
 -- BACKFILL SCRIPT FOR EXISTING USERS (Run in Supabase SQL editor):
 -- insert into public.user_privacy_lookups (user_id, email_hash)
 -- select id, encode(digest(lower(email), 'sha256'), 'hex')
 -- from auth.users
 -- on conflict (user_id) do nothing;
+
+-- 12. Slow-Social Suite Expansion Additions
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS is_sunset_locked BOOLEAN DEFAULT FALSE;
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS audio_play_count INTEGER DEFAULT 0;
+ALTER TABLE public.posts ADD COLUMN IF NOT EXISTS audio_is_whisper BOOLEAN DEFAULT FALSE;
+
+CREATE TABLE IF NOT EXISTS public.vault_entries (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  title TEXT,
+  content TEXT,
+  image_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.vault_entries ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can manage their own vault entries" 
+  ON public.vault_entries 
+  FOR ALL 
+  USING (auth.uid() = user_id);
+
+-- 13. Slow-Social Zen Suite Additions
+
+-- 13a. Sundial Vignettes (Disappearing 24h stories)
+CREATE TABLE IF NOT EXISTS public.vignettes (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  image_url TEXT NOT NULL,
+  caption TEXT,
+  expires_at TIMESTAMP WITH TIME ZONE DEFAULT (timezone('utc'::text, now()) + interval '24 hours') NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.vignettes ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Vignettes viewable by authenticated users" ON public.vignettes FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY "Users can insert own vignettes" ON public.vignettes FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own vignettes" ON public.vignettes FOR DELETE USING (auth.uid() = user_id);
+
+-- 13b. Zen Loops (Micro-contemplations with poem line overlays)
+CREATE TABLE IF NOT EXISTS public.zen_loops (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  video_url TEXT NOT NULL,
+  poem_line TEXT NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.zen_loops ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Zen loops viewable by authenticated users" ON public.zen_loops FOR SELECT USING (auth.uid() IS NOT NULL);
+CREATE POLICY "Users can insert own zen loops" ON public.zen_loops FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can delete own zen loops" ON public.zen_loops FOR DELETE USING (auth.uid() = user_id);
+
+-- 13c. Vibrational Resonance Reaction column
+ALTER TABLE public.message_reactions ADD COLUMN IF NOT EXISTS resonance_type TEXT CHECK (resonance_type IN ('om', 'love', 'chime', 'water'));
+
+-- 13d. Memory Cabinets (Highlights Scrapbook on Profile)
+CREATE TABLE IF NOT EXISTS public.memory_cabinets (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  title TEXT NOT NULL,
+  cover_image_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.memory_cabinets ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Memory cabinets viewable by everyone" ON public.memory_cabinets FOR SELECT USING (true);
+CREATE POLICY "Users can manage own memory cabinets" ON public.memory_cabinets FOR ALL USING (auth.uid() = user_id);
+
+CREATE TABLE IF NOT EXISTS public.cabinet_items (
+  cabinet_id UUID REFERENCES public.memory_cabinets(id) ON DELETE CASCADE NOT NULL,
+  post_id UUID REFERENCES public.posts(id) ON DELETE CASCADE,
+  vignette_id UUID REFERENCES public.vignettes(id) ON DELETE CASCADE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  PRIMARY KEY (cabinet_id, coalesce(post_id, vignette_id))
+);
+
+ALTER TABLE public.cabinet_items ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Cabinet items viewable by everyone" ON public.cabinet_items FOR SELECT USING (true);
+CREATE POLICY "Users can manage cabinet items" ON public.cabinet_items FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.memory_cabinets mc WHERE mc.id = cabinet_id AND mc.user_id = auth.uid())
+);
+
+-- 13e. Quiet Guides (Multi-page booklet scrollers with soundscapes)
+CREATE TABLE IF NOT EXISTS public.quiet_guides (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  user_id UUID REFERENCES public.users(id) ON DELETE CASCADE NOT NULL,
+  title TEXT NOT NULL,
+  description TEXT,
+  soundscape TEXT DEFAULT 'none' CHECK (soundscape IN ('none', 'rain', 'wind', 'chime')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+);
+
+ALTER TABLE public.quiet_guides ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Quiet guides viewable by everyone" ON public.quiet_guides FOR SELECT USING (true);
+CREATE POLICY "Users can manage own quiet guides" ON public.quiet_guides FOR ALL USING (auth.uid() = user_id);
+
+CREATE TABLE IF NOT EXISTS public.guide_pages (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  guide_id UUID REFERENCES public.quiet_guides(id) ON DELETE CASCADE NOT NULL,
+  page_number INTEGER NOT NULL,
+  title TEXT,
+  content TEXT NOT NULL,
+  image_url TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  UNIQUE (guide_id, page_number)
+);
+
+ALTER TABLE public.guide_pages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Guide pages viewable by everyone" ON public.guide_pages FOR SELECT USING (true);
+CREATE POLICY "Users can manage own guide pages" ON public.guide_pages FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.quiet_guides qg WHERE qg.id = guide_id AND qg.user_id = auth.uid())
+);
+
+

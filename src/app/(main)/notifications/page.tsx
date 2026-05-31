@@ -1,76 +1,62 @@
-import { getNotifications, markNotificationsRead } from '@/app/(main)/actions'
-import { Bell, Heart, MessageCircle, UserCircle } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server'
+import { ChevronLeft } from 'lucide-react'
+import Link from 'next/link'
+import { redirect } from 'next/navigation'
 
 export default async function NotificationsPage() {
-  const notifications = await getNotifications()
-  
-  // Mark as read in the background
-  if (notifications.some((n: any) => !n.read)) {
-    markNotificationsRead()
-  }
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) redirect('/login')
 
   return (
-    <div className="pb-32 md:pb-0 min-h-screen bg-background/50">
-      <header className="sticky top-0 z-10 bg-background/80 px-6 py-6 backdrop-blur-2xl border-b border-border/30">
-        <h1 className="text-2xl font-light tracking-tight text-foreground">Notifications</h1>
+    <div className="w-full flex flex-col min-h-screen bg-background pb-32">
+      <header className="w-full flex items-center px-6 pt-12 pb-4 max-w-[800px] mx-auto bg-transparent">
+        <Link href="/profile" className="flex items-center justify-center w-10 h-10 -ml-2 hover:opacity-70 transition-opacity">
+          <ChevronLeft className="text-foreground" size={28} strokeWidth={2} />
+        </Link>
+        <h1 className="text-[18px] font-bold text-foreground flex-1 text-center -ml-8">Notification Preferences</h1>
       </header>
-      
-      <div className="p-6 max-w-xl mx-auto space-y-4 mt-4">
-        {notifications.length === 0 ? (
-          <div className="text-center text-muted-foreground py-24 space-y-4">
-            <Bell className="mx-auto opacity-10" size={40} strokeWidth={1} />
-            <p className="text-lg font-light italic">Quiet today 🌿</p>
-            <p className="text-sm font-light opacity-70">You're all caught up with your network.</p>
-          </div>
-        ) : (
-          notifications.map((notification: any) => (
-            <div 
-              key={notification.id} 
-              className={`flex items-start gap-4 p-5 rounded-3xl transition-all ${notification.read ? 'bg-background/80 border border-border/30 hover:border-border/60 hover:shadow-sm' : 'bg-primary/5 border border-primary/20 shadow-sm'}`}
-            >
-              <div className="w-12 h-12 rounded-full bg-background flex items-center justify-center text-primary overflow-hidden shrink-0 shadow-sm border border-border/50">
-                {notification.source_user.avatar_url ? (
-                  <img src={notification.source_user.avatar_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <UserCircle size={28} strokeWidth={1} />
-                )}
-              </div>
-              
-              <div className="flex-1 space-y-1">
-                <p className="text-sm">
-                  <span className="font-medium text-foreground">{notification.source_user.display_name}</span>
-                  {' '}
-                  <span className="text-muted-foreground font-light">
-                    {notification.type === 'reaction' ? 'reacted to your reflection' : 'shared a thought on your post'}
-                  </span>
-                </p>
-                
-                {notification.post?.content && (
-                  <p className="text-sm font-light text-muted-foreground/80 border-l-2 border-border/50 pl-3 mt-3 italic line-clamp-2">
-                    "{notification.post.content}"
-                  </p>
-                )}
-                
-                <p className="text-xs text-muted-foreground/40 pt-2 font-medium uppercase tracking-wider">
-                  {new Date(notification.created_at).toLocaleDateString()}
-                </p>
-              </div>
 
-              <div className="shrink-0 mt-1">
-                {notification.type === 'reaction' ? (
-                  <div className="w-8 h-8 rounded-full bg-primary/5 flex items-center justify-center text-primary">
-                    <Heart size={14} strokeWidth={2} />
-                  </div>
-                ) : (
-                  <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-muted-foreground">
-                    <MessageCircle size={14} strokeWidth={2} />
-                  </div>
-                )}
+      <main className="w-full max-w-[800px] px-6 mx-auto mt-4 space-y-4">
+        <section className="bg-card border border-border-mint rounded-[24px] p-5 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+          <h2 className="font-bold text-[15px] text-foreground mb-4">Email Notifications</h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[14px] font-medium text-foreground">Friend Requests</p>
+                <p className="text-[12px] text-foreground/60">Get notified when someone wants to connect</p>
+              </div>
+              <div className="w-11 h-6 bg-foreground rounded-full relative">
+                <div className="w-5 h-5 bg-card rounded-full absolute right-0.5 top-0.5"></div>
               </div>
             </div>
-          ))
-        )}
-      </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[14px] font-medium text-foreground">New Messages</p>
+                <p className="text-[12px] text-foreground/60">Get notified when you receive a message</p>
+              </div>
+              <div className="w-11 h-6 bg-[#BCE3D8] rounded-full relative">
+                <div className="w-5 h-5 bg-card rounded-full absolute left-0.5 top-0.5"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-card border border-border-mint rounded-[24px] p-5 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+          <h2 className="font-bold text-[15px] text-foreground mb-4">Push Notifications</h2>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[14px] font-medium text-foreground">Daily Reminders</p>
+                <p className="text-[12px] text-foreground/60">Reminders for journaling and mindfulness</p>
+              </div>
+              <div className="w-11 h-6 bg-foreground rounded-full relative">
+                <div className="w-5 h-5 bg-card rounded-full absolute right-0.5 top-0.5"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </main>
     </div>
   )
 }

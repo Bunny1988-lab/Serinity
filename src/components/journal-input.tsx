@@ -24,7 +24,7 @@ export function JournalInput() {
   }
 
   return (
-    <form onSubmit={handleSend} className="bg-white/90 backdrop-blur-md border border-white shadow-sm rounded-full flex items-center px-4 py-2">
+    <form onSubmit={handleSend} className="bg-card/90 backdrop-blur-md border border-white shadow-sm rounded-full flex items-center px-4 py-2">
       <input 
         type="text" 
         value={input}

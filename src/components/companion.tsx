@@ -129,33 +129,33 @@ export function Companion({ userId }: { userId: string }) {
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            className="bg-background/80 backdrop-blur-2xl border border-border/50 rounded-3xl shadow-2xl w-[90vw] max-w-[360px] h-[70vh] max-h-[560px] sm:w-[450px] sm:h-[660px] md:w-[480px] md:h-[700px] flex flex-col overflow-hidden relative"
+            className="bg-surface border-[0.5px] border-outline-variant shadow-lg w-[90vw] max-w-[360px] h-[70vh] max-h-[560px] sm:w-[450px] sm:h-[660px] md:w-[480px] md:h-[700px] flex flex-col overflow-hidden relative"
           >
             {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-border/30 bg-primary/5">
-              <div className="flex items-center gap-2">
-                <Sparkles size={16} className="text-primary" />
-                <span className="font-light tracking-wide text-sm">Seren</span>
+            <div className="flex items-center justify-between p-6 border-b-[0.5px] border-outline-variant bg-surface-container-low">
+              <div className="flex items-center gap-3">
+                <Sparkles size={20} className="text-secondary" />
+                <span className="font-display text-2xl font-bold tracking-wide text-primary italic">Seren</span>
               </div>
               <div className="flex items-center gap-1">
                 <button 
                   onClick={handleForgetHistory}
-                  className="p-2 text-muted-foreground hover:text-destructive transition-colors rounded-full hover:bg-muted/50"
+                  className="p-2 text-on-surface-variant hover:text-secondary transition-colors rounded-full hover:bg-surface-container shadow-sm"
                   title="Forget History"
                 >
-                  <Trash2 size={14} />
+                  <Trash2 size={18} strokeWidth={2} />
                 </button>
                 <button 
                   onClick={() => setIsOpen(false)}
-                  className="p-2 text-muted-foreground hover:text-foreground transition-colors rounded-full hover:bg-muted/50"
+                  className="p-2 text-on-surface-variant hover:text-primary transition-colors rounded-full hover:bg-surface-container shadow-sm"
                 >
-                  <X size={16} />
+                  <X size={20} strokeWidth={2} />
                 </button>
               </div>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 scrollbar-thin scrollbar-thumb-border">
+            <div className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-outline bg-surface-container-low">
               {messages.map((msg, i) => (
                 <motion.div 
                   initial={{ opacity: 0, y: 5 }}
@@ -163,10 +163,10 @@ export function Companion({ userId }: { userId: string }) {
                   key={msg.id + i} 
                   className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                 >
-                  <div className={`px-4 py-3 max-w-[85%] rounded-2xl text-[14px] leading-relaxed font-light ${
+                  <div className={`px-5 py-4 max-w-[85%] text-sm leading-relaxed font-medium ${
                     msg.role === 'user' 
-                      ? 'bg-primary text-primary-foreground rounded-br-none' 
-                      : 'bg-muted/50 text-foreground rounded-bl-none border border-border/50'
+                      ? 'bg-primary text-on-primary rounded-2xl rounded-br-sm shadow-sm' 
+                      : 'bg-surface border-[0.5px] border-outline-variant text-primary rounded-2xl rounded-bl-sm shadow-sm'
                   }`}>
                     {msg.content}
                     {msg.content === '' && isStreaming && <span className="animate-pulse">...</span>}
@@ -177,22 +177,22 @@ export function Companion({ userId }: { userId: string }) {
             </div>
 
             {/* Input */}
-            <div className="p-4 bg-background">
+            <div className="p-6 bg-surface border-t-[0.5px] border-outline-variant">
               <form onSubmit={handleSubmit} className="flex items-center gap-2 relative">
                 <input
                   type="text"
                   value={input}
                   onChange={e => setInput(e.target.value)}
                   placeholder="Reflect with Seren..."
-                  className="w-full h-12 bg-muted/30 border border-border/50 rounded-full pl-5 pr-12 focus:outline-none focus:border-primary/50 text-sm font-light text-foreground"
+                  className="w-full h-14 bg-surface-container-lowest border-[0.5px] border-outline-variant rounded-full pl-6 pr-14 focus:outline-none focus:border-primary text-[15px] font-medium text-primary placeholder:text-on-surface-variant shadow-sm transition-all"
                   disabled={isStreaming}
                 />
                 <button 
                   type="submit"
                   disabled={!input.trim() || isStreaming}
-                  className="absolute right-2 p-2 bg-primary text-primary-foreground rounded-full disabled:opacity-50 transition-opacity"
+                  className="absolute right-1 w-12 h-12 flex items-center justify-center bg-primary text-on-primary rounded-full disabled:opacity-50 transition-opacity hover:bg-primary/90 shadow-sm"
                 >
-                  <Send size={14} />
+                  <Send size={18} strokeWidth={2} />
                 </button>
               </form>
             </div>
@@ -207,15 +207,16 @@ export function Companion({ userId }: { userId: string }) {
           y: shouldReduceMotion ? 0 : [0, -5, 0],
           transition: { duration: 4, repeat: Infinity, ease: "easeInOut" }
         }}
-        className="w-14 h-14 rounded-full backdrop-blur-md border border-primary/20 bg-primary/10 flex items-center justify-center cursor-pointer shadow-[0_0_30px_10px_rgba(var(--primary),0.05)] relative overflow-hidden"
+        className="w-16 h-16 rounded-full border-[0.5px] border-outline-variant bg-surface flex items-center justify-center cursor-pointer shadow-lg relative overflow-hidden"
         title="Open Seren"
       >
         <motion.div 
           animate={{ opacity: shouldReduceMotion ? 0.5 : [0.3, 0.6, 0.3] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          className="w-6 h-6 rounded-full bg-primary/40 blur-md"
+          className="absolute inset-0 rounded-full bg-surface-container opacity-50"
         />
-        {!isOpen && <Sparkles size={16} className="text-primary/70 absolute" />}
+        {!isOpen && <Sparkles size={24} className="text-secondary relative z-10" strokeWidth={2} />}
+        {isOpen && <X size={24} className="text-primary relative z-10" strokeWidth={2} />}
       </motion.button>
 
       <ConfirmDialog

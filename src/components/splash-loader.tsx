@@ -64,7 +64,7 @@ export function SplashLoader({ isVisible }: { isVisible: boolean }) {
               {/* Inner core */}
               <div className="w-12 h-12 bg-primary rounded-full shadow-[0_0_40px_rgba(var(--primary),0.8)]" />
               {/* Soft reflection */}
-              <div className="absolute top-1/4 left-1/4 w-4 h-4 bg-white/40 rounded-full blur-[2px]" />
+              <div className="absolute top-1/4 left-1/4 w-4 h-4 bg-card/40 rounded-full blur-[2px]" />
             </motion.div>
 
             {/* Rotating Messaging */}

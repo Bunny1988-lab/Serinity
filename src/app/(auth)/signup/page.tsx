@@ -10,16 +10,16 @@ export default async function SignupPage({
 
   return (
     <div className="w-full space-y-8">
-      <div className="text-center space-y-2">
-        <h1 className="text-3xl font-semibold tracking-tight text-slate-800">Join Serenity</h1>
-        <p className="text-sm text-slate-500 font-medium">A calm, private space for intentional sharing</p>
+      <div className="text-center space-y-3 mb-8">
+        <h1 className="font-display text-4xl font-bold tracking-tight text-primary italic">Join Serenity</h1>
+        <p className="text-sm text-on-surface-variant font-medium">A calm, private space for intentional sharing.</p>
       </div>
 
       <SignupForm error={error} />
 
-      <div className="text-center text-sm font-medium mt-8">
-        <span className="text-slate-500">Already have an account? </span>
-        <Link href="/login" className="text-teal-700 font-bold hover:text-teal-600 transition-colors">
+      <div className="text-center text-sm font-medium mt-10">
+        <span className="text-on-surface-variant">Already have an account? </span>
+        <Link href="/login" className="text-primary font-bold hover:text-secondary transition-colors">
           Sign in
         </Link>
       </div>

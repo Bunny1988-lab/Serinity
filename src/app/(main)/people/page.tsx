@@ -78,68 +78,63 @@ export default async function PeoplePage({
   }
 
   return (
-    <div className="pb-32 md:pb-8 min-h-screen bg-transparent relative overflow-x-hidden">
-      {/* Ambient */}
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
-
-      {/* Sticky header + search */}
-      <header className="sticky top-0 z-10 bg-background/40 backdrop-blur-2xl border-b border-border/20">
-        <div className="px-5 md:px-10 pt-5 pb-4 max-w-2xl mx-auto">
-          <div className="flex items-center gap-2.5 mb-4">
-            <UserPlus2 size={20} className="text-primary/80" strokeWidth={1.5} />
-            <h1 className="text-xl font-light tracking-tight">Find People</h1>
+    <div className="w-full flex flex-col min-h-screen bg-background pb-32">
+      <header className="w-full bg-background sticky top-0 z-20 border-b border-border-mint/50 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+        <div className="px-6 pt-10 pb-4 max-w-[800px] mx-auto">
+          <div className="flex items-center gap-2 mb-4">
+            <UserPlus2 size={24} className="text-foreground" strokeWidth={2} />
+            <h1 className="text-[17px] font-bold text-foreground">Find People</h1>
             {incomingRequests.length > 0 && (
-              <span className="ml-auto h-5 min-w-[20px] px-1.5 rounded-full bg-primary text-[10px] font-bold text-primary-foreground flex items-center justify-center">
+              <span className="ml-auto h-6 min-w-[24px] px-2 rounded-full bg-foreground text-[11px] font-bold text-white flex items-center justify-center">
                 {incomingRequests.length}
               </span>
             )}
           </div>
 
-          {/* Search bar */}
           <form method="GET" className="relative">
             <Search
-              size={15}
-              className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/50 pointer-events-none"
+              size={18}
+              className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40 pointer-events-none"
             />
             <input
               name="q"
               defaultValue={query || ''}
               autoComplete="off"
               placeholder="Search by name or @username…"
-              className="w-full pl-10 pr-4 py-2.5 bg-background/50 border border-border/30 rounded-full text-sm font-light outline-none focus:border-primary/40 transition-all placeholder:text-muted-foreground/40"
+              className="w-full pl-11 pr-5 py-3 bg-card border border-border-mint rounded-full text-[14px] font-medium text-foreground outline-none focus:border-border-mint focus:ring-1 focus:ring-[#BCE3D8] transition-all placeholder:text-foreground/40 shadow-sm"
             />
           </form>
         </div>
       </header>
 
-      <div className="px-4 md:px-10 py-6 max-w-2xl mx-auto space-y-8">
+      <main className="px-6 space-y-6 pt-6 max-w-[800px] mx-auto w-full">
         {/* ── Incoming requests ─────────────────────────────── */}
         {incomingRequests.length > 0 && (
           <section className="space-y-3">
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+            <h3 className="text-[14px] font-bold text-foreground/60 uppercase tracking-widest px-2">
               Friend Requests ({incomingRequests.length})
-            </p>
-            <div className="space-y-2">
+            </h3>
+            <div className="bg-card border border-border-mint rounded-[24px] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.02)] divide-y divide-[#BCE3D8]/30">
               {incomingRequests.map((req: any) => {
                 const sender = incomingProfiles.find((p) => p.id === req.sender_id)
                 if (!sender) return null
                 return (
                   <div
                     key={req.id}
-                    className="flex items-center gap-3 p-4 bg-primary/5 border border-primary/15 rounded-2xl"
+                    className="flex items-center gap-4 p-5 bg-background/20 transition-all"
                   >
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-muted border border-border/20 shrink-0 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-background border border-border-mint shrink-0 flex items-center justify-center">
                       {sender.avatar_url ? (
                         <img src={sender.avatar_url} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-sm font-light text-muted-foreground">
+                        <span className="text-[16px] font-bold text-foreground">
                           {sender.display_name?.[0]?.toUpperCase()}
                         </span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{sender.display_name}</p>
-                      <p className="text-xs text-muted-foreground/60 truncate">@{sender.username}</p>
+                      <p className="text-[15px] font-bold text-foreground truncate">{sender.display_name}</p>
+                      <p className="text-[13px] text-foreground/60 font-medium truncate">@{sender.username}</p>
                     </div>
                     <FriendRequestButton
                       targetUserId={sender.id}
@@ -155,38 +150,38 @@ export default async function PeoplePage({
 
         {/* ── People list ───────────────────────────────────── */}
         <section className="space-y-3">
-          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">
+          <h3 className="text-[14px] font-bold text-foreground/60 uppercase tracking-widest px-2">
             {trimmed ? `Results for "${trimmed}"` : 'People on Serenity'}
-          </p>
+          </h3>
 
           {people.length === 0 ? (
-            <div className="text-center py-20 space-y-3">
-              <Users2 size={40} className="mx-auto text-muted-foreground/25 stroke-[1.25]" />
-              <p className="text-muted-foreground/50 font-light text-sm">No people found</p>
+            <div className="text-center py-16 bg-card border border-border-mint border-dashed rounded-[24px] space-y-3">
+              <Users2 size={32} className="mx-auto text-foreground/30" strokeWidth={2} />
+              <p className="text-[14px] text-foreground/60 font-medium">No people found</p>
             </div>
           ) : (
-            <div className="space-y-2">
+            <div className="bg-card border border-border-mint rounded-[24px] overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.02)] divide-y divide-[#BCE3D8]/30">
               {people.map((person: any) => {
                 const { status, requestId } = getStatus(person.id)
                 return (
                   <div
                     key={person.id}
-                    className="flex items-center gap-3 p-4 bg-background/30 border border-border/20 rounded-2xl hover:border-border/50 transition-all group"
+                    className="flex items-center gap-4 p-5 hover:bg-background/30 transition-colors group"
                   >
-                    <div className="w-10 h-10 rounded-full overflow-hidden bg-muted border border-border/20 shrink-0 flex items-center justify-center">
+                    <div className="w-12 h-12 rounded-full overflow-hidden bg-background border border-border-mint shrink-0 flex items-center justify-center group-hover:scale-105 transition-transform">
                       {person.avatar_url ? (
                         <img src={person.avatar_url} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <span className="text-sm font-light text-muted-foreground">
+                        <span className="text-[16px] font-bold text-foreground">
                           {person.display_name?.[0]?.toUpperCase()}
                         </span>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                      <p className="text-[15px] font-bold text-foreground truncate group-hover:text-foreground/80 transition-colors">
                         {person.display_name}
                       </p>
-                      <p className="text-xs text-muted-foreground/55 truncate">@{person.username}</p>
+                      <p className="text-[13px] text-foreground/60 font-medium truncate">@{person.username}</p>
                     </div>
                     <FriendRequestButton
                       targetUserId={person.id}
@@ -199,7 +194,7 @@ export default async function PeoplePage({
             </div>
           )}
         </section>
-      </div>
+      </main>
     </div>
   )
 }

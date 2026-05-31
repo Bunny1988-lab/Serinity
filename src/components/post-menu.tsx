@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { MoreHorizontal, Trash2, MessageSquareOff } from 'lucide-react'
+import { MoreHorizontal, Trash2, MessageSquareOff, MessageSquare } from 'lucide-react'
 import { deletePost, toggleComments } from '@/app/(main)/actions'
 
 export function PostMenu({ postId, authorId, currentUserId, allowComments }: { postId: string, authorId: string, currentUserId: string, allowComments: boolean }) {
@@ -30,27 +30,32 @@ export function PostMenu({ postId, authorId, currentUserId, allowComments }: { p
     <div className="relative">
       <button 
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2 text-muted-foreground hover:bg-muted/50 rounded-full transition-colors"
+        className={`w-10 h-10 flex items-center justify-center rounded-full transition-all border ${isOpen ? 'bg-background text-foreground border-border-mint' : 'text-foreground/40 hover:bg-background hover:text-foreground border-transparent hover:border-border-mint'}`}
       >
-        <MoreHorizontal size={18} />
+        <MoreHorizontal size={20} strokeWidth={2} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-10 w-48 bg-background border border-border/50 rounded-xl shadow-lg overflow-hidden z-20">
+        <div className="absolute right-0 top-12 w-56 bg-card border border-border-mint rounded-[20px] shadow-[0_8px_24px_rgba(0,0,0,0.06)] overflow-hidden z-20 py-1">
           <button 
             onClick={handleToggleComments}
-            className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-muted/50 transition-colors text-left"
+            className="w-full flex items-center gap-3 px-5 py-3.5 text-[14px] font-bold text-foreground hover:bg-background transition-colors text-left"
           >
-            <MessageSquareOff size={16} className="text-muted-foreground" />
-            <span>{allowComments ? 'Disable Comments' : 'Enable Comments'}</span>
+            {allowComments ? (
+              <><MessageSquareOff size={16} strokeWidth={2.5} className="text-foreground/60" /> Disable Comments</>
+            ) : (
+              <><MessageSquare size={16} strokeWidth={2.5} className="text-foreground/60" /> Enable Comments</>
+            )}
           </button>
           
+          <div className="h-[1px] bg-[#BCE3D8]/50 mx-2" />
+
           <button 
             onClick={handleDelete}
             disabled={isDeleting}
-            className="w-full flex items-center gap-3 px-4 py-3 text-sm hover:bg-destructive/10 text-destructive transition-colors text-left border-t border-border/50"
+            className="w-full flex items-center gap-3 px-5 py-3.5 text-[14px] font-bold text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors text-left"
           >
-            <Trash2 size={16} />
+            <Trash2 size={16} strokeWidth={2.5} />
             <span>{isDeleting ? 'Deleting...' : 'Delete Post'}</span>
           </button>
         </div>

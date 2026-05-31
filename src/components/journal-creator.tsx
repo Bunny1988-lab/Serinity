@@ -5,6 +5,7 @@ import { createJournalEntry } from '@/app/(main)/actions'
 import { Button } from '@/components/ui/button'
 import { ImagePlus, Smile, Send, X, Loader2, Flame, Lock } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 
 const MOODS = ['Happy', 'Reflective', 'Calm', 'Anxious', 'Excited', 'Tired', 'Grateful', 'Overwhelmed', 'Low']
 
@@ -48,6 +49,10 @@ export function JournalCreator() {
     if (burnAfter) formData.append('burn_after_hours', burnAfter)
     
     await createJournalEntry(formData)
+    toast.success('Journal securely saved', {
+      description: 'Your thoughts are safely encrypted in your vault.',
+      icon: '🌿'
+    })
     setContent('')
     setMood('')
     setFile(null)

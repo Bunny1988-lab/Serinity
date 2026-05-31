@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { Share2, ShieldCheck } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { ContactImporter } from '@/components/contact-importer'
 
 export function CircleConnections({ userId }: { userId: string }) {
@@ -36,23 +35,22 @@ export function CircleConnections({ userId }: { userId: string }) {
   return (
     <div className="flex flex-col sm:flex-row gap-3 pt-6 relative z-10 w-full">
       {/* Invite Friends Button (Cross platform share) */}
-      <Button 
+      <button 
         onClick={handleShare}
-        className="flex-1 flex items-center justify-center gap-2 rounded-2xl py-6 bg-gradient-to-tr from-primary to-primary/80 text-primary-foreground hover:shadow-lg hover:shadow-primary/10 transition-all hover:scale-[1.02] active:scale-[0.98] select-none cursor-pointer"
+        className="flex-1 flex items-center justify-center gap-2 rounded-full h-12 bg-foreground text-white hover:opacity-90 transition-opacity active:scale-[0.98] select-none cursor-pointer"
       >
-        <Share2 size={16} />
-        <span className="font-medium text-sm">{copied ? 'Link Copied!' : 'Invite Friends'}</span>
-      </Button>
+        <Share2 size={16} strokeWidth={2.5} />
+        <span className="font-bold text-[14px]">{copied ? 'Link Copied!' : 'Invite Friends'}</span>
+      </button>
 
       {/* Sync Contacts Button (Local SHA-256 sync matcher) */}
-      <Button 
+      <button 
         onClick={() => setImporterOpen(true)}
-        variant="outline"
-        className="flex-1 flex items-center justify-center gap-2 rounded-2xl py-6 border border-border/10 bg-background/30 backdrop-blur-sm text-foreground hover:bg-muted/40 transition-all hover:scale-[1.02] active:scale-[0.98] select-none cursor-pointer"
+        className="flex-1 flex items-center justify-center gap-2 rounded-full h-12 border border-border-mint bg-card text-foreground hover:bg-background transition-all active:scale-[0.98] select-none cursor-pointer shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
       >
-        <ShieldCheck size={16} className="text-primary" />
-        <span className="font-medium text-sm">Sync Contacts</span>
-      </Button>
+        <ShieldCheck size={18} strokeWidth={2.5} className="text-foreground" />
+        <span className="font-bold text-[14px]">Sync Contacts</span>
+      </button>
 
       <ContactImporter isOpen={importerOpen} onClose={() => setImporterOpen(false)} />
     </div>

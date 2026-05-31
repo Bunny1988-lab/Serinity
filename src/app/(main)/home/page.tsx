@@ -1,15 +1,20 @@
 import { createClient } from '@/lib/supabase/server'
-import { Calendar, Moon, Plus, Target, Heart, Award, Sparkles } from 'lucide-react'
+import { Calendar, Heart, Sparkles, Target } from 'lucide-react'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { NotificationBell } from '@/components/notification-bell'
+import { CreatePostModal } from '@/components/create-post-modal'
+import { PostInteractions } from '@/components/post-interactions'
+import { AudioReflectionsPlayer } from '@/components/audio-reflections-player'
+import { SunsetLockCover } from '@/components/sunset-lock-cover'
+import { getMoodInkwellStyle } from '@/lib/utils'
+import { VignetteCarousel } from '@/components/vignette-carousel'
+
 
 export default async function HomeDashboard() {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    redirect('/login')
-  }
+  if (!user) redirect('/login')
 
   const { data: profile } = await supabase
     .from('users')
@@ -17,129 +22,184 @@ export default async function HomeDashboard() {
     .eq('id', user.id)
     .single()
 
-  const mockConnections = [
-    { id: '1', display_name: 'Elena', avatar_url: null, status: 'Active' },
-    { id: '2', display_name: 'Julian', avatar_url: null, status: 'Recent' },
-    { id: '3', display_name: 'Sophia', avatar_url: null, status: 'Recent' },
-    { id: '4', display_name: 'Inner Circle', avatar_url: null, status: 'Group' },
-  ]
+  // Real circles for the create post dropdown
+  const { data: circles } = await supabase
+    .from('circles')
+    .select('id, name')
+    .eq('owner_id', user.id)
 
-  const firstName = profile?.display_name?.split(' ')[0] || 'There'
-  const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
+  // Fetch actual posts with sunset lock and audio whisper fields
+  const { data: posts } = await supabase
+    .from('posts')
+    .select(`
+      id, content, image_url, audio_url, mood, created_at, allow_comments,
+      audio_play_count, audio_is_whisper, is_sunset_locked,
+      users:author_id (id, display_name, avatar_url),
+      reactions (id, user_id),
+      comments (id, content, created_at, users:author_id(display_name))
+    `)
+    .order('created_at', { ascending: false })
+    .limit(15)
 
   return (
-    <div className="min-h-screen bg-transparent pb-32 md:pb-0 relative text-foreground">
-      {/* Header */}
-      <header className="px-6 py-6 flex items-center justify-between sticky top-0 z-10 bg-background/60 backdrop-blur-xl border-b border-border/40">
-        <div className="w-10 h-10 rounded-full bg-secondary overflow-hidden flex items-center justify-center shrink-0 shadow-sm border border-border/50">
-          {profile?.avatar_url ? (
-            <img src={profile.avatar_url} alt="Profile" className="w-full h-full object-cover" />
-          ) : (
-            <span className="text-sm font-medium text-primary">{profile?.display_name?.[0]}</span>
+    <div className="flex w-full min-h-screen bg-background">
+      {/* ── MAIN SCROLL AREA ── */}
+      <div className="flex-1 min-w-0 flex flex-col items-center pt-32 pb-24">
+        <div className="w-full max-w-[800px] px-5">
+          {/* Feed Intro / Atmosphere */}
+          <div className="mb-16 text-center">
+            <p className="font-label-caps text-xs font-bold text-on-surface-variant mb-4 uppercase tracking-[0.2em]">
+              The Curator's Journal
+            </p>
+            <h3 className="font-headline-md text-3xl font-medium text-primary italic">
+              Deep focus is the currency of the modern age.
+            </h3>
+          </div>
+
+          {/* Daily Vignettes */}
+          <div className="mb-16">
+            <VignetteCarousel currentUser={{ id: user.id, display_name: profile?.display_name || 'You', avatar_url: profile?.avatar_url }} />
+          </div>
+          
+          {/* Single Column Feed */}
+          <div className="space-y-24">
+            {posts?.map((post: any) => {
+              const authorInfo = post.users || { id: '', display_name: 'Anonymous', avatar_url: null }
+              const isOwnPost = authorInfo.id === user.id
+
+              return (
+                <article key={post.id} className="group">
+                  <SunsetLockCover isLocked={post.is_sunset_locked}>
+                    {post.image_url && (
+                      <div className="relative overflow-hidden mb-8 border-[0.5px] border-outline-variant bg-surface-container-low transition-all duration-700 ease-out hover:shadow-[0_0_60px_rgba(0,0,0,0.03)] rounded-2xl">
+                        <img
+                          alt="Post visual"
+                          className="w-full h-[500px] object-cover transition-transform duration-1000 group-hover:scale-105"
+                          src={post.image_url}
+                        />
+                        <div className="absolute top-6 left-6 z-20">
+                          <Link 
+                            href={isOwnPost ? '/profile' : `/discover?u=${authorInfo.id}`}
+                            className="flex items-center space-x-3 hover:opacity-85 transition-all"
+                          >
+                            <div className="w-10 h-10 rounded-full border border-white/20 bg-white/10 backdrop-blur-md overflow-hidden flex items-center justify-center">
+                              {authorInfo.avatar_url ? (
+                                <img
+                                  alt="Author"
+                                  className="w-full h-full object-cover"
+                                  src={authorInfo.avatar_url}
+                                />
+                              ) : (
+                                <span className="text-white font-bold text-sm">{(authorInfo.display_name || 'A')[0]}</span>
+                              )}
+                            </div>
+                            <span className="font-ui-element text-sm font-medium tracking-wide text-white drop-shadow-md">
+                              {authorInfo.display_name || 'Anonymous'}
+                            </span>
+                          </Link>
+                        </div>
+                      </div>
+                    )}
+                    
+                    <div className={post.image_url ? 'px-2' : 'bg-surface-container-low border-[0.5px] border-outline-variant p-12 relative overflow-hidden group rounded-2xl'}>
+                      {!post.image_url && (
+                        <div className="absolute -right-20 -top-20 w-64 h-64 bg-primary/5 rounded-full blur-[80px] group-hover:bg-primary/10 transition-colors duration-700"></div>
+                      )}
+                      
+                      <div className={!post.image_url ? 'relative z-10 flex flex-col items-center text-center' : ''}>
+                        {post.mood && (
+                          <span className={`font-label-caps text-xs font-bold text-secondary mb-4 uppercase tracking-widest block ${!post.image_url ? 'mb-8' : ''}`}>
+                            Feeling {post.mood}
+                          </span>
+                        )}
+                        
+                        <div className={`flex justify-between items-start mb-4 ${!post.image_url ? 'w-full flex-col items-center gap-4' : ''}`}>
+                          <h2 className={`${getMoodInkwellStyle(post.mood) || (!post.image_url ? 'font-display-lg text-5xl italic text-primary' : 'font-headline-md text-3xl font-medium text-primary')} ${!post.image_url ? 'max-w-lg leading-[1.2] mb-8 text-center' : 'max-w-2xl leading-tight'}`}>
+                            {post.content}
+                          </h2>
+                          {post.image_url && (
+                            <span className="font-label-caps text-xs font-bold text-on-surface-variant pt-2 uppercase tracking-widest whitespace-nowrap">
+                              {new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                            </span>
+                          )}
+                        </div>
+
+                        {post.audio_url && (
+                          <div className={`mb-6 flex ${!post.image_url ? 'justify-center w-full' : ''}`}>
+                            <AudioReflectionsPlayer 
+                              audioUrl={post.audio_url} 
+                              isWhisper={post.audio_is_whisper}
+                              playCount={post.audio_play_count}
+                              postId={post.id}
+                            />
+                          </div>
+                        )}
+
+                        {!post.image_url && (
+                          <>
+                            <div className="w-12 h-[0.5px] bg-outline mb-8"></div>
+                            <div className="flex items-center space-x-4">
+                              <Link
+                                href={isOwnPost ? '/profile' : `/discover?u=${authorInfo.id}`}
+                                className="flex items-center space-x-4 hover:opacity-85 transition-all"
+                              >
+                                <div className="w-12 h-12 rounded-full border border-outline-variant overflow-hidden flex items-center justify-center bg-surface">
+                                  {authorInfo.avatar_url ? (
+                                    <img src={authorInfo.avatar_url} alt="Author" className="w-full h-full object-cover" />
+                                  ) : (
+                                    <span className="font-bold text-primary">{(authorInfo.display_name || 'A')[0]}</span>
+                                  )}
+                                </div>
+                                <div className="text-left">
+                                  <p className="font-ui-element text-sm font-medium tracking-wide text-primary">
+                                    {authorInfo.display_name || 'Anonymous'}
+                                  </p>
+                                  <p className="font-label-caps text-[10px] font-bold text-on-surface-variant uppercase tracking-widest">
+                                    {new Date(post.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                  </p>
+                                </div>
+                              </Link>
+                            </div>
+                          </>
+                        )}
+
+                        <div className={!post.image_url ? 'w-full mt-12' : ''}>
+                          <PostInteractions 
+                            postId={post.id} 
+                            initialReactions={post.reactions} 
+                            initialComments={post.comments} 
+                            allowComments={post.allow_comments} 
+                            mood={post.mood}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </SunsetLockCover>
+                </article>
+              )
+            })}
+
+            {(!posts || posts.length === 0) && (
+              <div className="text-center py-24">
+                <span className="material-symbols-outlined text-4xl text-on-surface-variant mb-4">history_edu</span>
+                <p className="font-headline-md text-xl text-primary italic">The page is blank.</p>
+                <p className="font-body-md text-on-surface-variant mt-2">Write the first entry in your journal.</p>
+              </div>
+            )}
+          </div>
+
+          {posts && posts.length > 0 && (
+            <div className="mt-32 flex flex-col items-center">
+              <div className="w-1 h-12 bg-outline-variant mb-8"></div>
+              <button className="font-label-caps text-xs font-bold text-on-surface-variant hover:text-primary transition-colors tracking-[0.3em] uppercase active-underline relative py-2">
+                Scroll to reveal more
+              </button>
+            </div>
           )}
         </div>
-        
-        <h1 className="text-xl font-light tracking-widest uppercase opacity-80">Serenity</h1>
-        
-        <NotificationBell />
-      </header>
-
-      <div className="px-6 py-8 space-y-8 max-w-2xl mx-auto">
-        {/* Welcome Card */}
-        <div className="bg-card/40 backdrop-blur-md rounded-3xl p-6 shadow-sm border border-border/50 space-y-4">
-          <div className="flex justify-between items-start">
-            <div>
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">{today}</p>
-              <h2 className="text-2xl font-light mt-1">Welcome back, <span className="font-medium">{firstName}</span></h2>
-              <p className="text-sm text-muted-foreground mt-1">Your calm space awaits 🌙</p>
-            </div>
-            <div className="flex items-center gap-2 bg-secondary/50 px-3 py-1.5 rounded-full border border-border/40">
-              <span className="text-lg">🌿</span>
-              <span className="text-sm font-medium">Calm</span>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-3 gap-3 pt-4 border-t border-border/40">
-            <div className="flex flex-col items-center p-3 bg-background/50 rounded-2xl border border-border/30">
-              <span className="text-xl mb-1">✍️</span>
-              <span className="text-sm font-semibold">12</span>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Journal</span>
-            </div>
-            <div className="flex flex-col items-center p-3 bg-background/50 rounded-2xl border border-border/30">
-              <span className="text-xl mb-1">🧘‍♀️</span>
-              <span className="text-sm font-semibold">5</span>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Reflection</span>
-            </div>
-            <div className="flex flex-col items-center p-3 bg-background/50 rounded-2xl border border-border/30">
-              <span className="text-xl mb-1">✨</span>
-              <span className="text-sm font-semibold">21</span>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-widest">Check-in</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Connect */}
-        <div className="space-y-4">
-          <div className="flex items-end justify-between">
-            <h3 className="font-medium flex items-center gap-2"><Heart size={18} className="text-primary" /> Trusted Circle</h3>
-            <Link href="/discover" className="text-xs text-muted-foreground hover:text-foreground">Discover</Link>
-          </div>
-          
-          <div className="flex gap-4 overflow-x-auto pb-2 hide-scrollbar">
-            {mockConnections.map(conn => (
-              <Link href={`/messages`} key={conn.id} className="flex flex-col items-center gap-2 shrink-0 group">
-                <div className="relative">
-                  <div className="w-16 h-16 rounded-full bg-secondary/80 border border-border flex items-center justify-center shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
-                    {conn.avatar_url ? (
-                      <img src={conn.avatar_url} alt={conn.display_name} className="w-full h-full object-cover" />
-                    ) : (
-                      <span className="text-lg font-light">{conn.display_name[0]}</span>
-                    )}
-                  </div>
-                  {conn.status === 'Active' && (
-                    <span className="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-background rounded-full"></span>
-                  )}
-                </div>
-                <div className="text-center">
-                  <p className="text-xs font-medium">{conn.display_name}</p>
-                  <p className="text-[10px] text-muted-foreground">{conn.status}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
-        </div>
-
-        {/* Wellness Journey & Events */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {/* Wellness Journey */}
-          <div className="bg-card/40 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-border/50 flex flex-col gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
-              <Target size={20} strokeWidth={1.5} />
-            </div>
-            <div>
-              <p className="text-sm font-medium">Gratitude Challenge</p>
-              <p className="text-xs text-muted-foreground mt-1">Day 3 of 7 completed</p>
-            </div>
-            <div className="w-full bg-secondary h-1.5 rounded-full mt-2 overflow-hidden">
-              <div className="bg-primary h-full w-[42%] rounded-full"></div>
-            </div>
-          </div>
-          
-          {/* Upcoming Event */}
-          <div className="bg-card/40 backdrop-blur-md rounded-3xl p-5 shadow-sm border border-border/50 flex flex-col gap-3">
-            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary mb-1">
-              <Calendar size={20} strokeWidth={1.5} />
-            </div>
-            <div>
-              <p className="text-sm font-medium">Mindfulness Session</p>
-              <p className="text-xs text-muted-foreground mt-1">Today at 8:00 PM</p>
-            </div>
-            <button className="text-xs font-medium text-primary mt-auto text-left hover:underline">Join Circle</button>
-          </div>
-        </div>
-
       </div>
-
+      
+      <CreatePostModal circles={circles || []} />
     </div>
   )
 }

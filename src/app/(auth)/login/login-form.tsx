@@ -1,60 +1,76 @@
 'use client'
 
 import { login } from '@/app/auth/actions'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { useLoader } from '@/components/loader-context'
 import { useState } from 'react'
+import { Loader2 } from 'lucide-react'
 
 export function LoginForm({ error }: { error?: string }) {
   const { triggerLoader } = useLoader()
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    // We let the native form submission continue by not calling e.preventDefault()
-    // unless we wanted to handle the fetch ourselves. Next.js server actions
-    // hooked to `action` allow us to do onSubmit + action simultaneously.
     setIsLoading(true)
-    triggerLoader(4000) // Trigger cinematic loader for transition
+    triggerLoader(4000)
   }
 
   return (
-    <form action={login} onSubmit={handleSubmit} className="space-y-6">
+    <form action={login} onSubmit={handleSubmit} className="space-y-6 text-left select-none">
       {error && (
-        <div className="p-3 text-sm text-destructive-foreground bg-destructive/10 rounded-xl border border-destructive/20 font-light">
+        <div className="p-4 text-[11px] font-bold text-error bg-error/5 border border-error/25 rounded-2xl tracking-wide uppercase">
           {error}
         </div>
       )}
       
-      <div className="space-y-5">
+      <div className="space-y-4">
+        {/* Email Field */}
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/80 pl-1">Email</Label>
-          <Input
+          <label htmlFor="email" className="text-[9px] font-bold uppercase tracking-[0.25em] text-outline pl-1">
+            Email Key
+          </label>
+          <input
             id="email"
             name="email"
             type="email"
             required
-            className="h-12 bg-background/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/30 rounded-2xl transition-all font-light px-4"
-            placeholder="you@example.com"
+            disabled={isLoading}
+            className="w-full h-14 bg-background/50 border border-outline-variant/40 focus:border-amber-500/40 focus:ring-4 focus:ring-amber-500/3 rounded-2xl transition-all text-xs font-semibold text-primary px-5 outline-none placeholder:text-outline/50 shadow-xs"
+            placeholder="curator@quiet.network"
           />
         </div>
+
+        {/* Password Field */}
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/80 pl-1">Password</Label>
-          <Input
+          <label htmlFor="password" className="text-[9px] font-bold uppercase tracking-[0.25em] text-outline pl-1">
+            Access Passcode
+          </label>
+          <input
             id="password"
             name="password"
             type="password"
             required
-            className="h-12 bg-background/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/30 rounded-2xl transition-all font-light px-4"
+            disabled={isLoading}
+            className="w-full h-14 bg-background/50 border border-outline-variant/40 focus:border-amber-500/40 focus:ring-4 focus:ring-amber-500/3 rounded-2xl transition-all text-xs font-semibold text-primary px-5 outline-none placeholder:text-outline/50 shadow-xs"
             placeholder="••••••••"
           />
         </div>
       </div>
 
-      <Button disabled={isLoading} type="submit" className="w-full h-12 font-medium rounded-full shadow-md bg-primary hover:bg-primary/90 transition-all text-primary-foreground">
-        {isLoading ? 'Signing In...' : 'Sign In'}
-      </Button>
+      {/* Submit Button */}
+      <button 
+        disabled={isLoading} 
+        type="submit" 
+        className="w-full h-14 mt-6 flex items-center justify-center gap-2 font-label-caps text-[10px] font-bold uppercase tracking-[0.25em] bg-primary text-on-primary hover:bg-primary/95 transition-all rounded-full hover:scale-[1.01] active:scale-[0.98] cursor-pointer shadow-sm disabled:opacity-50"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 size={14} className="animate-spin" />
+            Unlocking Space...
+          </>
+        ) : (
+          'Access Journal'
+        )}
+      </button>
     </form>
   )
 }

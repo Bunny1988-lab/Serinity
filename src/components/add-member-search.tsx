@@ -23,7 +23,6 @@ export function AddMemberSearch({ circleId, excludeIds: initialExcludeIds }: Pro
       if (query.trim().length >= 2) {
         setIsSearching(true)
         const users = await searchUsers(query)
-        // Filter out users already in circle
         const filtered = users.filter((u: any) => !excludeIds.includes(u.id))
         setResults(filtered)
         setIsSearching(false)
@@ -31,7 +30,6 @@ export function AddMemberSearch({ circleId, excludeIds: initialExcludeIds }: Pro
         setResults([])
       }
     }, 300)
-
     return () => clearTimeout(timer)
   }, [query, excludeIds])
 
@@ -46,72 +44,71 @@ export function AddMemberSearch({ circleId, excludeIds: initialExcludeIds }: Pro
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 w-full">
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
         <div className="relative group flex-1">
-          <Search className="absolute left-4.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 transition-colors group-focus-within:text-primary" size={15} />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-foreground/40" size={18} />
           <input 
             type="text" 
             placeholder="Search registered users to add..." 
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="w-full h-11 bg-background/40 backdrop-blur-xs border border-border/40 rounded-full pl-11 pr-5 text-xs font-light outline-none focus:border-primary/50 focus:ring-4 focus:ring-primary/10 focus:bg-background/80 transition-all placeholder:text-muted-foreground/40 shadow-2xs"
+            className="w-full h-12 bg-background border border-border-mint/50 rounded-full pl-11 pr-5 text-[14px] font-medium text-foreground outline-none focus:border-border-mint focus:ring-1 focus:ring-[#BCE3D8] transition-all placeholder:text-foreground/40"
           />
         </div>
         
-        {/* Sync Contacts Button inside adding circles panel */}
         <button
           type="button"
           onClick={() => setImporterOpen(true)}
-          className="h-11 px-5 rounded-full border border-border/10 bg-background/30 backdrop-blur-sm text-xs font-medium text-foreground hover:bg-muted/40 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-1.5 shrink-0 select-none cursor-pointer"
+          className="h-12 px-6 rounded-full border border-border-mint bg-card text-[14px] font-bold text-foreground hover:bg-background transition-all flex items-center justify-center gap-2 shrink-0 select-none shadow-[0_2px_8px_rgba(0,0,0,0.02)] cursor-pointer"
         >
-          <ShieldCheck size={14} className="text-primary" />
+          <ShieldCheck size={18} strokeWidth={2.5} className="text-foreground" />
           Sync Contacts
         </button>
       </div>
 
       {isSearching && (
         <div className="flex items-center justify-center gap-2 py-6">
-          <Loader2 size={14} className="animate-spin text-primary" />
-          <p className="text-xs text-muted-foreground/75 font-light tracking-wide uppercase animate-pulse">Searching the platform...</p>
+          <Loader2 size={16} className="animate-spin text-foreground/60" />
+          <p className="text-[13px] text-foreground/60 font-bold uppercase tracking-wide animate-pulse">Searching...</p>
         </div>
       )}
 
       {!isSearching && query.length >= 2 && results.length === 0 && (
-        <div className="text-center py-6 border border-dashed border-border/30 rounded-2xl">
-          <p className="text-xs text-muted-foreground/60 font-light">No registered users match your search.</p>
+        <div className="text-center py-8 border border-dashed border-border-mint rounded-[20px] bg-background/30">
+          <p className="text-[14px] text-foreground/60 font-medium">No registered users match your search.</p>
         </div>
       )}
 
       {results.length > 0 && (
-        <div className="bg-background/40 backdrop-blur-md border border-border/30 rounded-2xl divide-y divide-border/20 overflow-hidden shadow-2xs animate-in fade-in duration-300">
+        <div className="bg-card border border-border-mint rounded-[20px] divide-y divide-[#BCE3D8]/30 overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
           {results.map((u: any) => {
             const isLoading = loadingUserId === u.id
             return (
-              <div key={u.id} className="flex items-center gap-3.5 p-3.5 hover:bg-muted/15 transition-colors">
-                <div className="w-9 h-9 rounded-full overflow-hidden bg-gradient-to-br from-primary/10 to-primary/0 border border-border/30 flex items-center justify-center shrink-0">
+              <div key={u.id} className="flex items-center gap-4 p-4 hover:bg-background/50 transition-colors">
+                <div className="w-10 h-10 rounded-full overflow-hidden bg-background border border-border-mint flex items-center justify-center shrink-0">
                   {u.avatar_url ? (
                     <img src={u.avatar_url} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <span className="text-sm font-semibold text-primary/60">{u.display_name?.[0]?.toUpperCase()}</span>
+                    <span className="text-[15px] font-bold text-foreground">{u.display_name?.[0]?.toUpperCase()}</span>
                   )}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs font-semibold text-foreground truncate">{u.display_name}</p>
-                  <p className="text-[10px] text-muted-foreground/60 truncate font-light">@{u.username}</p>
+                  <p className="text-[14px] font-bold text-foreground truncate">{u.display_name}</p>
+                  <p className="text-[12px] text-foreground/60 truncate font-medium">@{u.username}</p>
                 </div>
                 <button
                   type="button"
                   onClick={() => handleAdd(u.id)}
                   disabled={isLoading}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-semibold bg-primary text-primary-foreground hover:bg-primary/95 transition-all hover:scale-105 active:scale-95 disabled:opacity-50 select-none cursor-pointer shadow-2xs"
+                  className="flex items-center gap-1.5 px-5 py-2 rounded-full text-[13px] font-bold bg-foreground text-white hover:opacity-90 transition-all disabled:opacity-50 select-none shadow-sm cursor-pointer"
                 >
                   {isLoading ? (
-                    <Loader2 size={12} className="animate-spin" />
+                    <Loader2 size={14} className="animate-spin" />
                   ) : (
                     <>
-                      <Plus size={11} strokeWidth={2.5} />
-                      Add to Circle
+                      <Plus size={14} strokeWidth={2.5} />
+                      Add
                     </>
                   )}
                 </button>

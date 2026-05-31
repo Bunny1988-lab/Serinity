@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react'
 import { createPost } from '@/app/(main)/actions'
-import { Button } from '@/components/ui/button'
 import { ImagePlus, Smile, Send, X, Loader2, Calendar } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -89,6 +88,7 @@ export function PostCreator({ circles = [] }: { circles?: { id: string, name: st
     setUnlockDate('')
     setShowCalendar(false)
     setIsUploading(false)
+    setIsExpanded(false)
   }
 
   function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -102,27 +102,27 @@ export function PostCreator({ circles = [] }: { circles?: { id: string, name: st
   return (
     <motion.div 
       layout
-      className={`bg-background/80 backdrop-blur-md border border-border/50 rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] relative transition-colors ${isExpanded ? 'bg-background' : ''}`}
+      className={`bg-card border border-border-mint rounded-[32px] p-6 shadow-[0_4px_12px_rgba(0,0,0,0.02)] relative transition-colors`}
     >
       {showSafeguard && (
-        <div className="absolute inset-0 z-50 bg-background/90 backdrop-blur-xl rounded-3xl flex flex-col items-center justify-center p-8 text-center border border-primary/20">
-          <p className="font-medium text-xl text-foreground mb-3 tracking-tight">Reflect before sharing?</p>
-          <p className="text-base font-light text-muted-foreground mb-8 max-w-sm leading-relaxed">
+        <div className="absolute inset-0 z-50 bg-background/95 backdrop-blur-sm rounded-[32px] flex flex-col items-center justify-center p-8 text-center border border-border-mint">
+          <p className="font-bold text-[18px] text-foreground mb-2">Reflect before sharing?</p>
+          <p className="text-[14px] font-medium text-foreground/70 mb-8 max-w-sm leading-relaxed">
             This seems emotional. Would you rather save it privately to your journal first, or are you sure you want to share it?
           </p>
-          <div className="flex gap-4">
-            <Button variant="outline" className="rounded-full px-6 border-border/50" onClick={() => setShowSafeguard(false)}>Cancel</Button>
-            <Button className="rounded-full px-6" onClick={executePost}>Share Anyway</Button>
+          <div className="flex gap-3">
+            <button className="px-6 py-2.5 rounded-full border border-border-mint text-[13px] font-bold text-foreground bg-card hover:bg-background transition-all shadow-sm" onClick={() => setShowSafeguard(false)}>Cancel</button>
+            <button className="px-6 py-2.5 rounded-full text-[13px] font-bold text-white bg-foreground hover:bg-foreground/90 transition-all shadow-[0_4px_12px_rgba(0,0,0,0.04)]" onClick={executePost}>Share Anyway</button>
           </div>
         </div>
       )}
 
       <form onSubmit={handleInitialSubmit}>
         <textarea
-          className="w-full bg-transparent resize-none outline-none text-foreground placeholder:text-muted-foreground/60 text-lg font-light transition-all"
+          className="w-full bg-transparent resize-none outline-none text-foreground placeholder:text-foreground/40 text-[16px] font-medium transition-all"
           placeholder="What's on your mind?"
           value={content}
-          rows={isExpanded || content ? 4 : 1}
+          rows={isExpanded || content ? 3 : 1}
           onFocus={() => setIsExpanded(true)}
           onChange={(e) => setContent(e.target.value)}
           disabled={isUploading}
@@ -138,22 +138,22 @@ export function PostCreator({ circles = [] }: { circles?: { id: string, name: st
             >
               {file && (
                 <div className="relative inline-block mt-4 mb-4">
-                  <img src={URL.createObjectURL(file)} alt="Upload preview" className="max-h-48 rounded-2xl object-cover shadow-sm" />
+                  <img src={URL.createObjectURL(file)} alt="Upload preview" className="max-h-48 rounded-[20px] object-cover border border-border-mint" />
                   <button 
                     type="button" 
                     onClick={() => setFile(null)}
-                    className="absolute -top-3 -right-3 bg-background border border-border/50 text-foreground rounded-full p-1.5 shadow-sm hover:bg-muted transition-colors"
+                    className="absolute -top-3 -right-3 bg-card border border-border-mint text-foreground rounded-full p-1.5 shadow-sm hover:bg-background transition-colors"
                   >
-                    <X size={14} />
+                    <X size={14} strokeWidth={2.5} />
                   </button>
                 </div>
               )}
 
               {mood && (
                 <div className="flex items-center gap-2 mt-2 mb-4">
-                  <span className="text-xs font-medium uppercase tracking-widest bg-primary/5 text-primary px-4 py-1.5 rounded-full flex items-center gap-2 border border-primary/10">
+                  <span className="text-[11px] font-bold uppercase tracking-widest bg-background text-foreground px-4 py-1.5 rounded-full flex items-center gap-2 border border-border-mint">
                     Feeling {mood}
-                    <button type="button" onClick={() => setMood('')} className="hover:text-primary/50 transition-colors"><X size={14}/></button>
+                    <button type="button" onClick={() => setMood('')} className="hover:text-red-500 transition-colors"><X size={14} strokeWidth={2.5} /></button>
                   </span>
                 </div>
               )}
@@ -162,14 +162,14 @@ export function PostCreator({ circles = [] }: { circles?: { id: string, name: st
                 <motion.div 
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex flex-wrap gap-2 mt-2 mb-4 p-4 bg-muted/20 rounded-2xl border border-border/40"
+                  className="flex flex-wrap gap-2 mt-2 mb-4 p-4 bg-background/50 rounded-[24px] border border-border-mint"
                 >
                   {MOODS.map(m => (
                     <button 
                       key={m} 
                       type="button"
                       onClick={() => { setMood(m); setShowMoods(false) }}
-                      className="text-sm font-light px-4 py-1.5 rounded-full border border-border/50 hover:bg-primary/10 hover:text-primary transition-colors"
+                      className="text-[13px] font-bold px-4 py-2 rounded-full border border-border-mint bg-card text-foreground hover:bg-foreground hover:text-white hover:border-foreground transition-all shadow-sm"
                     >
                       {m}
                     </button>
@@ -179,10 +179,10 @@ export function PostCreator({ circles = [] }: { circles?: { id: string, name: st
 
               {unlockDate && (
                  <div className="flex items-center gap-2 mt-2 mb-4">
-                  <span className="text-xs font-medium bg-amber-500/5 border border-amber-500/20 text-amber-600 px-4 py-1.5 rounded-full flex items-center gap-2">
-                    <Calendar size={14} />
-                    Unlocks on {new Date(unlockDate).toLocaleDateString()}
-                    <button type="button" onClick={() => setUnlockDate('')} className="hover:text-amber-600/50 transition-colors"><X size={14}/></button>
+                  <span className="text-[11px] font-bold bg-[#FFF9E6] border border-[#FFE082] text-[#D4AF37] px-4 py-1.5 rounded-full flex items-center gap-2 uppercase tracking-widest">
+                    <Calendar size={14} strokeWidth={2.5} />
+                    Unlocks {new Date(unlockDate).toLocaleDateString()}
+                    <button type="button" onClick={() => setUnlockDate('')} className="hover:text-red-500 transition-colors"><X size={14} strokeWidth={2.5} /></button>
                   </span>
                 </div>
               )}
@@ -197,14 +197,14 @@ export function PostCreator({ circles = [] }: { circles?: { id: string, name: st
                     type="date" 
                     value={unlockDate}
                     onChange={(e) => { setUnlockDate(e.target.value); setShowCalendar(false) }}
-                    className="bg-background border border-border/50 shadow-sm rounded-xl px-4 py-2.5 text-sm outline-none text-muted-foreground"
+                    className="bg-card border border-border-mint shadow-sm rounded-full px-5 py-2.5 text-[14px] font-bold text-foreground outline-none"
                     min={new Date().toISOString().split('T')[0]}
                   />
                 </motion.div>
               )}
               
-              <div className="flex items-center justify-between pt-6 mt-2 border-t border-border/30">
-                <div className="flex items-center gap-1">
+              <div className="flex flex-wrap gap-4 items-center justify-between pt-6 mt-2 border-t border-border-mint/50">
+                <div className="flex items-center gap-2">
                   <input 
                     type="file" 
                     accept="image/*" 
@@ -215,33 +215,33 @@ export function PostCreator({ circles = [] }: { circles?: { id: string, name: st
                   <button 
                     type="button" 
                     onClick={() => fileInputRef.current?.click()}
-                    className="p-2.5 text-muted-foreground hover:text-primary hover:bg-primary/5 transition-colors rounded-full"
+                    className="p-2.5 text-foreground/50 hover:text-foreground hover:bg-background transition-colors rounded-full"
                     title="Add Image"
                   >
-                    <ImagePlus size={20} strokeWidth={1.5} />
+                    <ImagePlus size={20} strokeWidth={2} />
                   </button>
                   <button 
                     type="button" 
                     onClick={() => setShowMoods(!showMoods)}
-                    className={`p-2.5 transition-colors rounded-full ${showMoods ? 'text-primary bg-primary/5' : 'text-muted-foreground hover:text-primary hover:bg-primary/5'}`}
+                    className={`p-2.5 transition-colors rounded-full ${showMoods ? 'text-foreground bg-background' : 'text-foreground/50 hover:text-foreground hover:bg-background'}`}
                     title="Set Mood"
                   >
-                    <Smile size={20} strokeWidth={1.5} />
+                    <Smile size={20} strokeWidth={2} />
                   </button>
                   <button 
                     type="button" 
                     onClick={() => setShowCalendar(!showCalendar)}
-                    className={`p-2.5 transition-colors rounded-full ${showCalendar || unlockDate ? 'text-amber-500 bg-amber-500/5' : 'text-muted-foreground hover:text-amber-500 hover:bg-amber-500/5'}`}
+                    className={`p-2.5 transition-colors rounded-full ${showCalendar || unlockDate ? 'text-[#D4AF37] bg-[#FFF9E6]' : 'text-foreground/50 hover:text-[#D4AF37] hover:bg-[#FFF9E6]'}`}
                     title="Time Capsule"
                   >
-                    <Calendar size={20} strokeWidth={1.5} />
+                    <Calendar size={20} strokeWidth={2} />
                   </button>
                   
-                  <div className="relative flex items-center ml-2 border-l border-border/50 pl-4">
+                  <div className="relative flex items-center ml-2 border-l border-border-mint pl-4">
                     <select 
                       value={visibility}
                       onChange={(e) => setVisibility(e.target.value)}
-                      className="appearance-none bg-transparent text-sm font-medium text-muted-foreground outline-none cursor-pointer hover:text-foreground transition-colors pr-4"
+                      className="appearance-none bg-transparent text-[13px] font-bold text-foreground/60 outline-none cursor-pointer hover:text-foreground transition-colors pr-2"
                     >
                       <option value="all_friends">All Friends</option>
                       <option value="only_me">Only Me</option>
@@ -261,21 +261,19 @@ export function PostCreator({ circles = [] }: { circles?: { id: string, name: st
                         setShowMoods(false);
                         setShowCalendar(false);
                       }}
-                      className="text-sm font-medium text-muted-foreground hover:text-foreground px-3 py-2 rounded-full transition-colors"
+                      className="text-[13px] font-bold text-foreground/60 hover:text-foreground px-4 py-2 rounded-full transition-colors"
                     >
                       Cancel
                     </button>
                   )}
-                  <div className="flex items-center gap-2">
-                    <Button 
-                      type="submit" 
-                      disabled={(!content.trim() && !file) || isUploading || isValidating}
-                      className="rounded-full px-6 gap-2"
-                    >
-                      {(isUploading || isValidating) ? <Loader2 size={16} className="animate-spin" /> : <Send size={16} />}
-                      Share
-                    </Button>
-                  </div>
+                  <button 
+                    type="submit" 
+                    disabled={(!content.trim() && !file) || isUploading || isValidating}
+                    className="h-10 px-6 flex items-center gap-2 rounded-full font-bold text-[13px] shadow-sm bg-foreground hover:bg-foreground/90 transition-all text-white disabled:opacity-50 select-none cursor-pointer"
+                  >
+                    {(isUploading || isValidating) ? <Loader2 size={16} className="animate-spin" /> : <Send size={14} strokeWidth={2.5} />}
+                    Share
+                  </button>
                 </div>
               </div>
             </motion.div>

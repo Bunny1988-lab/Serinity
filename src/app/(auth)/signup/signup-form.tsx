@@ -1,11 +1,9 @@
 'use client'
 
 import { signup } from '@/app/auth/actions'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { useLoader } from '@/components/loader-context'
 import { useState } from 'react'
+import { Loader2 } from 'lucide-react'
 
 export function SignupForm({ error }: { error?: string }) {
   const { triggerLoader } = useLoader()
@@ -19,66 +17,77 @@ export function SignupForm({ error }: { error?: string }) {
   return (
     <form action={signup} onSubmit={handleSubmit} className="space-y-6">
       {error && (
-        <div className="p-3 text-sm text-destructive-foreground bg-destructive/10 rounded-xl border border-destructive/20 font-light">
+        <div className="p-4 text-[13px] font-bold text-red-600 bg-red-50 rounded-[16px] border border-red-100">
           {error}
         </div>
       )}
       
-      <div className="space-y-5">
+      <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email" className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/80 pl-1">Email</Label>
-          <Input
+          <label htmlFor="email" className="text-xs font-bold uppercase tracking-widest text-secondary pl-1">Email</label>
+          <input
             id="email"
             name="email"
             type="email"
             required
-            className="h-12 bg-background/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/30 rounded-2xl transition-all font-light px-4"
+            className="w-full h-14 bg-surface-container-lowest border-[0.5px] border-outline-variant focus:border-primary focus:ring-0 rounded-none transition-colors text-sm font-medium text-primary px-4 outline-none placeholder:text-on-surface-variant shadow-sm"
             placeholder="you@example.com"
           />
         </div>
         
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-3">
           <div className="space-y-2">
-            <Label htmlFor="username" className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/80 pl-1">Username</Label>
-            <Input
+            <label htmlFor="username" className="text-xs font-bold uppercase tracking-widest text-secondary pl-1">Username</label>
+            <input
               id="username"
               name="username"
               type="text"
               required
-              className="h-12 bg-background/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/30 rounded-2xl transition-all font-light px-4"
+              className="w-full h-14 bg-surface-container-lowest border-[0.5px] border-outline-variant focus:border-primary focus:ring-0 rounded-none transition-colors text-sm font-medium text-primary px-4 outline-none placeholder:text-on-surface-variant shadow-sm"
               placeholder="johndoe"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="display_name" className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/80 pl-1">Display Name</Label>
-            <Input
+            <label htmlFor="display_name" className="text-xs font-bold uppercase tracking-widest text-secondary pl-1">Display Name</label>
+            <input
               id="display_name"
               name="display_name"
               type="text"
               required
-              className="h-12 bg-background/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/30 rounded-2xl transition-all font-light px-4"
+              className="w-full h-14 bg-surface-container-lowest border-[0.5px] border-outline-variant focus:border-primary focus:ring-0 rounded-none transition-colors text-sm font-medium text-primary px-4 outline-none placeholder:text-on-surface-variant shadow-sm"
               placeholder="John Doe"
             />
           </div>
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="password" className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/80 pl-1">Password</Label>
-          <Input
+          <label htmlFor="password" className="text-xs font-bold uppercase tracking-widest text-secondary pl-1">Password</label>
+          <input
             id="password"
             name="password"
             type="password"
             required
             minLength={6}
-            className="h-12 bg-background/50 border-border/50 focus-visible:ring-1 focus-visible:ring-primary/30 rounded-2xl transition-all font-light px-4"
+            className="w-full h-14 bg-surface-container-lowest border-[0.5px] border-outline-variant focus:border-primary focus:ring-0 rounded-none transition-colors text-sm font-medium text-primary px-4 outline-none placeholder:text-on-surface-variant shadow-sm"
             placeholder="••••••••"
           />
         </div>
       </div>
 
-      <Button disabled={isLoading} type="submit" className="w-full h-12 font-medium rounded-full shadow-md bg-primary hover:bg-primary/90 transition-all text-primary-foreground">
-        {isLoading ? 'Creating Space...' : 'Create Account'}
-      </Button>
+      <button 
+        disabled={isLoading} 
+        type="submit" 
+        className="w-full h-14 mt-4 flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-[0.2em] shadow-sm bg-primary hover:bg-secondary transition-colors text-on-primary disabled:opacity-50 cursor-pointer"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 size={16} className="animate-spin" />
+            Creating Space...
+          </>
+        ) : (
+          'Create Account'
+        )}
+      </button>
     </form>
   )
 }

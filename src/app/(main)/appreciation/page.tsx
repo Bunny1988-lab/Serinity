@@ -50,66 +50,66 @@ export default async function AppreciationPage() {
   ].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
   const REACTION_ICONS: Record<string, any> = {
-    'hear_you': <Heart className="text-blue-500" fill="currentColor" size={24} />,
-    'appreciate': <Sparkles className="text-emerald-500" size={24} />,
-    'smile': <Sun className="text-amber-500" size={24} />
+    'hear_you': <Heart className="text-[#3b82f6]" fill="currentColor" size={24} />,
+    'appreciate': <Sparkles className="text-[#10b981]" size={24} />,
+    'smile': <Sun className="text-[#f59e0b]" size={24} />
   }
 
   return (
-    <div className="pb-20 md:pb-0 min-h-screen">
-      <header className="sticky top-0 z-10 bg-background/80 px-4 py-4 backdrop-blur-xl border-b border-border/50">
-        <h1 className="text-xl font-light tracking-tight flex items-center gap-2">
-          <Sparkles size={20} className="text-amber-500" />
+    <div className="w-full flex flex-col min-h-screen bg-background pb-32">
+      <header className="w-full flex items-center px-6 pt-12 pb-4 max-w-[800px] mx-auto bg-transparent relative z-20">
+        <h1 className="text-[17px] font-bold text-foreground flex items-center gap-2">
+          <Sparkles size={20} className="text-[#D4AF37]" />
           Appreciation Wall
         </h1>
       </header>
       
-      <div className="p-4 space-y-8 max-w-xl mx-auto">
-        <div className="bg-amber-500/5 border border-amber-500/10 rounded-2xl p-6 text-center space-y-2 relative overflow-hidden">
-          <Heart className="absolute -bottom-4 -left-4 opacity-5 text-amber-500" size={100} />
-          <h2 className="text-lg font-medium text-foreground relative z-10">Private Positivity Archive</h2>
-          <p className="text-sm font-light text-muted-foreground relative z-10">
+      <main className="px-6 space-y-6 max-w-[800px] mx-auto w-full">
+        <div className="bg-[#FFFCF5] border border-[#D4AF37]/40 rounded-[24px] p-6 text-center space-y-2 relative overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
+          <Heart className="absolute -bottom-4 -left-4 opacity-10 text-[#D4AF37]" size={100} />
+          <h2 className="text-[16px] font-bold text-foreground relative z-10">Private Positivity Archive</h2>
+          <p className="text-[13px] font-medium text-foreground/70 relative z-10">
             A quiet space to see the kindness you've received. No public counts, no comparison. Just good energy.
           </p>
         </div>
 
         <div className="columns-1 sm:columns-2 gap-4 space-y-4">
           {allPositivity.length === 0 ? (
-            <div className="text-center text-muted-foreground py-10 col-span-full">
-              <p className="text-sm font-light">Share your thoughts to receive kindness from your circles.</p>
+            <div className="text-center py-10 col-span-full">
+              <p className="text-[14px] text-foreground/60 font-medium">Share your thoughts to receive kindness from your circles.</p>
             </div>
           ) : (
             allPositivity.map((item, i) => (
-              <div key={i} className="bg-background/40 backdrop-blur-sm border border-border/50 rounded-2xl p-5 break-inside-avoid shadow-sm hover:shadow-md transition-shadow">
+              <div key={i} className="bg-card border border-border-mint rounded-[24px] p-5 break-inside-avoid shadow-[0_4px_12px_rgba(0,0,0,0.02)] transition-shadow">
                 {item.kind === 'reaction' ? (
                   <div className="flex flex-col items-center justify-center py-4 space-y-3">
                     {REACTION_ICONS[item.type] || <Heart className="text-rose-500" fill="currentColor" size={32} />}
-                    <p className="text-sm text-center">
-                      <span className="font-medium text-foreground">{item.user?.display_name}</span>
-                      <span className="text-muted-foreground"> reacted to your post</span>
+                    <p className="text-[13px] text-center">
+                      <span className="font-bold text-foreground">{item.user?.display_name}</span>
+                      <span className="text-foreground/70 font-medium"> reacted to your post</span>
                     </p>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xs font-medium">
+                      <div className="w-8 h-8 rounded-full bg-background border border-border-mint flex items-center justify-center text-foreground text-[13px] font-bold">
                         {item.author?.display_name?.[0]}
                       </div>
-                      <p className="text-sm font-medium text-foreground">{item.author?.display_name}</p>
+                      <p className="text-[14px] font-bold text-foreground">{item.author?.display_name}</p>
                     </div>
-                    <p className="text-sm text-foreground/80 font-light leading-relaxed">
+                    <p className="text-[14px] text-foreground font-medium leading-relaxed bg-background/30 p-4 rounded-[16px]">
                       "{item.content}"
                     </p>
                   </div>
                 )}
-                <p className="text-xs text-muted-foreground/50 mt-4 text-right">
+                <p className="text-[11px] font-bold text-foreground/40 mt-4 text-right uppercase tracking-widest">
                   {new Date(item.created_at).toLocaleDateString()}
                 </p>
               </div>
             ))
           )}
         </div>
-      </div>
+      </main>
     </div>
   )
 }

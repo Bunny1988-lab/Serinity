@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Discover Friends - Digital Sanctuary</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Geist:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-tertiary": "#ffffff",
+                      "surface-bright": "#faf9f7",
+                      "inverse-on-surface": "#f1f1ef",
+                      "on-background": "#1a1c1b",
+                      "error": "#ba1a1a",
+                      "on-tertiary-fixed-variant": "#394955",
+                      "surface": "#faf9f7",
+                      "secondary-container": "#e6e2dc",
+                      "on-primary": "#ffffff",
+                      "on-secondary-fixed": "#1c1c18",
+                      "on-tertiary-container": "#fcfcff",
+                      "charcoal": "#1A1C1E",
+                      "primary-fixed-dim": "#bbcbb9",
+                      "inverse-surface": "#2f3130",
+                      "on-secondary": "#ffffff",
+                      "secondary": "#605e5a",
+                      "on-secondary-container": "#666460",
+                      "secondary-fixed": "#e6e2dc",
+                      "surface-container-highest": "#e3e2e0",
+                      "sage-muted": "#7D8C7C",
+                      "outline-variant": "#c4c8c0",
+                      "on-primary-fixed-variant": "#3c4a3d",
+                      "ivory": "#FCFAF7",
+                      "surface-container": "#efeeec",
+                      "on-secondary-fixed-variant": "#484742",
+                      "primary": "#516051",
+                      "on-error-container": "#93000a",
+                      "outline": "#747872",
+                      "on-error": "#ffffff",
+                      "primary-container": "#6a7869",
+                      "mist": "#EDF0F2",
+                      "secondary-fixed-dim": "#c9c6c0",
+                      "clay": "#D9D2C9",
+                      "tertiary-fixed-dim": "#b8c8d8",
+                      "tertiary-container": "#677684",
+                      "on-tertiary-fixed": "#0d1d28",
+                      "surface-variant": "#e3e2e0",
+                      "on-primary-fixed": "#121e13",
+                      "surface-container-lowest": "#ffffff",
+                      "graphite": "#2D3033",
+                      "tertiary-fixed": "#d4e4f4",
+                      "on-surface": "#1a1c1b",
+                      "lavender-hush": "#E6E6FA",
+                      "surface-tint": "#546254",
+                      "error-container": "#ffdad6",
+                      "primary-fixed": "#d7e7d4",
+                      "tertiary": "#4e5e6b",
+                      "surface-dim": "#dadad8",
+                      "on-primary-container": "#f7fff3",
+                      "background": "#faf9f7",
+                      "surface-container-low": "#f4f3f1",
+                      "on-surface-variant": "#434842",
+                      "surface-container-high": "#e9e8e6",
+                      "inverse-primary": "#bbcbb9"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "section-gap": "64px",
+                      "gutter": "24px",
+                      "container-margin-mobile": "24px",
+                      "container-margin-desktop": "120px",
+                      "container-margin-tablet": "40px",
+                      "unit": "8px"
+              },
+              "fontFamily": {
+                      "headline-md": ["Geist"],
+                      "headline-lg": ["Geist"],
+                      "body-md": ["Inter"],
+                      "body-lg": ["Inter"],
+                      "label-sm": ["Inter"],
+                      "headline-lg-mobile": ["Geist"],
+                      "label-md": ["Inter"],
+                      "display-lg": ["Geist"]
+              },
+              "fontSize": {
+                      "headline-md": ["24px", {"lineHeight": "32px", "fontWeight": "400"}],
+                      "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "400"}],
+                      "body-md": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                      "body-lg": ["18px", {"lineHeight": "28px", "fontWeight": "400"}],
+                      "label-sm": ["12px", {"lineHeight": "16px", "letterSpacing": "0.04em", "fontWeight": "500"}],
+                      "headline-lg-mobile": ["28px", {"lineHeight": "36px", "fontWeight": "400"}],
+                      "label-md": ["14px", {"lineHeight": "20px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                      "display-lg": ["48px", {"lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "300"}]
+              }
+            },
+          },
+        }
+      </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .glass-card { background: rgba(255, 255, 255, 0.4); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        .soft-mint-bg { background: radial-gradient(circle at top right, #e0f2f1, #f4f9f7); min-height: 100vh; }
+        .breathing-avatar { animation: breathe 8s ease-in-out infinite; }
+        @keyframes breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="soft-mint-bg text-on-surface font-body-md overflow-x-hidden">
+<!-- Top AppBar -->
+<nav class="fixed top-0 w-full z-50 bg-ivory/80 backdrop-blur-xl border-b border-clay/20 h-16 flex justify-between items-center px-6 max-w-screen-md mx-auto left-0 right-0">
+<button class="flex items-center justify-center w-10 h-10 hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined text-primary">arrow_back</span>
+</button>
+<h1 class="font-headline-md text-headline-md text-primary">Discover Friends</h1>
+<button class="flex items-center justify-center w-10 h-10 hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined text-primary">settings</span>
+</button>
+</nav>
+<main class="pt-24 pb-32 px-6 max-w-screen-md mx-auto space-y-10">
+<!-- Search Bar -->
+<section class="relative">
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="w-full bg-surface-container-lowest border-none rounded-full py-4 pl-12 pr-6 shadow-[0_10px_40px_rgba(0,0,0,0.04)] focus:ring-1 focus:ring-sage-muted/30 transition-all placeholder:text-outline text-body-md" placeholder="Search" type="text"/>
+</div>
+</section>
+<!-- Suggested Matches -->
+<section>
+<div class="mb-6">
+<h2 class="font-headline-md text-headline-md text-primary font-bold">Suggested Matches</h2>
+<p class="text-secondary font-body-md">Connections for shared growth</p>
+</div>
+<div class="flex overflow-x-auto no-scrollbar gap-4 pb-4 -mx-2 px-2">
+<!-- Sarah M Card -->
+<div class="min-w-[160px] glass-card p-6 rounded-3xl flex flex-col items-center text-center space-y-3 transition-transform hover:scale-[1.02]">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-sage-muted/20 breathing-avatar">
+<img class="w-full h-full object-cover" data-alt="A serene portrait of a young woman named Sarah with a gentle smile, set against a soft, natural background with warm morning light. The visual style is premium minimalism with a soft-focus depth of field, utilizing a palette of muted earth tones and ivory. The mood is calm, empathetic, and intentional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7mf30xbwqhJd0t2WSA8Mregan2dJFwhxFirGKcLWHx6YvMRIhwvUPsnOdudzgbtTaKdV17BrdsNx1SMnpsuEkDMPIJZyw3-_4_8jcTKaguRqUXGEJ-hnnKZOc72BfwOxOCO9WiWLmE5smvPD5C_DFsG4TfQlEMeck30Ta4Iqz7RopZtYnO1jjFwJtgjBhJbZn5GVFj6GFDcbAxfaIY9o3uExJ9s6HQEHQWLZL3v2NdMvxo-Oz7j-DY8MHFMJKgqD5AyyUa7SyHsPu"/>
+</div>
+<span class="font-bold text-on-surface">Sarah M.</span>
+<span class="text-label-sm font-label-sm bg-sage-muted/10 text-primary px-3 py-1 rounded-full">Mindful</span>
+<button class="w-full border border-sage-muted text-sage-muted py-2 rounded-xl font-label-md hover:bg-sage-muted hover:text-white transition-colors">Connect</button>
+</div>
+<!-- Jumy B Card -->
+<div class="min-w-[160px] glass-card p-6 rounded-3xl flex flex-col items-center text-center space-y-3 transition-transform hover:scale-[1.02]">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-sage-muted/20">
+<img class="w-full h-full object-cover" data-alt="A portrait of a thoughtful man named Jumy, looking slightly away from the camera with a peaceful expression. He is photographed in a high-end wellness environment with soft, diffused architectural lighting. The color palette features sage greens and mist greys, maintaining a quiet, professional, and minimalist aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDctGu3HEFUxn80ydTu2NkU5XRCI12Be_IGw9z9mMxPMePXGaU1jQ8TyDhENMqq7tmX8Z9nfff96jnow7xw1o8qis4snftr9VVtNG8hItUx2JsIageG4R8Sjd7M_ppi5eH5-Lvcplbn7x11xmrm1TZ6zCGhhXrsLbI_m7aL50ZQm9H-nh3L5wCzJsKryulMORZgA38cSQnw1wxd7m0gZ3yHU4Z6OQfzew4L9gJ7fmVmym724ejmFCu9IKBodtULOkuX57Bk8o_aR08X"/>
+</div>
+<span class="font-bold text-on-surface">Jumy B.</span>
+<span class="text-label-sm font-label-sm bg-lavender-hush text-primary px-3 py-1 rounded-full">Journaler</span>
+<button class="w-full border border-sage-muted text-sage-muted py-2 rounded-xl font-label-md hover:bg-sage-muted hover:text-white transition-colors">Connect</button>
+</div>
+<!-- Alex K Card -->
+<div class="min-w-[160px] glass-card p-6 rounded-3xl flex flex-col items-center text-center space-y-3 transition-transform hover:scale-[1.02]">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-sage-muted/20">
+<img class="w-full h-full object-cover" data-alt="A high-quality close-up portrait of a person with a serene and focused gaze. The lighting is soft and natural, emphasizing a minimalist and peaceful atmosphere. The aesthetic follows a digital sanctuary theme with ivory, sage, and mist tones. The overall mood is intentional and empathetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCzNqZqt_7rEbcf6HOuXEPY2ixRZjkg6WRZn__jRtagTOnLriIilA7vlyYXUDINl-7kFmavqxlcqig6TVJnERswITmrzjdX35IVPGob0K4I8tww7wfrt6cvkkMAgq37PEPg9LbNw0kddNauduPLhCraW2A_RrUP1F7jzXDJxTTVKoXxRfn2lJSyXkAT9J7fQbB_Lkdy1E1Nxp-zWtkAEZZRLWBTMrNokSZ38yQPDG0dzPew2mCrm4BxW9oErfPANn0AT0dVhvzZtpwv"/>
+</div>
+<span class="font-bold text-on-surface">Alex K.</span>
+<span class="text-label-sm font-label-sm bg-clay/20 text-primary px-3 py-1 rounded-full">Healer</span>
+<button class="w-full border border-sage-muted text-sage-muted py-2 rounded-xl font-label-md hover:bg-sage-muted hover:text-white transition-colors">Connect</button>
+</div>
+</div>
+</section>
+<!-- Growth Interests -->
+<section>
+<div class="mb-6">
+<h2 class="font-headline-md text-headline-md text-primary font-bold">Growth Interests</h2>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="col-span-1 glass-card p-5 rounded-[2rem] space-y-2 hover:bg-white/60 transition-colors cursor-pointer">
+<div class="text-2xl">🌳</div>
+<h3 class="font-bold text-primary text-body-lg">Mindful Living 🍃</h3>
+<p class="text-label-sm text-secondary leading-relaxed">Popular interest groups, Mindful Living</p>
+</div>
+<div class="col-span-1 glass-card p-5 rounded-[2rem] space-y-2 hover:bg-white/60 transition-colors cursor-pointer">
+<div class="text-2xl">✍️</div>
+<h3 class="font-bold text-primary text-body-lg leading-tight">Collaborative Journaling</h3>
+<p class="text-label-sm text-secondary leading-relaxed">Popular interest groups</p>
+</div>
+<div class="col-span-2 glass-card p-6 rounded-[2rem] flex flex-col justify-center space-y-2 hover:bg-white/60 transition-colors cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="text-2xl">📈</div>
+<h3 class="font-bold text-primary text-headline-md">Growth Strategy</h3>
+</div>
+<p class="text-label-sm text-secondary">Popular interest groups, Growth, Strategy, Collaborative...</p>
+</div>
+</div>
+</section>
+<!-- Shared Reflections -->
+<section class="pb-8">
+<div class="mb-6">
+<h2 class="font-headline-md text-headline-md text-primary font-bold">Shared Reflections</h2>
+</div>
+<div class="space-y-4">
+<!-- Card 1 -->
+<div class="glass-card p-5 rounded-3xl flex items-center gap-4 transition-all hover:shadow-sm">
+<img class="w-14 h-14 rounded-full object-cover" data-alt="A soft, artistically lit portrait of a woman reflecting in a quiet, minimalist space. High-end aesthetic with frosted glass elements and a soothing color palette of soft ivory and sage. The character looks thoughtful and serene, perfectly embodying a digital sanctuary mood." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBGJ_5ajlqM1DDmFENkVYS61KXv7y4m-9u0viBSwKYKThva19M-F7SWiIbsxujrS7IB3bFLju4IKq6go6bwnijE03ub9JIx0E2kDUqH12pSyYQ0btAqf_DHBElJjNXWsFNwcWKuNOAlg6sFSTwffWC3gJnLedlyo6ol2vAEF8Oarf5xytofXb0h2x4Oq5B1DxYua49gG5Vryd1DZj-HTSrp-dura2tZrbALpVnYhI3if45RQGHmJxKP477mrJH_kS0i-Z8BmBnBTGvx"/>
+<div class="flex-1">
+<h4 class="font-bold text-on-surface">Shared Reflections 📖</h4>
+<div class="flex gap-2 mt-2">
+<button class="flex-1 py-2 text-label-md font-label-md border border-clay/30 rounded-xl hover:bg-mist transition-colors">💬 Say Hi</button>
+<button class="flex-1 py-2 text-label-md font-label-md bg-sage-muted text-white rounded-xl hover:opacity-90 transition-opacity">Connect</button>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="glass-card p-5 rounded-3xl flex items-center gap-4 transition-all hover:shadow-sm">
+<img class="w-14 h-14 rounded-full object-cover" data-alt="A portrait of a male professional in a serene, modern setting. The lighting is balanced and soft, creating an atmosphere of calm confidence and collaboration. Visual tones include charcoal, ivory, and soft greens, adhering to a premium minimalist design philosophy." src="https://lh3.googleusercontent.com/aida-public/AB6AXuCrJrCu-SQZPhagPc_8A0lXlMkZMqiXmGWCo0Fo0otve7KloCErZ2EswpOc-hTyPILCoL0NNN0s6YZim-e0vQlmbs-xZ-QRH162Q5LxvF80L7NHzt1Bs7mrPQUeGV1DlrdKfA8oLBoOCqMArUKKdOLKBYySm3BAmWYa2be-sDkLeRtpbVL6j_H-_fGzI7xJYxTMapZIrmoo4C_wtczL_d2welAi1G7gluyqoa3ucLFeCUSUHniuowR6hwm84NF7zrw3LGIJn4EM_X75"/>
+<div class="flex-1">
+<h4 class="font-bold text-on-surface">Team Perspective 🤝</h4>
+<div class="flex gap-2 mt-2">
+<button class="flex-1 py-2 text-label-md font-label-md border border-clay/30 rounded-xl hover:bg-mist transition-colors">💬 Say Hi</button>
+<button class="flex-1 py-2 text-label-md font-label-md bg-sage-muted text-white rounded-xl hover:opacity-90 transition-opacity">Connect</button>
+</div>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 bg-ivory/80 backdrop-blur-xl border-t border-clay/10 h-20 px-4 pb-safe flex justify-around items-center max-w-screen-md mx-auto right-0">
+<!-- Sanctuary -->
+<a class="flex flex-col items-center justify-center text-secondary px-3 py-1 hover:bg-mist/50 transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1">spa</span>
+<span class="text-label-sm font-label-sm">Sanctuary</span>
+</a>
+<!-- Journal -->
+<a class="flex flex-col items-center justify-center text-secondary px-3 py-1 hover:bg-mist/50 transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1">auto_stories</span>
+<span class="text-label-sm font-label-sm">Journal</span>
+</a>
+<!-- Discover (Active) -->
+<a class="flex flex-col items-center justify-center bg-sage-muted/10 text-primary rounded-xl px-4 py-1.5 border-t-2 border-primary scale-105 transition-all" href="#">
+<span class="material-symbols-outlined mb-0.5" style="font-variation-settings: 'FILL' 1;">explore</span>
+<span class="text-label-sm font-label-sm font-bold">Discover</span>
+</a>
+<!-- Journey -->
+<a class="flex flex-col items-center justify-center text-secondary px-3 py-1 hover:bg-mist/50 transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1">map</span>
+<span class="text-label-sm font-label-sm">Journey</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-secondary px-3 py-1 hover:bg-mist/50 transition-all rounded-xl" href="#">
+<span class="material-symbols-outlined mb-1">person</span>
+<span class="text-label-sm font-label-sm">Profile</span>
+</a>
+</nav>
+<script>
+        // Simple micro-interaction for interest cards
+        document.querySelectorAll('.glass-card').forEach(card => {
+            card.addEventListener('mousedown', () => {
+                card.style.transform = 'scale(0.98)';
+            });
+            card.addEventListener('mouseup', () => {
+                card.style.transform = 'scale(1.02)';
+                setTimeout(() => {
+                    card.style.transform = 'scale(1)';
+                }, 150);
+            });
+        });
+    </script>
+</body></html>

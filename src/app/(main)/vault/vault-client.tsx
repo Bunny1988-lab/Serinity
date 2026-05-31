@@ -5,9 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useVault } from '@/components/vault-context'
 import { generateSalt, deriveKey, encryptText, decryptText, generateMasterKey, wrapMasterKey, unwrapMasterKey } from '@/lib/crypto'
 import { setupVault, getVaultItems, addVaultItem, resetVaultPin, deleteVaultItem } from './actions'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { LockKeyhole, Unlock, Plus, FileText, Lock, X, Trash2 } from 'lucide-react'
+import { LockKeyhole, Unlock, Plus, FileText, Lock, X, Trash2, Loader2 } from 'lucide-react'
 import { ConfirmDialog, Toast } from '@/components/ui/dialog'
 
 const CANARY_MESSAGE = "SERENITY_VAULT_CANARY_OK"
@@ -246,143 +244,151 @@ export function VaultClient({
     return (
       <motion.div 
         initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-        className="w-full max-w-sm mx-auto mt-24 space-y-8 bg-background/50 p-8 rounded-3xl border border-border/50 shadow-2xl backdrop-blur-md text-center relative overflow-hidden"
+        className="w-full max-w-sm mx-auto mt-16 space-y-8 bg-card p-8 rounded-[32px] border border-border-mint shadow-[0_8px_32px_rgba(0,0,0,0.04)] text-center relative overflow-hidden"
       >
         {isRecoveryMode && (
-          <button onClick={() => setIsRecoveryMode(false)} className="absolute top-6 left-6 text-muted-foreground hover:text-foreground">
-            <X size={20} />
+          <button onClick={() => setIsRecoveryMode(false)} className="absolute top-6 left-6 text-foreground/50 hover:text-foreground transition-colors rounded-full hover:bg-background p-2">
+            <X size={20} strokeWidth={2.5} />
           </button>
         )}
         
-        <div className="w-16 h-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center text-primary">
-          {isRecoveryMode || isResettingPin ? <Unlock size={28} /> : <LockKeyhole size={28} />}
+        <div className="w-16 h-16 mx-auto rounded-full bg-background border border-border-mint flex items-center justify-center text-foreground">
+          {isRecoveryMode || isResettingPin ? <Unlock size={24} strokeWidth={2.5} /> : <LockKeyhole size={24} strokeWidth={2.5} />}
         </div>
         
         {isSetupRequired ? (
           <>
             <div>
-              <h2 className="text-2xl font-light">Secure Your Vault</h2>
-              <p className="text-xs text-muted-foreground mt-2 px-4 leading-relaxed">
+              <h2 className="text-[20px] font-bold text-foreground">Secure Your Vault</h2>
+              <p className="text-[13px] font-medium text-foreground/60 mt-2 px-2 leading-relaxed">
                 Create a PIN and a Security Question. Your data will be encrypted end-to-end.
               </p>
             </div>
-            <form onSubmit={handleSetup} className="space-y-6 text-left">
-              <div className="space-y-2">
-                <Input
+            <form onSubmit={handleSetup} className="space-y-5 text-left">
+              <div className="space-y-1.5">
+                <input
                   type="password"
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
                   placeholder="Create a PIN"
-                  className="h-12 text-center text-xl tracking-[0.5em] bg-background border-border/50 rounded-xl"
+                  className="w-full h-12 text-center text-xl tracking-[0.5em] bg-background border border-border-mint/50 focus:border-border-mint focus:ring-1 focus:ring-[#BCE3D8] rounded-full transition-all text-foreground font-bold outline-none placeholder:text-foreground/30 placeholder:tracking-normal placeholder:text-[14px]"
                   required
                 />
               </div>
-              <div className="space-y-2 pt-2 border-t border-border/50">
-                <label className="text-[10px] uppercase tracking-widest text-muted-foreground pl-1">Security Question</label>
-                <Input
+              <div className="space-y-1.5 pt-2 border-t border-border-mint/50">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-foreground/60 pl-2">Security Question</label>
+                <input
                   value={securityQuestion}
                   onChange={(e) => setSecurityQuestion(e.target.value)}
                   placeholder="e.g. What is your mother's maiden name?"
-                  className="h-12 bg-background border-border/50 rounded-xl font-light"
+                  className="w-full h-12 bg-background border border-border-mint/50 focus:border-border-mint focus:ring-1 focus:ring-[#BCE3D8] rounded-full transition-all text-[14px] font-medium text-foreground px-5 outline-none placeholder:text-foreground/40"
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] uppercase tracking-widest text-muted-foreground pl-1">Answer</label>
-                <Input
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-bold uppercase tracking-wider text-foreground/60 pl-2">Answer</label>
+                <input
                   type="password"
                   value={securityAnswer}
                   onChange={(e) => setSecurityAnswer(e.target.value)}
                   placeholder="Your Answer"
-                  className="h-12 bg-background border-border/50 rounded-xl font-light"
+                  className="w-full h-12 bg-background border border-border-mint/50 focus:border-border-mint focus:ring-1 focus:ring-[#BCE3D8] rounded-full transition-all text-[14px] font-medium text-foreground px-5 outline-none placeholder:text-foreground/40"
                   required
                 />
               </div>
-              {error && <p className="text-xs text-destructive text-center">{error}</p>}
-              <Button type="submit" disabled={isProcessing} className="w-full h-12 rounded-full font-medium">
-                {isProcessing ? 'Encrypting...' : 'Initialize Vault'}
-              </Button>
+              {error && <p className="text-[13px] font-bold text-red-600 text-center">{error}</p>}
+              <button disabled={isProcessing} type="submit" className="w-full h-12 flex items-center justify-center gap-2 font-bold text-[14px] rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.04)] bg-foreground hover:bg-foreground/90 transition-all text-white disabled:opacity-50 select-none cursor-pointer mt-2">
+                {isProcessing ? (
+                  <><Loader2 size={16} className="animate-spin" /> Encrypting...</>
+                ) : 'Initialize Vault'}
+              </button>
             </form>
           </>
         ) : isRecoveryMode ? (
           <>
             <div>
-              <h2 className="text-2xl font-light">Recover Vault</h2>
-              <p className="text-sm text-muted-foreground mt-2">
+              <h2 className="text-[20px] font-bold text-foreground">Recover Vault</h2>
+              <p className="text-[14px] font-bold text-foreground/80 mt-2 px-2">
                 {vaultSecurityQuestion}
               </p>
             </div>
-            <form onSubmit={handleRecovery} className="space-y-6">
+            <form onSubmit={handleRecovery} className="space-y-5">
               <div className="space-y-2">
-                <Input
+                <input
                   type="password"
                   value={securityAnswer}
                   onChange={(e) => setSecurityAnswer(e.target.value)}
                   placeholder="Your Answer"
-                  className="h-12 text-center bg-background border-border/50 rounded-xl font-light"
+                  className="w-full h-12 text-center bg-background border border-border-mint/50 focus:border-border-mint focus:ring-1 focus:ring-[#BCE3D8] rounded-full transition-all text-[14px] font-bold text-foreground outline-none placeholder:text-foreground/40"
                   required
                 />
-                {error && <p className="text-xs text-destructive">{error}</p>}
+                {error && <p className="text-[13px] font-bold text-red-600">{error}</p>}
               </div>
-              <Button type="submit" disabled={isProcessing} className="w-full h-12 rounded-full font-medium">
-                {isProcessing ? 'Decrypting...' : 'Recover'}
-              </Button>
+              <button disabled={isProcessing} type="submit" className="w-full h-12 flex items-center justify-center gap-2 font-bold text-[14px] rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.04)] bg-foreground hover:bg-foreground/90 transition-all text-white disabled:opacity-50 select-none cursor-pointer">
+                {isProcessing ? (
+                  <><Loader2 size={16} className="animate-spin" /> Decrypting...</>
+                ) : 'Recover'}
+              </button>
             </form>
           </>
         ) : isResettingPin ? (
           <>
             <div>
-              <h2 className="text-2xl font-light">Set New PIN</h2>
-              <p className="text-xs text-muted-foreground mt-2 px-4 leading-relaxed">
+              <h2 className="text-[20px] font-bold text-foreground">Set New PIN</h2>
+              <p className="text-[13px] font-medium text-foreground/60 mt-2 px-4 leading-relaxed">
                 Vault recovered successfully! Set a new PIN to re-secure it.
               </p>
             </div>
-            <form onSubmit={handleResetPin} className="space-y-6">
+            <form onSubmit={handleResetPin} className="space-y-5">
               <div className="space-y-2">
-                <Input
+                <input
                   type="password"
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
                   placeholder="New PIN"
-                  className="h-12 text-center text-xl tracking-[0.5em] bg-background border-border/50 rounded-xl"
+                  className="w-full h-12 text-center text-xl tracking-[0.5em] bg-background border border-border-mint/50 focus:border-border-mint focus:ring-1 focus:ring-[#BCE3D8] rounded-full transition-all text-foreground font-bold outline-none placeholder:text-foreground/30 placeholder:tracking-normal placeholder:text-[14px]"
                   required
                 />
-                {error && <p className="text-xs text-destructive">{error}</p>}
+                {error && <p className="text-[13px] font-bold text-red-600">{error}</p>}
               </div>
-              <Button type="submit" disabled={isProcessing} className="w-full h-12 rounded-full font-medium">
-                {isProcessing ? 'Saving...' : 'Set New PIN'}
-              </Button>
+              <button disabled={isProcessing} type="submit" className="w-full h-12 flex items-center justify-center gap-2 font-bold text-[14px] rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.04)] bg-foreground hover:bg-foreground/90 transition-all text-white disabled:opacity-50 select-none cursor-pointer">
+                {isProcessing ? (
+                  <><Loader2 size={16} className="animate-spin" /> Saving...</>
+                ) : 'Set New PIN'}
+              </button>
             </form>
           </>
         ) : (
           <>
             <div>
-              <h2 className="text-2xl font-light">Unlock Vault</h2>
-              <p className="text-sm text-muted-foreground mt-2">
+              <h2 className="text-[20px] font-bold text-foreground">Unlock Vault</h2>
+              <p className="text-[13px] font-medium text-foreground/60 mt-2">
                 Enter your PIN to decrypt your private space.
               </p>
             </div>
-            <form onSubmit={handleUnlock} className="space-y-6">
+            <form onSubmit={handleUnlock} className="space-y-5">
               <div className="space-y-2">
-                <Input
+                <input
                   type="password"
                   value={pin}
                   onChange={(e) => setPin(e.target.value)}
                   placeholder="Enter PIN"
-                  className="h-12 text-center text-xl tracking-[0.5em] bg-background border-border/50 rounded-xl"
+                  className="w-full h-12 text-center text-xl tracking-[0.5em] bg-background border border-border-mint/50 focus:border-border-mint focus:ring-1 focus:ring-[#BCE3D8] rounded-full transition-all text-foreground font-bold outline-none placeholder:text-foreground/30 placeholder:tracking-normal placeholder:text-[14px]"
                   required
                 />
-                {error && <p className="text-xs text-destructive">{error}</p>}
+                {error && <p className="text-[13px] font-bold text-red-600">{error}</p>}
               </div>
               
-              <Button type="submit" disabled={isProcessing} className="w-full h-12 rounded-full font-medium mb-4">
-                {isProcessing ? 'Decrypting...' : 'Unlock'}
-              </Button>
+              <button disabled={isProcessing} type="submit" className="w-full h-12 flex items-center justify-center gap-2 font-bold text-[14px] rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.04)] bg-foreground hover:bg-foreground/90 transition-all text-white disabled:opacity-50 select-none cursor-pointer">
+                {isProcessing ? (
+                  <><Loader2 size={16} className="animate-spin" /> Decrypting...</>
+                ) : 'Unlock'}
+              </button>
 
               <button 
                 type="button"
                 onClick={() => setIsRecoveryMode(true)}
-                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                className="text-[12px] font-bold text-foreground/50 hover:text-foreground transition-colors mt-2"
               >
                 Forgot PIN?
               </button>
@@ -395,22 +401,27 @@ export function VaultClient({
 
   // UNLOCKED STATE (Gallery & Note Adding)
   return (
-    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-8">
-      <div className="flex justify-end mb-4">
-        <Button variant="ghost" onClick={lockVault} className="text-muted-foreground hover:text-foreground">
-          <Lock size={16} className="mr-2" />
+    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
+      <div className="flex justify-end">
+        <button 
+          onClick={lockVault} 
+          className="flex items-center gap-2 px-4 py-2 text-[13px] font-bold text-foreground/60 hover:text-foreground hover:bg-card rounded-full transition-all border border-transparent hover:border-border-mint"
+        >
+          <Lock size={16} strokeWidth={2.5} />
           Lock Vault
-        </Button>
+        </button>
       </div>
 
       {!isAddingMode && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div 
             onClick={() => setIsAddingMode(true)}
-            className="aspect-video rounded-2xl border-2 border-dashed border-border/50 flex flex-col items-center justify-center text-muted-foreground hover:bg-muted/20 hover:text-foreground hover:border-primary/50 transition-all cursor-pointer"
+            className="aspect-video rounded-[24px] border-2 border-dashed border-border-mint flex flex-col items-center justify-center text-foreground/50 hover:bg-card hover:text-foreground transition-all cursor-pointer group shadow-sm hover:shadow-[0_4px_12px_rgba(0,0,0,0.02)]"
           >
-            <Plus size={32} className="mb-2" />
-            <span className="text-sm font-medium">Add Secret Note</span>
+            <div className="w-12 h-12 rounded-full bg-background border border-border-mint flex items-center justify-center mb-3 group-hover:scale-110 transition-transform">
+              <Plus size={24} strokeWidth={2.5} />
+            </div>
+            <span className="text-[14px] font-bold">Add Secret Note</span>
           </div>
 
           {items.map(item => {
@@ -424,24 +435,24 @@ export function VaultClient({
             } catch(e) {}
 
             return (
-              <div key={item.id} className="aspect-video rounded-2xl border border-border/50 bg-background/50 p-6 flex flex-col gap-2 relative group overflow-hidden">
+              <div key={item.id} className="aspect-video rounded-[24px] border border-border-mint bg-card p-6 flex flex-col gap-3 relative group overflow-hidden shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-primary">
-                    <FileText size={16} />
-                    <span className="text-xs font-medium uppercase tracking-widest">{new Date(item.created_at).toLocaleDateString()}</span>
+                  <div className="flex items-center gap-2 text-foreground">
+                    <FileText size={16} strokeWidth={2.5} />
+                    <span className="text-[11px] font-bold uppercase tracking-widest text-foreground/60">{new Date(item.created_at).toLocaleDateString()}</span>
                   </div>
                   <button 
                     onClick={() => confirmDeleteNote(item.id)}
-                    className="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                    className="w-8 h-8 flex items-center justify-center text-foreground/30 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover:opacity-100"
                     title="Delete Note"
                   >
-                    <Trash2 size={16} />
+                    <Trash2 size={16} strokeWidth={2.5} />
                   </button>
                 </div>
-                <h3 className="font-medium text-foreground">{title || 'Untitled'}</h3>
+                <h3 className="font-bold text-[15px] text-foreground">{title || 'Untitled'}</h3>
                 
                 {/* Blur filter to protect against shoulder surfing, reveals on hover */}
-                <div className="mt-2 text-sm text-muted-foreground font-light line-clamp-3 filter blur-sm group-hover:blur-none transition-all duration-300">
+                <div className="mt-2 text-[14px] text-foreground/80 font-medium line-clamp-3 filter blur-sm group-hover:blur-none transition-all duration-300">
                   {content}
                 </div>
               </div>
@@ -457,43 +468,50 @@ export function VaultClient({
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             onSubmit={handleAddNote}
-            className="max-w-2xl mx-auto bg-background/80 backdrop-blur-2xl p-6 md:p-8 rounded-3xl border border-border/50 shadow-2xl relative"
+            className="w-full bg-card p-6 md:p-8 rounded-[32px] border border-border-mint shadow-[0_8px_32px_rgba(0,0,0,0.04)] relative"
           >
-            <button 
-              type="button" 
-              onClick={() => setIsAddingMode(false)}
-              className="absolute top-6 right-6 text-muted-foreground hover:text-foreground"
-            >
-              <X size={20} />
-            </button>
-            <h2 className="text-2xl font-light mb-6">New Secret Note</h2>
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-[20px] font-bold text-foreground">New Secret Note</h2>
+              <button 
+                type="button" 
+                onClick={() => setIsAddingMode(false)}
+                className="p-2 text-foreground/50 hover:text-foreground hover:bg-background rounded-full transition-colors"
+              >
+                <X size={20} strokeWidth={2.5} />
+              </button>
+            </div>
             
             <div className="space-y-4">
-              <Input
+              <input
                 value={newTitle}
                 onChange={e => setNewTitle(e.target.value)}
                 placeholder="Title (optional)"
-                className="h-12 bg-transparent border-border/50 text-lg rounded-xl"
+                className="w-full h-14 px-6 bg-background border border-border-mint/50 focus:border-border-mint focus:ring-1 focus:ring-[#BCE3D8] text-[16px] font-bold text-foreground rounded-[20px] outline-none placeholder:text-foreground/40 transition-all"
               />
               <textarea
                 value={newContent}
                 onChange={e => setNewContent(e.target.value)}
                 placeholder="Write something completely private..."
-                className="w-full h-48 bg-transparent border border-border/50 rounded-xl p-4 resize-none focus:outline-none focus:ring-1 focus:ring-primary/30 text-foreground font-light"
+                className="w-full h-48 bg-background border border-border-mint/50 focus:border-border-mint focus:ring-1 focus:ring-[#BCE3D8] rounded-[20px] p-6 resize-none outline-none text-[15px] text-foreground font-medium placeholder:text-foreground/40 transition-all"
                 required
               />
             </div>
             
             <div className="mt-6 flex justify-end">
-              <Button disabled={isProcessing} type="submit" className="rounded-full px-8 h-12 shadow-md">
-                {isProcessing ? 'Encrypting...' : 'Encrypt & Save'}
-              </Button>
+              <button 
+                disabled={isProcessing} 
+                type="submit" 
+                className="h-12 px-8 flex items-center justify-center gap-2 font-bold text-[14px] rounded-full shadow-[0_4px_12px_rgba(0,0,0,0.04)] bg-foreground hover:bg-foreground/90 transition-all text-white disabled:opacity-50 select-none cursor-pointer"
+              >
+                {isProcessing ? (
+                  <><Loader2 size={16} className="animate-spin" /> Encrypting...</>
+                ) : 'Encrypt & Save'}
+              </button>
             </div>
           </motion.form>
         )}
       </AnimatePresence>
 
-      {/* Custom Confirm Dialog */}
       <ConfirmDialog
         isOpen={!!deleteTargetId}
         title="Delete secure note?"
@@ -505,7 +523,6 @@ export function VaultClient({
         onCancel={() => setDeleteTargetId(null)}
       />
 
-      {/* Toast notification */}
       <Toast
         isOpen={toast.open}
         message={toast.message}

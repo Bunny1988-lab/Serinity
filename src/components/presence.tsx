@@ -86,12 +86,10 @@ export function PresenceProvider({ userId }: { userId: string }) {
 export function OnlineDot({ userId, className = '' }: { userId: string; className?: string }) {
   const isOnline = usePresence(userId)
 
-  if (isOnline === null) return null
-
   return (
     <span
-      className={`block rounded-full ring-2 ring-background transition-colors duration-500 ${
-        isOnline ? 'bg-emerald-500' : 'bg-rose-400'
+      className={`block rounded-full transition-colors duration-500 border-2 ${
+        isOnline ? 'bg-foreground border-white' : 'bg-background border-border-mint'
       } ${className}`}
     />
   )

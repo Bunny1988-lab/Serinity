@@ -9,9 +9,12 @@ export async function createPost(formData: FormData) {
   const rawVisibility = formData.get('visibility') as string
   const mood = formData.get('mood') as string
   const image_url = formData.get('image_url') as string
+  const audio_url = formData.get('audio_url') as string
+  const is_sunset_locked = formData.get('is_sunset_locked') === 'true'
+  const audio_is_whisper = formData.get('audio_is_whisper') === 'true'
   const unlock_date = formData.get('unlock_date') as string
   
-  if (!content && !image_url) return
+  if (!content && !image_url && !audio_url) return
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return
@@ -33,6 +36,9 @@ export async function createPost(formData: FormData) {
     circle_id,
     mood: mood || null,
     image_url: image_url || null,
+    audio_url: audio_url || null,
+    is_sunset_locked,
+    audio_is_whisper,
     unlock_date: unlock_date ? new Date(unlock_date).toISOString() : null
   })
 
@@ -107,6 +113,9 @@ export async function updateProfileAvatar(formData: FormData) {
   await supabase.from('users').update({ avatar_url: avatarUrl }).eq('id', user.id)
 
   revalidatePath('/profile')
+  revalidatePath('/messages')
+  revalidatePath('/discover')
+  revalidatePath('/home')
 }
 
 export async function deletePost(formData: FormData) {
@@ -258,6 +267,33 @@ export async function appendDailyJournal(content: string) {
   revalidatePath('/journal')
 }
 
+export async function updateDailyJournal(content: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  // Check if there's an entry for today
+  const todayStart = new Date()
+  todayStart.setHours(0, 0, 0, 0)
+  
+  const { data: existing } = await supabase
+    .from('journal_entries')
+    .select('*')
+    .eq('user_id', user.id)
+    .gte('created_at', todayStart.toISOString())
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .single()
+
+  if (existing) {
+    await supabase.from('journal_entries').update({ content }).eq('id', existing.id)
+  } else {
+    await supabase.from('journal_entries').insert({ user_id: user.id, content })
+  }
+
+  revalidatePath('/journal')
+}
+
 export async function updateProfileSettings(formData: FormData) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -266,16 +302,25 @@ export async function updateProfileSettings(formData: FormData) {
   const updates: any = {}
   
   if (formData.has('display_name')) updates.display_name = formData.get('display_name')
+  if (formData.has('username')) updates.username = formData.get('username')
   if (formData.has('bio')) updates.bio = formData.get('bio')
   if (formData.has('is_paused')) updates.is_paused = formData.get('is_paused') === 'true'
   if (formData.has('privacy_profile_visibility')) updates.privacy_profile_visibility = formData.get('privacy_profile_visibility')
   if (formData.has('wallpaper_theme')) updates.wallpaper_theme = formData.get('wallpaper_theme')
+  if (formData.has('quiet_mode_enabled')) updates.quiet_mode_enabled = formData.get('quiet_mode_enabled') === 'true'
+  if (formData.has('quiet_mode_start')) updates.quiet_mode_start = formData.get('quiet_mode_start')
+  if (formData.has('quiet_mode_end')) updates.quiet_mode_end = formData.get('quiet_mode_end')
+  if (formData.has('quiet_mode_auto_reply')) updates.quiet_mode_auto_reply = formData.get('quiet_mode_auto_reply')
 
   if (Object.keys(updates).length > 0) {
     await supabase.from('users').update(updates).eq('id', user.id)
   }
 
   revalidatePath('/profile')
+  revalidatePath('/settings')
+  revalidatePath('/messages')
+  revalidatePath('/discover')
+  revalidatePath('/home')
 }
 
 export async function markMessagesAsRead(senderId: string) {
@@ -299,7 +344,14 @@ export async function deleteChatWithUser(partnerId: string) {
   await supabase
     .from('messages')
     .delete()
-    .or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`)
+    .eq('sender_id', user.id)
+    .eq('receiver_id', partnerId)
+
+  await supabase
+    .from('messages')
+    .delete()
+    .eq('sender_id', partnerId)
+    .eq('receiver_id', user.id)
 
   revalidatePath('/messages')
 }
@@ -472,3 +524,280 @@ export async function getAllFriendRequestsForUser() {
 
   return data || []
 }
+
+export async function cancelFriendRequest(requestId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false }
+
+  await supabase
+    .from('friend_requests')
+    .delete()
+    .eq('id', requestId)
+    .eq('sender_id', user.id) // Only the sender can cancel
+
+  revalidatePath('/discover')
+  revalidatePath('/people')
+  return { success: true }
+}
+
+export async function updateNotificationPreferences(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  const prefs: Record<string, boolean> = {}
+  for (const [key, val] of formData.entries()) {
+    prefs[key] = val === 'true'
+  }
+
+  await supabase.from('users').update({ notification_prefs: prefs }).eq('id', user.id)
+  revalidatePath('/notifications')
+}
+
+export async function updatePrivacySettings(formData: FormData) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return
+
+  const updates: Record<string, any> = {}
+  if (formData.has('privacy_profile_visibility')) {
+    updates.privacy_profile_visibility = formData.get('privacy_profile_visibility')
+  }
+
+  await supabase.from('users').update(updates).eq('id', user.id)
+  revalidatePath('/privacy')
+}
+
+export async function toggleMessageReaction(messageId: string, emoji: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Unauthorized' }
+
+  // Check if user already reacted to this message
+  const { data: existing } = await supabase
+    .from('message_reactions')
+    .select('id, emoji')
+    .eq('message_id', messageId)
+    .eq('user_id', user.id)
+    .maybeSingle()
+
+  if (existing) {
+    if (existing.emoji === emoji) {
+      // Toggle off: delete reaction
+      await supabase
+        .from('message_reactions')
+        .delete()
+        .eq('id', existing.id)
+    } else {
+      // Update reaction to new emoji
+      await supabase
+        .from('message_reactions')
+        .update({ emoji })
+        .eq('id', existing.id)
+    }
+  } else {
+    // Insert new reaction
+    await supabase
+      .from('message_reactions')
+      .insert({
+        message_id: messageId,
+        user_id: user.id,
+        emoji
+      })
+  }
+
+  return { success: true }
+}
+
+export async function updateDailyIntention(text: string | null) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Unauthorized' }
+
+  const intention_text = text ? text.slice(0, 60) : null
+  const intention_expires_at = text ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null
+
+  const { error } = await supabase
+    .from('users')
+    .update({ intention_text, intention_expires_at })
+    .eq('id', user.id)
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/messages')
+  revalidatePath('/profile')
+  return { success: true }
+}
+
+export async function updateDigitalSabbathSettings(enabled: boolean, start: string, end: string, autoReply: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Unauthorized' }
+
+  const { error } = await supabase
+    .from('users')
+    .update({
+      quiet_mode_enabled: enabled,
+      quiet_mode_start: start,
+      quiet_mode_end: end,
+      quiet_mode_auto_reply: autoReply
+    })
+    .eq('id', user.id)
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/settings')
+  return { success: true }
+}
+
+export async function checkAndSendQuietReply(receiverId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false }
+
+  const { data: receiver } = await supabase
+    .from('users')
+    .select('quiet_mode_enabled, quiet_mode_start, quiet_mode_end, quiet_mode_auto_reply')
+    .eq('id', receiverId)
+    .single()
+
+  if (receiver && receiver.quiet_mode_enabled) {
+    const now = new Date()
+    const currentStr = now.toTimeString().split(' ')[0] // "HH:MM:SS"
+    const start = receiver.quiet_mode_start
+    const end = receiver.quiet_mode_end
+
+    let isQuietTime = false
+    if (start < end) {
+      isQuietTime = currentStr >= start && currentStr <= end
+    } else {
+      isQuietTime = currentStr >= start || currentStr <= end
+    }
+
+    if (isQuietTime) {
+      const autoReplyMsg = {
+        id: crypto.randomUUID(),
+        sender_id: receiverId,
+        receiver_id: user.id,
+        content: `🤖 ${receiver.quiet_mode_auto_reply || 'Practicing quiet focus. Messages will be read mindfully.'}`,
+        is_whisper: false
+      }
+      await supabase.from('messages').insert(autoReplyMsg)
+      return { success: true, autoReplied: true }
+    }
+  }
+
+  return { success: true, autoReplied: false }
+}
+
+export async function sharePostToChat(postId: string, recipientId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Unauthorized' }
+
+  const { error } = await supabase
+    .from('messages')
+    .insert({
+      sender_id: user.id,
+      receiver_id: recipientId,
+      shared_post_id: postId,
+      content: 'Shared a bento signal 📦'
+    })
+
+  if (error) return { success: false, error: error.message }
+
+  // Check and trigger quiet reply if recipient is asleep
+  await checkAndSendQuietReply(recipientId)
+
+  return { success: true }
+}
+
+export async function shareProfileToChat(targetProfileId: string, recipientId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Unauthorized' }
+
+  const { error } = await supabase
+    .from('messages')
+    .insert({
+      sender_id: user.id,
+      receiver_id: recipientId,
+      shared_profile_id: targetProfileId,
+      content: 'Shared a member profile 👤'
+    })
+
+  if (error) return { success: false, error: error.message }
+
+  // Check and trigger quiet reply if recipient is asleep
+  await checkAndSendQuietReply(recipientId)
+
+  return { success: true }
+}
+
+export async function createVaultEntry(formData: FormData) {
+  const supabase = await createClient()
+  const title = formData.get('title') as string
+  const content = formData.get('content') as string
+  const image_url = formData.get('image_url') as string
+
+  if (!title && !content && !image_url) return { success: false, error: 'Empty entry' }
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Unauthorized' }
+
+  const { error } = await supabase
+    .from('vault_entries')
+    .insert({
+      user_id: user.id,
+      title: title || null,
+      content: content || null,
+      image_url: image_url || null
+    })
+
+  if (error) return { success: false, error: error.message }
+
+  revalidatePath('/vault')
+  return { success: true }
+}
+
+export async function incrementWhisperPlayCount(postId: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Unauthorized' }
+
+  // Query post details
+  const { data: post } = await supabase
+    .from('posts')
+    .select('audio_play_count, audio_is_whisper')
+    .eq('id', postId)
+    .single()
+
+  if (!post) return { success: false, error: 'Post not found' }
+
+  if (post.audio_is_whisper) {
+    const nextCount = (post.audio_play_count || 0) + 1
+    if (nextCount >= 10) {
+      // Securely dissolve the post permanently from timeline!
+      await supabase.from('posts').delete().eq('id', postId)
+      revalidatePath('/feed')
+      revalidatePath('/home')
+      return { success: true, dissolved: true }
+    } else {
+      await supabase
+        .from('posts')
+        .update({ audio_play_count: nextCount })
+        .eq('id', postId)
+      
+      revalidatePath('/feed')
+      revalidatePath('/home')
+      return { success: true, count: nextCount }
+    }
+  }
+
+  return { success: true }
+}
+
+
+
+
