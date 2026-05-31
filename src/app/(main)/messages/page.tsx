@@ -51,17 +51,28 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
 
   let areFriends = false
   if (selectedRecipient) {
-    const { data: friendship } = await supabase
+    // Check both directions separately to avoid nested AND/OR PostgREST parsing issues
+    const { data: fr1 } = await supabase
       .from('friend_requests')
       .select('status')
-      .or(`and(sender_id.eq.${user.id},receiver_id.eq.${selectedRecipient.id}),and(sender_id.eq.${selectedRecipient.id},receiver_id.eq.${user.id})`)
+      .eq('sender_id', user.id)
+      .eq('receiver_id', selectedRecipient.id)
       .eq('status', 'accepted')
       .maybeSingle()
-    
-    if (friendship) {
+
+    const { data: fr2 } = await supabase
+      .from('friend_requests')
+      .select('status')
+      .eq('sender_id', selectedRecipient.id)
+      .eq('receiver_id', user.id)
+      .eq('status', 'accepted')
+      .maybeSingle()
+
+    if (fr1 || fr2) {
       areFriends = true
     }
   }
+
 
   function formatTime(d: string) {
     const date = new Date(d)

@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { UserPlus2, Search, Users2 } from 'lucide-react'
 import { FriendRequestButton, FriendStatus } from '@/components/friend-request-button'
 import { getAllFriendRequestsForUser } from '@/app/(main)/actions'
+import { InviteTrigger } from '@/components/invite-trigger'
 
 export default async function PeoplePage({
   searchParams,
@@ -15,6 +16,12 @@ export default async function PeoplePage({
     data: { user },
   } = await supabase.auth.getUser()
   if (!user) redirect('/login')
+
+  const { data: profile } = await supabase
+    .from('users')
+    .select('display_name')
+    .eq('id', user.id)
+    .single()
 
   // All friend requests involving me
   const allRequests = await getAllFriendRequestsForUser()
@@ -85,10 +92,13 @@ export default async function PeoplePage({
             <UserPlus2 size={24} className="text-foreground" strokeWidth={2} />
             <h1 className="text-[17px] font-bold text-foreground">Find People</h1>
             {incomingRequests.length > 0 && (
-              <span className="ml-auto h-6 min-w-[24px] px-2 rounded-full bg-foreground text-[11px] font-bold text-white flex items-center justify-center">
+              <span className="ml-2 h-6 min-w-[24px] px-2 rounded-full bg-foreground text-[11px] font-bold text-white flex items-center justify-center">
                 {incomingRequests.length}
               </span>
             )}
+            <div className="ml-auto">
+              <InviteTrigger displayName={profile?.display_name ?? undefined} />
+            </div>
           </div>
 
           <form method="GET" className="relative">
