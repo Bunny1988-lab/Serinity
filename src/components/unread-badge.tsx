@@ -33,7 +33,7 @@ export function UnreadBadge({ initialCount, userId }: Props) {
         const msg = payload.new as any
         const old = payload.old as any
         // When read_at is set (message was read), decrement
-        if (msg.receiver_id === userId && !old.read_at && msg.read_at) {
+        if (msg.receiver_id === userId && old && !old.read_at && msg.read_at) {
           setCount(c => Math.max(0, c - 1))
         }
       })
@@ -66,7 +66,7 @@ export function UnreadBadgeMobile({ initialCount, userId }: Props) {
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'messages' }, (payload) => {
         const msg = payload.new as any
         const old = payload.old as any
-        if (msg.receiver_id === userId && !old.read_at && msg.read_at) {
+        if (msg.receiver_id === userId && old && !old.read_at && msg.read_at) {
           setCount(c => Math.max(0, c - 1))
         }
       })
