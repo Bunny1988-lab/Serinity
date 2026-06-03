@@ -5,7 +5,7 @@ import { useLoader } from '@/components/loader-context'
 import { useState } from 'react'
 import { Loader2 } from 'lucide-react'
 
-export function SignupForm({ error }: { error?: string }) {
+export function SignupForm({ error, initialEmail }: { error?: string; initialEmail?: string }) {
   const { triggerLoader } = useLoader()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -30,6 +30,7 @@ export function SignupForm({ error }: { error?: string }) {
             name="email"
             type="email"
             required
+            defaultValue={initialEmail || ''}
             className="w-full h-14 bg-surface-container-lowest border-[0.5px] border-outline-variant focus:border-primary focus:ring-0 rounded-none transition-colors text-sm font-medium text-primary px-4 outline-none placeholder:text-on-surface-variant shadow-sm"
             placeholder="you@example.com"
           />

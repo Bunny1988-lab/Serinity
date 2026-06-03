@@ -1,6 +1,6 @@
 'use client'
 
-import { Bell, Heart, MessageSquare, Check, CheckCheck, Sparkles } from 'lucide-react'
+import { Bell, Heart, MessageSquare, Check, CheckCheck, Sparkles, UserCheck } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getNotifications, markNotificationsRead, markNotificationRead } from '@/app/(main)/actions'
@@ -22,7 +22,7 @@ function timeAgo(dateString: string) {
   return new Date(dateString).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
 }
 
-type NotifType = 'reaction' | 'comment' | string
+type NotifType = 'reaction' | 'comment' | 'connection_accepted' | string
 
 function notifMeta(type: NotifType, sourceName: string, postContent?: string) {
   const post = postContent ? `"${postContent.slice(0, 40)}${postContent.length > 40 ? '…' : ''}"` : 'your post'
@@ -40,6 +40,13 @@ function notifMeta(type: NotifType, sourceName: string, postContent?: string) {
         iconBg: 'bg-blue-500/10',
         text: `${sourceName} commented on ${post}`,
         link: '/home',
+      }
+    case 'connection_accepted':
+      return {
+        icon: <UserCheck size={13} className="text-emerald-500" />,
+        iconBg: 'bg-emerald-500/10',
+        text: `${sourceName} accepted your connection request.`,
+        link: '/people',
       }
     default:
       return {

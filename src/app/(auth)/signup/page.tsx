@@ -4,9 +4,9 @@ import Link from 'next/link'
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>
+  searchParams: Promise<{ error?: string; email?: string }>
 }) {
-  const { error } = await searchParams
+  const { error, email } = await searchParams
 
   return (
     <div className="w-full space-y-8">
@@ -15,7 +15,7 @@ export default async function SignupPage({
         <p className="text-sm text-on-surface-variant font-medium">A calm, private space for intentional sharing.</p>
       </div>
 
-      <SignupForm error={error} />
+      <SignupForm error={error} initialEmail={email} />
 
       <div className="text-center text-sm font-medium mt-10">
         <span className="text-on-surface-variant">Already have an account? </span>

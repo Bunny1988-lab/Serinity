@@ -33,7 +33,12 @@ export function MobileDrawer({ unreadMessages, userId }: MobileDrawerProps) {
   return (
     <>
       <button
-        onClick={() => setIsOpen(true)}
+        type="button"
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          setIsOpen(true)
+        }}
         className="md:hidden text-primary p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors focus:outline-none"
         title="Open Navigation"
       >
@@ -67,7 +72,12 @@ export function MobileDrawer({ unreadMessages, userId }: MobileDrawerProps) {
                   <p className="font-body-md text-[10px] tracking-[0.15em] text-on-surface-variant/80 uppercase font-bold mt-1">Premium Network</p>
                 </div>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                    setIsOpen(false)
+                  }}
                   className="p-2 -mr-2 rounded-full hover:bg-surface-container text-on-surface-variant transition-colors"
                 >
                   <X size={20} />

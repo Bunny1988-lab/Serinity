@@ -850,6 +850,9 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
       {/* ── HEADER ───────────────────────────────────────── */}
       <header className={`h-20 flex justify-between items-center px-6 md:px-16 sticky top-0 backdrop-blur-md border-b-[0.5px] z-20 transition-all duration-500 ${themeStyles.header}`}>
         <div className="flex items-center gap-4">
+          <Link href="/messages" className="md:hidden hover:opacity-75 transition-opacity text-primary -ml-2 p-1">
+            <ChevronLeft size={24} />
+          </Link>
           <div className="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center overflow-hidden border-[0.5px] border-outline-variant relative">
             {recipient.avatar_url ? (
               <img src={recipient.avatar_url} alt={recipient.display_name} className="w-full h-full object-cover" />

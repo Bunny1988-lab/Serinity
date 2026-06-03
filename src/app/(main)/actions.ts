@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import crypto from 'crypto'
 
 export async function createPost(formData: FormData) {
   const supabase = await createClient()
@@ -522,11 +523,31 @@ export async function acceptFriendRequest(requestId: string) {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false }
 
-  await supabase
+  // Fetch the request to know the sender
+  const { data: req } = await supabase
+    .from('friend_requests')
+    .select('sender_id')
+    .eq('id', requestId)
+    .eq('receiver_id', user.id)
+    .single()
+
+  if (!req) return { success: false }
+
+  const { error: updateErr } = await supabase
     .from('friend_requests')
     .update({ status: 'accepted' })
     .eq('id', requestId)
     .eq('receiver_id', user.id)
+
+  if (updateErr) return { success: false, error: updateErr.message }
+
+  // Create a connection accepted notification for the sender
+  await supabase.from('notifications').insert({
+    user_id: req.sender_id,
+    source_user_id: user.id,
+    type: 'connection_accepted',
+    post_id: null
+  })
 
   revalidatePath('/people')
   revalidatePath('/messages')
@@ -832,6 +853,26 @@ export async function incrementWhisperPlayCount(postId: string) {
   }
 
   return { success: true }
+}
+
+export async function searchFriendByEmail(email: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return null
+
+  const emailHash = crypto.createHash('sha256').update(email.toLowerCase().trim()).digest('hex')
+
+  const { data, error } = await supabase.rpc('search_friends_by_email', {
+    p_user_id: user.id,
+    p_email_hash: emailHash
+  })
+
+  if (error) {
+    console.error('Error searching friends by email:', error)
+    return null
+  }
+
+  return data?.[0] || null
 }
 
 

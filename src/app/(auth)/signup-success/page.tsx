@@ -1,0 +1,118 @@
+'use client'
+
+import { useSearchParams } from 'next/navigation'
+import { useState, useTransition, Suspense } from 'react'
+import Link from 'next/link'
+import { resendVerification } from '@/app/auth/actions'
+import { Loader2, Mail, CheckCircle2, AlertCircle } from 'lucide-react'
+
+function SignupSuccessContent() {
+  const searchParams = useSearchParams()
+  const email = searchParams.get('email') || ''
+  const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
+  const [errorMessage, setErrorMessage] = useState('')
+  const [isPending, startTransition] = useTransition()
+
+  const handleResend = () => {
+    setStatus('idle')
+    startTransition(async () => {
+      const result = await resendVerification(email)
+      if (result.success) {
+        setStatus('success')
+      } else {
+        setStatus('error')
+        setErrorMessage(result.error || 'Failed to resend. Please try again.')
+      }
+    })
+  }
+
+  return (
+    <div className="w-full space-y-8 select-none text-center">
+      {/* Brand Header */}
+      <div className="space-y-3 mb-8">
+        <span className="font-label-caps text-[9px] font-bold text-amber-600 uppercase tracking-[0.3em]">
+          step complete
+        </span>
+        <h1 className="font-display text-3xl font-bold tracking-wide text-primary italic">
+          Account Created Successfully
+        </h1>
+        <p className="text-xs text-on-surface-variant/80 font-medium tracking-wide">
+          We sent a verification link to your email.
+        </p>
+      </div>
+
+      {/* Email Indicator Card */}
+      <div className="bg-background/40 border border-outline-variant/30 p-5 rounded-[24px] inline-flex items-center gap-3.5 mx-auto">
+        <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+          <Mail size={16} />
+        </div>
+        <div className="text-left">
+          <p className="text-[10px] font-bold text-outline uppercase tracking-wider leading-none mb-1">Verify Email</p>
+          <p className="text-sm font-semibold text-primary">{email || 'your email address'}</p>
+        </div>
+      </div>
+
+      {/* Notification Statuses */}
+      {status === 'success' && (
+        <div className="p-4 text-xs font-semibold text-emerald-750 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl flex items-center gap-2 justify-center">
+          <CheckCircle2 size={14} className="shrink-0" />
+          <span>New verification link sent! Please check your inbox.</span>
+        </div>
+      )}
+
+      {status === 'error' && (
+        <div className="p-4 text-xs font-semibold text-rose-700 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 rounded-2xl flex items-center gap-2 justify-center">
+          <AlertCircle size={14} className="shrink-0" />
+          <span>{errorMessage}</span>
+        </div>
+      )}
+
+      {/* Core Action Buttons */}
+      <div className="space-y-4 pt-4">
+        {/* Resend Button */}
+        <button
+          onClick={handleResend}
+          disabled={isPending || !email}
+          className="w-full h-14 flex items-center justify-center gap-2 font-label-caps text-[10px] font-bold uppercase tracking-[0.25em] bg-primary text-on-primary hover:bg-primary/95 transition-all rounded-full hover:scale-[1.01] active:scale-[0.98] cursor-pointer shadow-sm disabled:opacity-50"
+        >
+          {isPending ? (
+            <>
+              <Loader2 size={14} className="animate-spin" />
+              Resending...
+            </>
+          ) : (
+            'Resend Verification Link'
+          )}
+        </button>
+
+        {/* Footnote Controls */}
+        <div className="flex flex-col items-center gap-3 pt-6 border-t border-outline-variant/10 text-xs font-semibold">
+          <Link
+            href={`/signup?email=${encodeURIComponent(email)}`}
+            className="text-primary font-bold hover:text-amber-700 transition-colors uppercase tracking-wider text-[10px]"
+          >
+            Change Email Address
+          </Link>
+          <Link
+            href="/login"
+            className="text-[10px] text-outline hover:text-primary transition-colors uppercase tracking-widest font-bold"
+          >
+            Return to Login
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export default function SignupSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center h-48">
+        <Loader2 className="animate-spin text-primary" size={24} />
+      </div>
+    }>
+      <SignupSuccessContent />
+    </Suspense>
+  )
+}

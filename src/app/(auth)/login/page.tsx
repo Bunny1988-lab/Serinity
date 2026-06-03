@@ -36,7 +36,7 @@ export default async function LoginPage({
           </Link>
         </div>
         <div>
-          <Link href="#" className="text-[10px] text-outline hover:text-primary transition-colors uppercase tracking-widest font-bold">
+          <Link href="/auth/forgot-password" className="text-[10px] text-outline hover:text-primary transition-colors uppercase tracking-widest font-bold">
             Recover Access Keys
           </Link>
         </div>

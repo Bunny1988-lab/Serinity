@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Search, PenSquare, X } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { OnlineDot } from '@/components/presence'
+import { searchFriendByEmail } from '@/app/(main)/actions'
 
 interface Partner {
   id: string
@@ -65,17 +66,25 @@ export function MessagesSidebar({
 }: MessagesSidebarProps) {
   const [query, setQuery] = useState('')
   const [showCompose, setShowCompose] = useState(false)
+  const [emailSearchResult, setEmailSearchResult] = useState<Partner | null>(null)
   const router = useRouter()
 
   // Filter existing conversations by search query
   const filteredConvos = useMemo(() => {
     if (!query.trim()) return conversations
     const q = query.toLowerCase()
-    return conversations.filter(c =>
+    let list = conversations.filter(c =>
       c.partner.display_name?.toLowerCase().includes(q) ||
       c.partner.username?.toLowerCase().includes(q)
     )
-  }, [conversations, query])
+    if (emailSearchResult) {
+      const matchInConvo = conversations.find(c => c.partner.id === emailSearchResult.id)
+      if (matchInConvo && !list.some(c => c.partner.id === emailSearchResult.id)) {
+        list = [...list, matchInConvo]
+      }
+    }
+    return list
+  }, [conversations, query, emailSearchResult])
 
   // Filter friends for compose picker (exclude already-in-convos? No — show all)
   const filteredFriends = useMemo(() => {
@@ -87,9 +96,24 @@ export function MessagesSidebar({
     )
   }, [friends, query])
 
+  const handleQueryChange = async (val: string) => {
+    setQuery(val)
+    if (val.includes('@') && val.includes('.')) {
+      const match = await searchFriendByEmail(val.trim())
+      setEmailSearchResult(match)
+    } else {
+      setEmailSearchResult(null)
+    }
+  }
+
+  const resetQuery = () => {
+    setQuery('')
+    setEmailSearchResult(null)
+  }
+
   function startChat(userId: string) {
     setShowCompose(false)
-    setQuery('')
+    resetQuery()
     router.push(`/messages?u=${userId}`)
   }
 
@@ -97,8 +121,14 @@ export function MessagesSidebar({
   const friendsNotInConvos = useMemo(() => {
     if (!query.trim()) return []
     const existingIds = new Set(conversations.map(c => c.partner.id))
-    return filteredFriends.filter(f => !existingIds.has(f.id))
-  }, [query, filteredFriends, conversations])
+    let list = filteredFriends.filter(f => !existingIds.has(f.id))
+    if (emailSearchResult && !existingIds.has(emailSearchResult.id)) {
+      if (!list.some(f => f.id === emailSearchResult.id)) {
+        list = [...list, emailSearchResult]
+      }
+    }
+    return list
+  }, [query, filteredFriends, conversations, emailSearchResult])
 
   return (
     <div className="flex flex-col h-full">
@@ -107,7 +137,7 @@ export function MessagesSidebar({
         <h2 className="font-headline-sm text-2xl text-primary">Conversations</h2>
         <button
           id="compose-new-message-btn"
-          onClick={() => { setShowCompose(true); setQuery('') }}
+          onClick={() => { setShowCompose(true); resetQuery() }}
           title="New conversation"
           className="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-primary transition-all cursor-pointer"
         >
@@ -125,18 +155,50 @@ export function MessagesSidebar({
             <input
               id="message-search-input"
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={e => handleQueryChange(e.target.value)}
               className="w-full bg-surface-container-low border-none rounded-xl pl-9 pr-8 py-2.5 text-[13px] font-medium placeholder:text-outline/50 focus:ring-0 focus:outline-none transition-all"
               placeholder="Search conversations..."
               type="text"
             />
             {query && (
-              <button onClick={() => setQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors">
+              <button onClick={resetQuery} className="absolute right-3 top-1/2 -translate-y-1/2 text-outline hover:text-primary transition-colors">
                 <X size={13} />
               </button>
             )}
           </div>
         </div>
+
+        {/* Horizontal Active/Connected Users Row */}
+        {!query.trim() && friends.length > 0 && (
+          <div className="px-4 mb-4 shrink-0">
+            <p className="text-[10px] font-black uppercase tracking-widest text-outline mb-2.5 px-1">Connected</p>
+            <div className="flex gap-4 overflow-x-auto hide-scrollbar pb-1.5 pt-0.5">
+              {friends.map(friend => (
+                <button
+                  key={friend.id}
+                  onClick={() => startChat(friend.id)}
+                  className="flex flex-col items-center gap-1.5 shrink-0 select-none cursor-pointer group"
+                >
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-full overflow-hidden flex items-center justify-center bg-surface-container border-[0.5px] border-outline-variant group-hover:scale-105 transition-all">
+                      {friend.avatar_url ? (
+                        <img src={friend.avatar_url} alt="" className="w-full h-full object-cover" />
+                      ) : (
+                        <span className="text-sm font-bold text-primary">
+                          {friend.display_name?.[0]?.toUpperCase() || '?'}
+                        </span>
+                      )}
+                    </div>
+                    <OnlineDot userId={friend.id} className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 border-2 border-surface" />
+                  </div>
+                  <span className="text-[10px] font-semibold text-on-surface-variant/90 max-w-[56px] truncate group-hover:text-primary transition-colors text-center">
+                    {friend.display_name?.split(' ')[0]}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Search: show matching friends not yet in convos */}
         {query.trim() && friendsNotInConvos.length > 0 && (
