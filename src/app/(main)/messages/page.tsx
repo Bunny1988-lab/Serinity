@@ -25,19 +25,38 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
     ...(receivedFrom || []).map(m => m.sender_id),
   ]))
 
-  const { data: allUsers } = await supabase
+  // Fetch all users with audit logs
+  const { data: allUsers, error: allUsersError } = await supabase
     .from('users').select('id, username, display_name, avatar_url, intention_text, intention_expires_at').neq('id', user.id)
 
-  // Fetch accepted friend requests for the user
-  const { data: sentReqs } = await supabase.from('friend_requests').select('receiver_id').eq('sender_id', user.id).eq('status', 'accepted')
-  const { data: recReqs } = await supabase.from('friend_requests').select('sender_id').eq('receiver_id', user.id).eq('status', 'accepted')
+  console.log('--- AUDIT DEBUG LOGS: MESSAGES PAGE ---');
+  console.log('Current User ID:', user.id);
+  if (allUsersError) {
+    console.error('ERROR FETCHING USERS from database:', allUsersError);
+  } else {
+    console.log(`Successfully fetched ${allUsers?.length || 0} users from database.`);
+  }
+
+  // Fetch accepted friend requests for the user with audit logs
+  const { data: sentReqs, error: sentReqsError } = await supabase.from('friend_requests').select('receiver_id').eq('sender_id', user.id).eq('status', 'accepted')
+  const { data: recReqs, error: recReqsError } = await supabase.from('friend_requests').select('sender_id').eq('receiver_id', user.id).eq('status', 'accepted')
+
+  if (sentReqsError) console.error('Error fetching sent friend requests:', sentReqsError);
+  if (recReqsError) console.error('Error fetching received friend requests:', recReqsError);
+
+  console.log('Raw sent friend requests from DB:', sentReqs);
+  console.log('Raw received friend requests from DB:', recReqs);
 
   const friendIds = new Set([
     ...(sentReqs || []).map(r => r.receiver_id),
     ...(recReqs || []).map(r => r.sender_id),
   ])
 
+  console.log('Computed connected friend IDs:', Array.from(friendIds));
+
   const actualFriends = allUsers?.filter(u => friendIds.has(u.id)) || []
+  console.log('Filtered connected friends:', actualFriends);
+  console.log('----------------------------------------');
 
   const conversations = await Promise.all(
     partnerIds.map(async (partnerId) => {
