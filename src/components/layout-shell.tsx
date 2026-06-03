@@ -1,8 +1,8 @@
 'use client'
 
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, Component, type ReactNode } from 'react'
 import Link from 'next/link'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Bell } from 'lucide-react'
 import { DesktopNavItem } from '@/components/desktop-nav-item'
 import { logout } from '@/app/auth/actions'
 import { MindfulPause } from '@/components/mindful-pause'
@@ -13,8 +13,18 @@ import { PresenceProvider } from '@/components/presence'
 import { UnreadBadge } from '@/components/unread-badge'
 import { MobileNav } from '@/components/mobile-nav'
 import { NotificationBell } from '@/components/notification-bell'
-
 import { MobileDrawer } from '@/components/mobile-drawer'
+
+// Error boundary to prevent any header widget from crashing the whole page
+class SafeWidget extends Component<{ children: ReactNode; fallback?: ReactNode }, { error: boolean }> {
+  state = { error: false }
+  static getDerivedStateFromError() { return { error: true } }
+  componentDidCatch(e: Error) { console.error('[LayoutShell] Widget error:', e) }
+  render() {
+    if (this.state.error) return this.props.fallback ?? null
+    return this.props.children
+  }
+}
 
 interface LayoutShellProps {
   children: React.ReactNode
@@ -135,7 +145,9 @@ export function LayoutShell({ children, unreadMessages, userId, profile }: Layou
           {/* ── TOP APP BAR (Responsive layout-aligned) ────────────────────────────── */}
           <header className={`fixed top-0 right-0 left-0 transition-all duration-300 ease-in-out h-20 bg-surface/40 backdrop-blur-md border-b-[0.5px] border-outline-variant z-40 flex justify-between items-center px-6 md:px-16 ${contentMarginClass}`}>
             <div className="flex items-center space-x-4 md:space-x-8">
-              <MobileDrawer unreadMessages={unreadMessages} userId={userId} />
+              <SafeWidget>
+                <MobileDrawer unreadMessages={unreadMessages} userId={userId} />
+              </SafeWidget>
               <h2 className="font-headline-sm text-2xl font-medium text-primary capitalize hidden md:block">
                 Quiet
               </h2>
@@ -149,7 +161,9 @@ export function LayoutShell({ children, unreadMessages, userId, profile }: Layou
                 />
                 <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant">search</span>
               </div>
-              <NotificationBell />
+              <SafeWidget fallback={<Bell size={20} className="text-on-surface-variant" />}>
+                <NotificationBell />
+              </SafeWidget>
               <Link href="/profile" className="text-on-surface-variant hover:opacity-70 transition-opacity flex">
                 <span className="material-symbols-outlined">account_circle</span>
               </Link>
