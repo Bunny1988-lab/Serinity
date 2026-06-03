@@ -9,19 +9,30 @@ export default async function SignupPage({
   const { error, email } = await searchParams
 
   return (
-    <div className="w-full space-y-8">
-      <div className="text-center space-y-3 mb-8">
-        <h1 className="font-display text-4xl font-bold tracking-tight text-primary italic">Join Serenity</h1>
-        <p className="text-sm text-on-surface-variant font-medium">A calm, private space for intentional sharing.</p>
+    <div className="w-full space-y-8 select-none">
+      {/* Brand Header */}
+      <div className="text-center space-y-2 mb-10">
+        <span className="font-label-caps text-[9px] font-bold text-amber-600 uppercase tracking-[0.3em]">
+          curate profile
+        </span>
+        <h1 className="font-display text-4xl font-bold tracking-wide text-primary italic">
+          Quiet.
+        </h1>
+        <p className="text-xs text-on-surface-variant/80 font-medium tracking-wide">
+          A calm, private space for intentional sharing.
+        </p>
       </div>
 
       <SignupForm error={error} initialEmail={email} />
 
-      <div className="text-center text-sm font-medium mt-10">
-        <span className="text-on-surface-variant">Already have an account? </span>
-        <Link href="/login" className="text-primary font-bold hover:text-secondary transition-colors">
-          Sign in
-        </Link>
+      {/* Footnote controls */}
+      <div className="text-center text-xs font-semibold mt-10 border-t border-outline-variant/20 pt-8">
+        <div className="text-[11px] tracking-wide">
+          <span className="text-on-surface-variant/80">Already have an account? </span>
+          <Link href="/login" className="text-primary font-bold hover:text-amber-700 transition-colors uppercase tracking-wider text-[10px]">
+            Sign in
+          </Link>
+        </div>
       </div>
     </div>
   )

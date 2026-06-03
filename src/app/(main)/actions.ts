@@ -875,6 +875,24 @@ export async function searchFriendByEmail(email: string) {
   return data?.[0] || null
 }
 
+export async function deleteAllChats() {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Unauthorized' }
+
+  const { error } = await supabase
+    .from('messages')
+    .delete()
+    .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
+
+  if (error) {
+    return { success: false, error: error.message }
+  }
+
+  revalidatePath('/messages')
+  return { success: true }
+}
+
 
 
 

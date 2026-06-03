@@ -3,10 +3,10 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { Search, PenSquare, X } from 'lucide-react'
+import { Search, PenSquare, X, Trash2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { OnlineDot } from '@/components/presence'
-import { searchFriendByEmail } from '@/app/(main)/actions'
+import { searchFriendByEmail, deleteAllChats } from '@/app/(main)/actions'
 
 interface Partner {
   id: string
@@ -67,7 +67,28 @@ export function MessagesSidebar({
   const [query, setQuery] = useState('')
   const [showCompose, setShowCompose] = useState(false)
   const [emailSearchResult, setEmailSearchResult] = useState<Partner | null>(null)
+  const [isDeletingAll, setIsDeletingAll] = useState(false)
   const router = useRouter()
+
+  const handleDeleteAllChats = async () => {
+    if (window.confirm("Are you sure you want to delete all chats? This will permanently remove all messages and cannot be undone.")) {
+      setIsDeletingAll(true)
+      try {
+        const res = await deleteAllChats()
+        if (res.success) {
+          router.push('/messages')
+          router.refresh()
+        } else {
+          alert(res.error || "Failed to delete chats.")
+        }
+      } catch (err) {
+        console.error(err)
+        alert("An unexpected error occurred.")
+      } finally {
+        setIsDeletingAll(false)
+      }
+    }
+  }
 
   // Filter existing conversations by search query
   const filteredConvos = useMemo(() => {
@@ -135,14 +156,26 @@ export function MessagesSidebar({
       {/* Header */}
       <header className="h-20 flex items-center justify-between px-6 border-b-[0.5px] border-outline-variant shrink-0 bg-surface">
         <h2 className="font-headline-sm text-2xl text-primary">Conversations</h2>
-        <button
-          id="compose-new-message-btn"
-          onClick={() => { setShowCompose(true); resetQuery() }}
-          title="New conversation"
-          className="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-primary transition-all cursor-pointer"
-        >
-          <PenSquare size={18} strokeWidth={2} />
-        </button>
+        <div className="flex items-center gap-2">
+          {conversations.length > 0 && (
+            <button
+              onClick={handleDeleteAllChats}
+              disabled={isDeletingAll}
+              title="Delete all chats"
+              className="w-9 h-9 rounded-full flex items-center justify-center text-outline/60 hover:bg-error/10 hover:text-error transition-all cursor-pointer disabled:opacity-50"
+            >
+              <Trash2 size={16} strokeWidth={2} className={isDeletingAll ? 'animate-pulse' : ''} />
+            </button>
+          )}
+          <button
+            id="compose-new-message-btn"
+            onClick={() => { setShowCompose(true); resetQuery() }}
+            title="New conversation"
+            className="w-9 h-9 rounded-full flex items-center justify-center text-on-surface-variant hover:bg-surface-container hover:text-primary transition-all cursor-pointer"
+          >
+            <PenSquare size={18} strokeWidth={2} />
+          </button>
+        </div>
       </header>
 
       <div className="flex-1 overflow-y-auto hide-scrollbar py-4 flex flex-col">

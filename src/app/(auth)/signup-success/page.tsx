@@ -29,12 +29,12 @@ function SignupSuccessContent() {
   return (
     <div className="w-full space-y-8 select-none text-center">
       {/* Brand Header */}
-      <div className="space-y-3 mb-8">
+      <div className="space-y-2 mb-10">
         <span className="font-label-caps text-[9px] font-bold text-amber-600 uppercase tracking-[0.3em]">
           step complete
         </span>
-        <h1 className="font-display text-3xl font-bold tracking-wide text-primary italic">
-          Account Created Successfully
+        <h1 className="font-display text-4xl font-bold tracking-wide text-primary italic">
+          Quiet.
         </h1>
         <p className="text-xs text-on-surface-variant/80 font-medium tracking-wide">
           We sent a verification link to your email.
@@ -42,26 +42,26 @@ function SignupSuccessContent() {
       </div>
 
       {/* Email Indicator Card */}
-      <div className="bg-background/40 border border-outline-variant/30 p-5 rounded-[24px] inline-flex items-center gap-3.5 mx-auto">
+      <div className="w-full bg-background/40 border border-outline-variant/30 p-5 rounded-[24px] flex items-center gap-4 text-left shadow-xs">
         <div className="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
           <Mail size={16} />
         </div>
-        <div className="text-left">
-          <p className="text-[10px] font-bold text-outline uppercase tracking-wider leading-none mb-1">Verify Email</p>
-          <p className="text-sm font-semibold text-primary">{email || 'your email address'}</p>
+        <div className="min-w-0">
+          <p className="text-[9px] font-bold text-outline uppercase tracking-widest leading-none mb-1.5">Registered Email</p>
+          <p className="text-xs font-semibold text-primary truncate">{email || 'your email address'}</p>
         </div>
       </div>
 
       {/* Notification Statuses */}
       {status === 'success' && (
-        <div className="p-4 text-xs font-semibold text-emerald-750 bg-emerald-50 dark:bg-emerald-950/20 border border-emerald-100 dark:border-emerald-900/30 rounded-2xl flex items-center gap-2 justify-center">
+        <div className="p-4 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/5 border border-emerald-500/20 rounded-2xl flex items-center gap-2 justify-center tracking-wide uppercase">
           <CheckCircle2 size={14} className="shrink-0" />
-          <span>New verification link sent! Please check your inbox.</span>
+          <span>New link sent! Check your inbox.</span>
         </div>
       )}
 
       {status === 'error' && (
-        <div className="p-4 text-xs font-semibold text-rose-700 bg-rose-50 dark:bg-rose-950/20 border border-rose-100 dark:border-rose-900/30 rounded-2xl flex items-center gap-2 justify-center">
+        <div className="p-4 text-[11px] font-bold text-error bg-error/5 border border-error/25 rounded-2xl flex items-center gap-2 justify-center tracking-wide uppercase">
           <AlertCircle size={14} className="shrink-0" />
           <span>{errorMessage}</span>
         </div>
@@ -78,7 +78,7 @@ function SignupSuccessContent() {
           {isPending ? (
             <>
               <Loader2 size={14} className="animate-spin" />
-              Resending...
+              Resending Link...
             </>
           ) : (
             'Resend Verification Link'
@@ -86,7 +86,7 @@ function SignupSuccessContent() {
         </button>
 
         {/* Footnote Controls */}
-        <div className="flex flex-col items-center gap-3 pt-6 border-t border-outline-variant/10 text-xs font-semibold">
+        <div className="flex flex-col items-center gap-4 pt-6 border-t border-outline-variant/20 text-xs font-semibold">
           <Link
             href={`/signup?email=${encodeURIComponent(email)}`}
             className="text-primary font-bold hover:text-amber-700 transition-colors uppercase tracking-wider text-[10px]"
