@@ -242,6 +242,33 @@ export async function deleteMessage(messageId: string) {
     .or(`sender_id.eq.${user.id},receiver_id.eq.${user.id}`)
 }
 
+export async function savePostToJournal(postId: string, note: string) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not authenticated')
+
+  // Fetch the post to include its content/image in the journal entry
+  const { data: post } = await supabase
+    .from('posts')
+    .select('content, image_url, users(display_name)')
+    .eq('id', postId)
+    .single()
+
+  if (!post) throw new Error('Post not found')
+  const authorName = (post.users as any)?.display_name || 'Anonymous'
+
+  const journalContent = `[Saved from ${authorName}]\n${post.content || ''}\n\nMy Reflection:\n${note}`
+
+  const { error } = await supabase.from('journals').insert({
+    author_id: user.id,
+    content: journalContent,
+    image_url: post.image_url || null
+  })
+
+  if (error) throw new Error('Failed to save to journal')
+  revalidatePath('/journal')
+}
+
 export async function createJournalEntry(formData: FormData) {
   const supabase = await createClient()
   const content = formData.get('content') as string
@@ -381,14 +408,9 @@ export async function deleteChatWithUser(partnerId: string) {
   await supabase
     .from('messages')
     .delete()
-    .eq('sender_id', user.id)
-    .eq('receiver_id', partnerId)
+    .or(`and(sender_id.eq.${user.id},receiver_id.eq.${partnerId}),and(sender_id.eq.${partnerId},receiver_id.eq.${user.id})`)
 
-  await supabase
-    .from('messages')
-    .delete()
-    .eq('sender_id', partnerId)
-    .eq('receiver_id', user.id)
+
 
   revalidatePath('/messages')
 }

@@ -1,12 +1,13 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, PenSquare, X, Trash2 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { OnlineDot } from '@/components/presence'
-import { searchFriendByEmail, deleteAllChats } from '@/app/(main)/actions'
+import { searchFriendByEmail, deleteAllChats, deleteChatWithUser } from '@/app/(main)/actions'
+import { createClient } from '@/lib/supabase/client'
 
 interface Partner {
   id: string
@@ -69,6 +70,19 @@ export function MessagesSidebar({
   const [emailSearchResult, setEmailSearchResult] = useState<Partner | null>(null)
   const [isDeletingAll, setIsDeletingAll] = useState(false)
   const router = useRouter()
+
+  // Real-time updates for sidebar
+  useEffect(() => {
+    const supabase = createClient()
+    const channel = supabase.channel('sidebar-messages-changes')
+    channel.on('postgres_changes', { event: '*', schema: 'public', table: 'messages' }, (payload) => {
+      const msg = (payload.new || payload.old) as any
+      if (msg && (msg.sender_id === currentUserId || msg.receiver_id === currentUserId)) {
+        router.refresh()
+      }
+    }).subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [currentUserId, router])
 
   const handleDeleteAllChats = async () => {
     if (window.confirm("Are you sure you want to delete all chats? This will permanently remove all messages and cannot be undone.")) {
@@ -271,41 +285,61 @@ export function MessagesSidebar({
               const isFromMe = lastMessage?.sender_id === currentUserId
 
               return (
-                <Link
-                  key={partner.id}
-                  href={`/messages?u=${partner.id}`}
-                  className={`flex items-center gap-3 p-3 rounded-2xl transition-all duration-200 cursor-pointer
-                    ${isActive ? 'bg-surface-container-high' : 'hover:bg-surface-container-low'}`}
-                >
-                  <div className="relative shrink-0">
-                    <Avatar user={partner} size={11} />
-                    <OnlineDot userId={partner.id} className="absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-surface" />
+                <div key={partner.id} className="relative overflow-hidden rounded-2xl group">
+                  {/* Background Delete Button */}
+                  <div className="absolute inset-y-0 right-0 w-16 bg-error flex items-center justify-center rounded-2xl">
+                    <button 
+                      onClick={(e) => handleDeleteSingleChat(partner.id, e)}
+                      className="text-white w-full h-full flex items-center justify-center cursor-pointer"
+                      title="Delete chat"
+                    >
+                      <Trash2 size={16} />
+                    </button>
                   </div>
 
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between items-center mb-0.5">
-                      <span className={`text-[13px] font-semibold truncate ${isActive ? 'text-primary' : unreadCount > 0 ? 'text-primary' : 'text-on-surface-variant'}`}>
-                        {partner.display_name}
-                      </span>
-                      {lastMessage && (
-                        <span className="text-[10px] text-outline font-medium shrink-0 ml-2">
-                          {formatTime(lastMessage.created_at)}
-                        </span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <p className={`text-[12px] truncate flex-1 ${unreadCount > 0 ? 'text-primary font-semibold' : 'text-on-surface-variant'}`}>
-                        {isFromMe && <span className="font-medium opacity-60">You: </span>}
-                        {lastText}
-                      </p>
-                      {unreadCount > 0 && (
-                        <span className="shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-on-primary text-[10px] font-black flex items-center justify-center">
-                          {unreadCount > 9 ? '9+' : unreadCount}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </Link>
+                  {/* Foreground Content */}
+                  <motion.div
+                    drag="x"
+                    dragConstraints={{ left: -64, right: 0 }}
+                    dragElastic={0.1}
+                    className="relative z-10 bg-surface rounded-2xl"
+                  >
+                    <Link
+                      href={`/messages?u=${partner.id}`}
+                      className={`flex items-center gap-3 p-3 rounded-2xl transition-all duration-200 cursor-pointer
+                        ${isActive ? 'bg-surface-container-high' : 'hover:bg-surface-container-low'}`}
+                    >
+                      <div className="relative shrink-0">
+                        <Avatar user={partner} size={11} />
+                        <OnlineDot userId={partner.id} className="absolute -bottom-0.5 -right-0.5 w-3 h-3 border-2 border-surface" />
+                      </div>
+
+                      <div className="flex-1 min-w-0 pointer-events-none">
+                        <div className="flex justify-between items-center mb-0.5">
+                          <span className={`text-[13px] font-semibold truncate ${isActive ? 'text-primary' : unreadCount > 0 ? 'text-primary' : 'text-on-surface-variant'}`}>
+                            {partner.display_name}
+                          </span>
+                          {lastMessage && (
+                            <span className="text-[10px] text-outline font-medium shrink-0 ml-2">
+                              {formatTime(lastMessage.created_at)}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <p className={`text-[12px] truncate flex-1 ${unreadCount > 0 ? 'text-primary font-semibold' : 'text-on-surface-variant'}`}>
+                            {isFromMe && <span className="font-medium opacity-60">You: </span>}
+                            {lastText}
+                          </p>
+                          {unreadCount > 0 && (
+                            <span className="shrink-0 min-w-[18px] h-[18px] px-1 rounded-full bg-primary text-on-primary text-[10px] font-black flex items-center justify-center">
+                              {unreadCount > 9 ? '9+' : unreadCount}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </Link>
+                  </motion.div>
+                </div>
               )
             })}
           </div>

@@ -4,6 +4,8 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { FriendRequestButton } from '@/components/friend-request-button'
 import { ShareProfileButton } from '@/components/share-profile-button'
+import { RealtimeDiscoverListener } from '@/components/realtime-discover-listener'
+import { ExpandableImage } from '@/components/expandable-image'
 
 export default async function DiscoverPage({ searchParams }: { searchParams: Promise<{ u?: string }> }) {
   const { u: targetUserId } = await searchParams
@@ -118,6 +120,7 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Pro
 
   return (
     <div className="w-full flex flex-col pb-32 min-h-screen bg-surface">
+      <RealtimeDiscoverListener />
       <header className="md:hidden w-full flex justify-between items-center px-6 pt-12 pb-4 bg-surface/40 backdrop-blur-md sticky top-0 z-50 border-b-[0.5px] border-outline-variant mb-6">
         <Link href="/home" className="flex items-center justify-center w-10 h-10 hover:opacity-70 transition-opacity -ml-2">
           <ChevronLeft className="text-on-surface-variant hover:text-primary transition-colors" size={28} strokeWidth={2} />
@@ -170,8 +173,13 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Pro
               }
               
               return (
-                <div key={item.data.id} className={`${className} group relative overflow-hidden bg-white/40 backdrop-blur-md border-[0.5px] border-outline-variant transition-all duration-500 hover:scale-[1.01] shadow-[0_0_30px_rgba(27,28,27,0.04)]`}>
-                  <img className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" alt={item.data.content} src={item.data.image_url} />
+                <div key={item.data.id} className={`${className} group relative bg-white/40 backdrop-blur-md border-[0.5px] border-outline-variant transition-all duration-500 hover:scale-[1.01] shadow-[0_0_30px_rgba(27,28,27,0.04)]`}>
+                  <ExpandableImage
+                    layoutId={`discover-${item.data.id}`}
+                    src={item.data.image_url}
+                    alt={item.data.content}
+                    className="w-full h-full overflow-hidden"
+                  />
                   
                   {item.size === 'large' ? (
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-6">

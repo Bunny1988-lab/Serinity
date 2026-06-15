@@ -14,7 +14,7 @@ export async function login(formData: FormData) {
     password: formData.get('password') as string,
   }
 
-  const { error } = await supabase.auth.signInWithPassword(data)
+  const { data: authData, error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
     // If email is not confirmed, redirect to signup-success page
@@ -22,6 +22,25 @@ export async function login(formData: FormData) {
       redirect('/signup-success?email=' + encodeURIComponent(data.email))
     }
     redirect('/login?error=' + encodeURIComponent(error.message))
+  }
+
+  // ── Safety net: ensure public.users row exists ──────────────────────────────
+  // The DB trigger `handle_new_user` can silently fail if username metadata was
+  // missing at signup, leaving no row in public.users. This upsert guarantees
+  // the row always exists so all downstream fetches work correctly.
+  if (authData?.user) {
+    const userId = authData.user.id
+    const meta = authData.user.user_metadata || {}
+    const fallbackUsername = meta.username || data.email.split('@')[0].replace(/[^a-z0-9_]/gi, '_').toLowerCase()
+
+    await supabase.from('users').upsert(
+      {
+        id: userId,
+        username: fallbackUsername,
+        display_name: meta.display_name || meta.full_name || fallbackUsername,
+      },
+      { onConflict: 'id', ignoreDuplicates: true }
+    )
   }
 
   revalidatePath('/', 'layout')
@@ -42,6 +61,9 @@ export async function signup(formData: FormData) {
     email: data.email,
     password: data.password,
     options: {
+      emailRedirectTo: process.env.NEXT_PUBLIC_SITE_URL 
+        ? `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`
+        : 'http://localhost:3000/auth/callback',
       data: {
         username: data.username,
         display_name: data.display_name,

@@ -22,7 +22,7 @@ export async function updateSession(request: NextRequest) {
             return request.cookies.getAll()
           },
           setAll(cookiesToSet) {
-            cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value))
+            cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
             supabaseResponse = NextResponse.next({
               request,
             })
@@ -34,23 +34,24 @@ export async function updateSession(request: NextRequest) {
       }
     )
 
-    // IMPORTANT: Avoid writing any logic between createServerClient and
-    // supabase.auth.getUser(). A simple mistake could make it very hard to debug
-    // issues with users being randomly logged out.
-
+    // Use getSession() instead of getUser() in middleware.
+    // getSession() reads from the cookie (no network call) so it never times out on Edge.
+    // Actual token verification (getUser) still happens in Server Components / API routes.
     const {
-      data: { user },
-    } = await supabase.auth.getUser()
+      data: { session },
+    } = await supabase.auth.getSession()
+
+    const isAuthed = !!session
 
     if (
-      !user &&
+      !isAuthed &&
       !request.nextUrl.pathname.startsWith('/login') &&
       !request.nextUrl.pathname.startsWith('/signup') &&
       !request.nextUrl.pathname.startsWith('/onboarding') &&
       !request.nextUrl.pathname.startsWith('/auth') &&
       !request.nextUrl.pathname.startsWith('/api/diagnose')
     ) {
-      // For API requests, return 401 Unauthorized instead of redirecting to HTML login page
+      // For API requests, return 401 instead of redirecting to the HTML login page
       if (request.nextUrl.pathname.startsWith('/api/')) {
         return new NextResponse(
           JSON.stringify({ error: 'Unauthorized' }),
@@ -58,7 +59,7 @@ export async function updateSession(request: NextRequest) {
         )
       }
 
-      // no user, potentially respond by redirecting the user to the login page
+      // No session — redirect to login
       const url = request.nextUrl.clone()
       url.pathname = '/login'
       return NextResponse.redirect(url)

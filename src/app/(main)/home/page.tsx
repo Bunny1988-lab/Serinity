@@ -9,6 +9,7 @@ import { AudioReflectionsPlayer } from '@/components/audio-reflections-player'
 import { SunsetLockCover } from '@/components/sunset-lock-cover'
 import { getMoodInkwellStyle } from '@/lib/utils'
 import { VignetteCarousel } from '@/components/vignette-carousel'
+import { ExpandableImage } from '@/components/expandable-image'
 
 
 export default async function HomeDashboard() {
@@ -28,7 +29,7 @@ export default async function HomeDashboard() {
     .select('id, name')
     .eq('owner_id', user.id)
 
-  // Fetch actual posts with sunset lock and audio whisper fields
+  // Fetch actual posts with sunset lock and audio whisper fields (Global Feed)
   const { data: posts } = await supabase
     .from('posts')
     .select(`
@@ -71,11 +72,12 @@ export default async function HomeDashboard() {
                 <article key={post.id} className="group">
                   <SunsetLockCover isLocked={post.is_sunset_locked}>
                     {post.image_url && (
-                      <div className="relative overflow-hidden mb-8 border-[0.5px] border-outline-variant bg-surface-container-low transition-all duration-700 ease-out hover:shadow-[0_0_60px_rgba(0,0,0,0.03)] rounded-2xl">
-                        <img
-                          alt="Post visual"
-                          className="w-full h-[500px] object-cover transition-transform duration-1000 group-hover:scale-105"
+                      <div className="relative mb-8 rounded-2xl">
+                        <ExpandableImage
+                          layoutId={`post-${post.id}`}
                           src={post.image_url}
+                          alt="Post visual"
+                          className="w-full h-[500px] rounded-2xl overflow-hidden border-[0.5px] border-outline-variant bg-surface-container-low shadow-sm"
                         />
                         <div className="absolute top-6 left-6 z-20">
                           <Link 

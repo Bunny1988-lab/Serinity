@@ -25,21 +25,21 @@ export default async function SettingsPage() {
         {/* ── SIDEBAR TABS ───────────────────────────────────────── */}
         <aside className="w-full md:w-64 flex flex-col space-y-10 shrink-0">
           <div className="flex flex-col space-y-4">
-            <button className="flex items-center gap-4 py-2 text-primary font-bold transition-all border-r-2 border-primary -mr-0 pr-4 text-left">
+            <Link href="/settings" className="flex items-center gap-4 py-2 text-primary font-bold transition-all border-r-2 border-primary -mr-0 pr-4 text-left">
               <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>account_circle</span> Account
-            </button>
-            <button className="flex items-center gap-4 py-2 text-on-surface-variant hover:text-primary transition-all text-left">
+            </Link>
+            <Link href="/settings/notifications" className="flex items-center gap-4 py-2 text-on-surface-variant hover:text-primary transition-all text-left">
               <span className="material-symbols-outlined">notifications_active</span> Notifications
-            </button>
-            <button className="flex items-center gap-4 py-2 text-on-surface-variant hover:text-primary transition-all text-left">
+            </Link>
+            <Link href="/settings/privacy" className="flex items-center gap-4 py-2 text-on-surface-variant hover:text-primary transition-all text-left">
               <span className="material-symbols-outlined">verified_user</span> Privacy
-            </button>
-            <button className="flex items-center gap-4 py-2 text-on-surface-variant hover:text-primary transition-all text-left">
+            </Link>
+            <Link href="/settings/appearance" className="flex items-center gap-4 py-2 text-on-surface-variant hover:text-primary transition-all text-left">
               <span className="material-symbols-outlined">palette</span> Appearance
-            </button>
-            <button className="flex items-center gap-4 py-2 text-on-surface-variant hover:text-primary transition-all text-left">
+            </Link>
+            <Link href="/settings/support" className="flex items-center gap-4 py-2 text-on-surface-variant hover:text-primary transition-all text-left">
               <span className="material-symbols-outlined">help_center</span> Support
-            </button>
+            </Link>
           </div>
           
           {/* Status Card */}

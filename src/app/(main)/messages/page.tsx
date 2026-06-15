@@ -96,7 +96,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
   const activeFriends = validConvos.slice(0, 4).map(c => c?.partner)
 
   return (
-    <div className="flex h-screen overflow-hidden w-full">
+    <div className="flex h-[calc(100dvh-80px)] overflow-hidden w-full relative">
       {/* ── LEFT SIDEBAR ─────────────────────────────────────────── */}
       <section className={`
         flex flex-col w-full md:w-[380px] shrink-0
@@ -121,7 +121,9 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
       </section>
 
       {/* ── MAIN CHAT PANEL ──────────────────────────────────────── */}
-      <section className={`flex-1 flex flex-col bg-surface-container-lowest relative min-w-0 ${!selectedRecipient ? 'hidden md:flex' : 'flex'}`}>
+      <section 
+        className={`flex-1 flex flex-col relative min-w-0 bg-[#eeeff4] text-[#1a1a2e] ${!selectedRecipient ? 'hidden md:flex' : 'flex'}`}
+      >
         {selectedRecipient ? (
           <ChatInterface currentUserId={user.id} recipient={selectedRecipient} areFriends={areFriends} />
         ) : (

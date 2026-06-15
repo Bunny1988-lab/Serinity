@@ -109,6 +109,21 @@ export function PostInteractions({
     }
   }
 
+  const [isSavingJournal, setIsSavingJournal] = useState(false)
+
+  async function handleSaveToJournal() {
+    if (isSavingJournal) return
+    setIsSavingJournal(true)
+    try {
+      const { savePostToJournal } = await import('@/app/(main)/actions')
+      await savePostToJournal(postId, 'Saved from feed.')
+      toast.success('Saved to your Private Journal', { icon: '📝' })
+    } catch (error) {
+      toast.error('Failed to save to journal')
+    }
+    setIsSavingJournal(false)
+  }
+
   return (
     <div className="pt-6 border-t-[0.5px] border-outline-variant/30">
       <div className="flex items-center space-x-8">
@@ -131,7 +146,18 @@ export function PostInteractions({
           </button>
         )}
         
-        <div className="relative ml-auto">
+        <div className="relative ml-auto flex items-center space-x-6">
+          {/* Save to Journal Button */}
+          <button 
+            onClick={handleSaveToJournal}
+            disabled={isSavingJournal}
+            className="flex items-center space-x-2 transition-colors text-on-surface-variant hover:text-primary disabled:opacity-50"
+            title="Save to Private Journal"
+          >
+            <span className="material-symbols-outlined">bookmark</span>
+          </button>
+
+          {/* Share Button */}
           <button 
             onClick={handleShareClick}
             className={`flex items-center space-x-2 transition-colors ${showShareMenu ? 'text-primary' : 'text-on-surface-variant hover:text-primary'}`}

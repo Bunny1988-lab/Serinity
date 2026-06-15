@@ -57,10 +57,23 @@ export function GlobalRealtime({ userId }: { userId: string }) {
       })
       .subscribe()
 
+    // Listen for new posts globally (Home Feed Realtime updates)
+    const postsChannel = supabase.channel('global_posts')
+      .on('postgres_changes', {
+        event: '*', // Listen to INSERT, UPDATE, DELETE
+        schema: 'public',
+        table: 'posts'
+      }, () => {
+        // Debounced refresh to seamlessly update the feed without reloading
+        scheduleRefresh()
+      })
+      .subscribe()
+
     return () => {
       if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current)
       supabase.removeChannel(msgChannel)
       supabase.removeChannel(notifChannel)
+      supabase.removeChannel(postsChannel)
     }
   }, [userId, scheduleRefresh])
 

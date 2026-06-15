@@ -126,8 +126,8 @@ export function LayoutShell({ children, unreadMessages, userId, profile }: Layou
 
             {/* Tactile Collapsible Sign Out Trigger */}
             <form action={logout} className="mt-8 shrink-0 flex justify-center w-full">
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 title="Sign Out"
                 className={`flex items-center justify-center bg-primary text-on-primary border-[0.5px] border-primary hover:opacity-90 active:scale-95 transition-all duration-300 cursor-pointer ${
                   isCollapsed ? 'w-11 h-11 rounded-full' : 'w-full py-4 rounded-xl scale-95 font-body-md text-base'
@@ -143,7 +143,7 @@ export function LayoutShell({ children, unreadMessages, userId, profile }: Layou
           </nav>
 
           {/* ── TOP APP BAR (Responsive layout-aligned) ────────────────────────────── */}
-          <header className={`fixed top-0 right-0 left-0 transition-all duration-300 ease-in-out h-20 bg-surface/40 backdrop-blur-md border-b-[0.5px] border-outline-variant z-40 flex justify-between items-center px-6 md:px-16 ${contentMarginClass}`}>
+          <header className={`fixed top-0 right-0 left-0 transition-all duration-300 ease-in-out h-20 bg-surface/40 backdrop-blur-md border-b-[0.5px] border-outline-variant z-40 justify-between items-center px-6 md:px-16 ${contentMarginClass} ${isChatActive ? 'hidden md:flex' : 'flex'}`}>
             <div className="flex items-center space-x-4 md:space-x-8">
               <SafeWidget>
                 <MobileDrawer unreadMessages={unreadMessages} userId={userId} />
@@ -171,7 +171,7 @@ export function LayoutShell({ children, unreadMessages, userId, profile }: Layou
           </header>
 
           {/* ── MAIN CONTENT (Margin-aligned) ──────────────────────────── */}
-          <main className={`flex-1 min-w-0 min-h-screen overflow-x-hidden transition-all duration-300 ease-in-out pt-20 ${contentMarginClass}`}>
+          <main className={`flex-1 min-w-0 min-h-screen overflow-x-hidden transition-all duration-300 ease-in-out ${isChatActive ? 'pt-0 md:pt-20' : 'pt-20'} ${contentMarginClass}`}>
             {children}
           </main>
 

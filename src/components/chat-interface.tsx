@@ -402,18 +402,19 @@ const vanishStyles = {
   dateSep: 'bg-[#1a1426] text-purple-300',
 }
 
-// ── Normal (Tatami/Minimalist) palette — matches Stitch reference ─────────────
+// ── Normal palette — light grey background, white input bar ─────────────────
+// Uses Tailwind arbitrary values to ensure light grey rendering regardless of global dark mode
 const normalStyles = {
-  container: 'bg-[#fbf9f7] dark:bg-[#121110]',
-  header: 'bg-[#fbf9f7]/80 dark:bg-[#121110]/80 border-outline-variant',
-  headerText: 'text-primary',
-  headerSub: 'text-outline',
-  bubbleSent: 'bg-gradient-to-br from-[#1a1c22] to-[#010103] text-white border-[0.5px] border-black/10 shadow-md',
-  bubbleReceived: 'bg-[#efedec] dark:bg-[#1e1d1c] text-primary border-[0.5px] border-outline-variant/30',
-  inputForm: 'bg-surface border-outline-variant focus-within:border-primary/50 text-primary',
-  inputText: 'text-primary placeholder:text-outline/50',
-  buttonIcon: 'text-outline hover:text-primary',
-  dateSep: 'bg-surface-container text-outline',
+  container: 'bg-[#eeeff4] text-[#1a1a2e]',
+  header: 'bg-[#eeeff4]/90 backdrop-blur-md border-[#dddee6]',
+  headerText: 'text-[#1a1a2e]',
+  headerSub: 'text-[#8a8a9a]',
+  bubbleSent: 'bg-[#1a1a2e] text-white border-[0.5px] border-[#1a1a2e]/80 shadow-sm',
+  bubbleReceived: 'bg-white text-[#1a1a2e] border-[0.5px] border-[#dddee6] shadow-sm',
+  inputForm: 'bg-[#ffffff] border-[#dddee6] shadow-md focus-within:border-[#dddee6] outline-none',
+  inputText: 'text-[#1a1a2e] placeholder:text-[#9b9bad] outline-none',
+  buttonIcon: 'text-[#9b9bad] hover:text-[#1a1a2e]',
+  dateSep: 'bg-[#e2e3ea] text-[#8a8a9a]',
 }
 
 export function ChatInterface({ currentUserId, recipient, areFriends }: { currentUserId: string; recipient: any; areFriends?: boolean }) {
@@ -464,6 +465,18 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
     channel.on('broadcast', { event: 'typing' }, (payload) => {
       if (payload.payload.userId === recipient.id) {
         setIsTyping(payload.payload.isTyping)
+      }
+    })
+
+    channel.on('broadcast', { event: 'new_message' }, (payload) => {
+      const msg = payload.payload.message
+      if (msg.sender_id === recipient.id) {
+        setMessages(prev => {
+          if (prev.some(m => m.id === msg.id)) return prev
+          return [...prev, msg]
+        })
+        markMessagesAsRead(recipient.id)
+        setTimeout(() => scrollToBottom('smooth' as ScrollBehavior), 100)
       }
     })
 
@@ -643,6 +656,14 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
     }
 
     setMessages(prev => [...prev, { ...msg, message_reactions: [], is_optimistic: true, created_at: new Date().toISOString() }])
+    
+    // Broadcast instantly to bypass Postgres realtime config
+    supabase.channel(`dm_${[currentUserId, recipient.id].sort().join('_')}`).send({
+      type: 'broadcast',
+      event: 'new_message',
+      payload: { message: { ...msg, message_reactions: [], is_optimistic: false, created_at: new Date().toISOString() } }
+    })
+
     await supabase.from('messages').insert(msg)
     await checkAndSendQuietReply(recipient.id)
 
@@ -710,8 +731,37 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
       ...(image_url ? { image_url } : {})
     }
 
+    // Only send columns that exist in the database schema
+    const dbPayload = {
+      id: messageId,
+      sender_id: currentUserId,
+      receiver_id: recipient.id,
+      content: text,
+      is_whisper: isWhisper,
+      reply_to_id: replyingTo?.id || null,
+      ...(image_url ? { image_url } : {})
+    }
+
     setMessages(prev => [...prev, { ...msg, message_reactions: [], is_optimistic: true, created_at: new Date().toISOString() }])
-    await supabase.from('messages').insert(msg)
+    
+    // Broadcast instantly to bypass Postgres realtime config
+    supabase.channel(`dm_${[currentUserId, recipient.id].sort().join('_')}`).send({
+      type: 'broadcast',
+      event: 'new_message',
+      payload: { message: { ...msg, message_reactions: [], is_optimistic: false, created_at: new Date().toISOString() } }
+    })
+
+    const { error: insertError } = await supabase.from('messages').insert(dbPayload)
+    
+    if (insertError) {
+      console.error('Failed to send message:', insertError)
+      toast.error('Failed to send message. Please try again.')
+      // Revert optimistic update
+      setMessages(prev => prev.filter(m => m.id !== messageId))
+      setIsSending(false)
+      return
+    }
+
     await checkAndSendQuietReply(recipient.id)
 
     setIsSending(false)
@@ -784,11 +834,13 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
 
   return (
     <div
-      className={`flex flex-col h-full min-h-0 relative w-full overflow-hidden transition-all duration-500 ${st.container}`}
+      className={`flex flex-col h-full overflow-hidden relative w-full transition-all duration-500 ${st.container}`}
       onClick={() => setActiveMenuId(null)}
     >
-      {/* ── HEADER ─────────────────────────────────────────────────────── */}
-      <header className={`h-20 flex justify-between items-center px-6 md:px-16 sticky top-0 backdrop-blur-md border-b-[0.5px] z-20 transition-all duration-500 ${st.header}`}>
+      {/* ── HEADER ─ fixed height, never scrolls ─────────────────────────── */}
+      <header
+        className={`h-[64px] shrink-0 flex justify-between items-center px-4 md:px-8 border-b-[0.5px] z-20 transition-all duration-500 ${st.header}`}
+      >
         <div className="flex items-center gap-4">
           {/* Back arrow — mobile only */}
           <Link href="/messages" className="md:hidden -ml-2 p-1.5 rounded-full hover:bg-surface-container transition-colors">
@@ -866,7 +918,7 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
         id="chat-scroller"
         style={{ overscrollBehavior: 'contain' }}
       >
-        <div className="max-w-3xl mx-auto w-full space-y-8">
+        <div className="max-w-2xl mx-auto w-full space-y-5">
 
           {/* Vanish mode banner */}
           {isVanishMode && (
@@ -1095,19 +1147,37 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
 
           {/* Empty state */}
           {displayedMessages.length === 0 && (
-            <div className="flex flex-col items-center justify-center gap-5 py-28 text-center">
-              <div className="w-20 h-20 rounded-full border-[0.5px] border-outline-variant bg-surface-container flex items-center justify-center overflow-hidden">
-                {recipient.avatar_url ? (
-                  <img src={recipient.avatar_url} alt="" className="w-full h-full object-cover grayscale opacity-60" />
-                ) : (
-                  <span className="text-3xl font-bold text-outline">{recipient.display_name?.[0]?.toUpperCase()}</span>
-                )}
+            <div className="flex flex-col items-center justify-center gap-8 py-32 text-center">
+              {/* Avatar — large, warm, editorial */}
+              <div className="relative">
+                <div className="w-24 h-24 rounded-full overflow-hidden border border-[#e8e2d9] shadow-[0_4px_24px_rgba(0,0,0,0.06)] bg-[#eee9e2]">
+                  {recipient.avatar_url ? (
+                    <img src={recipient.avatar_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <span className="w-full h-full flex items-center justify-center font-display text-4xl font-semibold text-[#6b5f52]">
+                      {recipient.display_name?.[0]?.toUpperCase()}
+                    </span>
+                  )}
+                </div>
+                {/* Subtle ring around avatar */}
+                <div className="absolute inset-0 rounded-full ring-[3px] ring-[#eeeff4] ring-offset-[3px] ring-offset-transparent" />
               </div>
-              <div className="space-y-1">
-                <p className={`font-headline-sm text-3xl font-medium italic ${isVanishMode ? 'text-purple-200' : 'text-primary'}`}>
+
+              {/* Name + tagline */}
+              <div className="space-y-2">
+                <p className="font-display text-[32px] font-medium italic tracking-tight text-[#1a1a2e] leading-none">
                   {recipient.display_name}
                 </p>
-                <p className="text-[13px] text-outline font-medium">Start a mindful, quiet conversation.</p>
+                <div className="w-8 h-[0.5px] bg-[#c8c9d4] mx-auto my-3" />
+                <p className="text-[12px] text-[#8a8a9a] font-medium uppercase tracking-[0.2em]">
+                  Start a mindful, quiet conversation.
+                </p>
+              </div>
+
+              {/* E2E notice */}
+              <div className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-[#e2e3ea] border border-[#dddee6]">
+                <span className="material-symbols-outlined text-[14px] text-[#8a8a9a]">lock</span>
+                <span className="text-[10px] font-bold uppercase tracking-widest text-[#8a8a9a]">End-to-end encrypted</span>
               </div>
             </div>
           )}
@@ -1199,7 +1269,9 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
       </AnimatePresence>
 
       {/* ── INPUT BAR ──────────────────────────────────────────────────── */}
-      <footer className={`px-6 md:px-16 pb-6 pt-3 sticky bottom-0 w-full z-30 ${st.container}`}>
+      <footer 
+        className={`px-6 md:px-16 pb-6 pt-3 sticky bottom-0 w-full z-30 bg-[#eeeff4]`}
+      >
         {areFriends === false ? (
           <div className="max-w-3xl mx-auto flex items-center justify-center py-4 px-6 bg-surface rounded-full border-[0.5px] border-outline-variant">
             <p className="text-[13px] font-semibold text-on-surface-variant">You must be connected to send messages.</p>
@@ -1208,7 +1280,7 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
           <>
             <form
               onSubmit={handleSend}
-              className={`max-w-3xl mx-auto flex items-center gap-3 rounded-full border-[0.5px] p-2 pl-5 pr-2 transition-colors duration-300 shadow-sm relative overflow-hidden ${st.inputForm}`}
+              className={`flex items-center gap-2 rounded-full border-[0.5px] p-1.5 pl-4 pr-1.5 transition-colors duration-300 relative overflow-hidden ${st.inputForm}`}
             >
               {/* Recording overlay */}
               <AnimatePresence>
@@ -1237,7 +1309,7 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
               <button
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
-                className={`transition-colors rounded-full hover:bg-surface-container p-1 ${st.buttonIcon}`}
+                className={`transition-colors rounded-full hover:bg-surface-container p-1 mt-1 ${st.buttonIcon}`}
               >
                 <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>add</span>
               </button>
@@ -1259,7 +1331,7 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
                   <button
                     type="button"
                     onClick={startRecording}
-                    className={`p-1.5 transition-colors rounded-full hover:bg-surface-container ${st.buttonIcon}`}
+                    className={`p-1.5 transition-colors rounded-full hover:bg-surface-container mt-1 ${st.buttonIcon}`}
                   >
                     <span className="material-symbols-outlined" style={{ fontSize: '20px' }}>mood</span>
                   </button>
@@ -1279,9 +1351,9 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
               </div>
             </form>
 
-            {/* E2E encryption footer text */}
-            <p className="text-center text-[10px] text-outline mt-3 uppercase tracking-widest opacity-50 font-label-caps">
-              End-to-End Encrypted Communication
+            {/* E2E footer text */}
+            <p className="text-center text-[10px] text-outline mt-2 uppercase tracking-widest opacity-40 font-label-caps">
+              End-to-End Encrypted
             </p>
           </>
         )}

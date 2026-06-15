@@ -1,14 +1,19 @@
 'use client'
 
-import { usePathname } from 'next/navigation'
+import { usePathname, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { Home, MessageCircle, Compass, BookOpen, User } from 'lucide-react'
 
 export function MobileNav() {
   const pathname = usePathname()
+  const searchParams = useSearchParams()
   
   // Hide on onboarding, login, etc
   if (['/login', '/signup', '/onboarding'].includes(pathname)) return null
+
+  // Hide the bottom nav dock if we are inside a specific chat conversation
+  const isInsideSpecificChat = pathname === '/messages' && searchParams.get('u') !== null
+  if (isInsideSpecificChat) return null
   
   const navItems = [
     { name: 'Home', href: '/home', icon: Home },
