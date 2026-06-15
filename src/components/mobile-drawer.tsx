@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, Component, useEffect, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -107,7 +108,14 @@ export function MobileDrawerPanel({ unreadMessages = 0, userId = '' }: MobileDra
 
   const safeUnread = Math.max(0, unreadMessages ?? 0)
 
-  return (
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
+  if (!mounted) return null
+
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <motion.div
@@ -205,7 +213,8 @@ export function MobileDrawerPanel({ unreadMessages = 0, userId = '' }: MobileDra
             </div>
           </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   )
 }
 
