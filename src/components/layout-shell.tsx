@@ -75,7 +75,7 @@ export function LayoutShell({ children, unreadMessages, userId, profile }: Layou
         <GlobalRealtime userId={userId} />
         <PresenceProvider userId={userId} />
         
-        <div className="flex min-h-screen bg-background relative overflow-hidden">
+        <div className="flex min-h-screen bg-background relative">
           <MindfulPause />
 
           {/* ── DESKTOP SIDEBAR (Slideable & Collapsible) ────────────────────────────── */}

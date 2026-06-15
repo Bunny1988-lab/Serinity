@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
 import { useTheme } from 'next-themes'
 
 const THEME_TYPES: Record<string, string> = {
@@ -47,12 +46,8 @@ export function WallpaperProvider({
     <>
       {mounted && isCustomTheme && (
         <div className="fixed inset-0 pointer-events-none z-[-1] overflow-hidden">
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: [0.5, 0.8, 0.5], scale: [1, 1.05, 1] }}
-            transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-            className="absolute inset-0 opacity-50 bg-gradient-to-tr from-transparent via-background/10 to-transparent mix-blend-overlay"
-          />
+          {/* Static gradient — no transform/scale to avoid creating a stacking context */}
+          <div className="absolute inset-0 opacity-50 bg-gradient-to-tr from-transparent via-background/10 to-transparent mix-blend-overlay" />
         </div>
       )}
       {children}
