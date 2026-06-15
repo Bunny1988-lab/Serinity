@@ -110,10 +110,8 @@ export function MobileDrawerPanel({ unreadMessages = 0, userId = '' }: MobileDra
   return (
     <AnimatePresence>
       {isOpen && (
-        <>
-          {/* Backdrop — rendered directly in layout root, no portal, no backdrop-blur parent */}
-          <motion.div
-            key="drawer-backdrop"
+        <motion.div
+          key="drawer-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -123,10 +121,11 @@ export function MobileDrawerPanel({ unreadMessages = 0, userId = '' }: MobileDra
             className="md:hidden"
             aria-hidden="true"
           />
+      )}
 
-          {/* Drawer panel */}
-          <motion.div
-            key="drawer-panel"
+      {isOpen && (
+        <motion.div
+          key="drawer-panel"
             role="dialog"
             aria-modal="true"
             aria-label="Navigation menu"
@@ -134,11 +133,11 @@ export function MobileDrawerPanel({ unreadMessages = 0, userId = '' }: MobileDra
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: '288px', zIndex: 99999 }}
-            className="bg-surface border-r border-outline-variant/30 flex flex-col py-8 px-6 md:hidden shadow-2xl overflow-y-auto hide-scrollbar"
+            style={{ position: 'fixed', top: 0, left: 0, height: '100dvh', width: '288px', zIndex: 99999 }}
+            className="bg-surface border-r border-outline-variant/30 flex flex-col md:hidden shadow-2xl"
           >
             {/* Header row */}
-            <div className="flex items-center justify-between mb-8 shrink-0">
+            <div className="flex items-center justify-between p-6 pb-4 shrink-0 border-b border-outline-variant/10">
               <div>
                 <h1 className="font-display text-3xl text-primary font-semibold tracking-tight">Quiet</h1>
                 <p className="text-[10px] tracking-[0.15em] text-on-surface-variant/70 uppercase font-bold mt-0.5">
@@ -156,7 +155,7 @@ export function MobileDrawerPanel({ unreadMessages = 0, userId = '' }: MobileDra
             </div>
 
             {/* Navigation links */}
-            <nav className="flex flex-col space-y-1 flex-grow" aria-label="Main navigation">
+            <nav className="flex flex-col space-y-1 flex-1 overflow-y-auto hide-scrollbar p-4" aria-label="Main navigation">
               {NAV_ITEMS.map((item) => {
                 const isActive = pathname === item.href || pathname.startsWith(item.href + '/')
                 return (
@@ -193,7 +192,7 @@ export function MobileDrawerPanel({ unreadMessages = 0, userId = '' }: MobileDra
             </nav>
 
             {/* Sign out */}
-            <div className="mt-6 shrink-0">
+            <div className="p-6 pt-4 shrink-0 border-t border-outline-variant/10 mt-auto pb-[max(1.5rem,env(safe-area-inset-bottom,1.5rem))]">
               <button
                 type="button"
                 onClick={handleLogout}
@@ -205,7 +204,6 @@ export function MobileDrawerPanel({ unreadMessages = 0, userId = '' }: MobileDra
               </button>
             </div>
           </motion.div>
-        </>
       )}
     </AnimatePresence>
   )
