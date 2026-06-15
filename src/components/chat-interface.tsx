@@ -476,7 +476,9 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
           return [...prev, msg]
         })
         markMessagesAsRead(recipient.id)
-        setTimeout(() => scrollToBottom('smooth' as ScrollBehavior), 100)
+        setTimeout(() => scrollToBottom('smooth' as ScrollBehavior), 250)
+        // Safety net for slow devices — retry once more after 500ms
+        setTimeout(() => scrollToBottom('instant' as ScrollBehavior), 500)
       }
     })
 
@@ -554,7 +556,7 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
       .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${recipient.id}),and(sender_id.eq.${recipient.id},receiver_id.eq.${currentUserId})`)
       .order('created_at', { ascending: true })
     if (data) setMessages(data)
-    setTimeout(() => scrollToBottom('instant' as ScrollBehavior), 100)
+    setTimeout(() => scrollToBottom('instant' as ScrollBehavior), 250)
   }
 
   useEffect(() => {
@@ -914,9 +916,9 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
       <div
         ref={scrollContainerRef}
         onScroll={handleScroll}
-        className="flex-1 overflow-y-auto px-6 md:px-16 py-10 scroll-smooth relative z-10 hide-scrollbar"
+        className="flex-1 overflow-y-auto px-3 sm:px-6 md:px-16 py-4 md:py-10 scroll-smooth relative z-10 hide-scrollbar"
         id="chat-scroller"
-        style={{ overscrollBehavior: 'contain' }}
+        style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
       >
         <div className="max-w-2xl mx-auto w-full space-y-5">
 
@@ -961,7 +963,7 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
                 return (
                   <div
                     key={msg.id}
-                    className={`flex gap-3 max-w-[80%] md:max-w-[70%] group relative ${isMe ? 'flex-row-reverse ml-auto' : ''}`}
+                    className={`flex gap-2 max-w-[78%] md:max-w-[68%] group relative ${isMe ? 'flex-row-reverse ml-auto' : ''}`}
                   >
                     {/* Recipient avatar — shown only for received messages */}
                     {!isMe && (
@@ -992,10 +994,10 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
                       <div
                         onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); setActiveMenuId(msg.id) }}
                         onClick={(e) => { e.stopPropagation(); setActiveMenuId(activeMenuId === msg.id ? null : msg.id) }}
-                        className={`relative cursor-pointer transition-all duration-200 ${isOpt ? 'opacity-50 animate-pulse' : ''} ${
+                        className={`relative cursor-pointer transition-all duration-200 overflow-hidden break-words ${isOpt ? 'opacity-50 animate-pulse' : ''} ${
                           isMe
-                            ? `${st.bubbleSent} p-4 rounded-2xl rounded-tr-none`
-                            : `${st.bubbleReceived} p-4 rounded-2xl rounded-tl-none`
+                            ? `${st.bubbleSent} p-3 md:p-4 rounded-2xl rounded-tr-none`
+                            : `${st.bubbleReceived} p-3 md:p-4 rounded-2xl rounded-tl-none`
                         }`}
                       >
                         {/* View-once image */}
@@ -1269,8 +1271,9 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
       </AnimatePresence>
 
       {/* ── INPUT BAR ──────────────────────────────────────────────────── */}
-      <footer 
-        className={`px-6 md:px-16 pb-6 pt-3 sticky bottom-0 w-full z-30 bg-[#eeeff4]`}
+      <footer
+        className={`px-3 sm:px-6 md:px-16 pt-2 pb-2 md:pb-6 sticky bottom-0 w-full z-30 ${isVanishMode ? 'bg-[#0d0d0f]' : 'bg-background'}`}
+        style={{ paddingBottom: 'max(8px, env(safe-area-inset-bottom, 8px))' }}
       >
         {areFriends === false ? (
           <div className="max-w-3xl mx-auto flex items-center justify-center py-4 px-6 bg-surface rounded-full border-[0.5px] border-outline-variant">

@@ -81,7 +81,7 @@ export function LayoutShell({ children, unreadMessages, userId, profile }: Layou
           <MindfulPause />
 
           {/* ── DESKTOP SIDEBAR (Slideable & Collapsible) ────────────────────────────── */}
-          <nav className={`fixed left-0 top-0 h-full border-r-[0.5px] border-outline-variant bg-white/40 backdrop-blur-md z-50 hidden md:flex flex-col py-16 transition-all duration-300 ease-in-out shadow-[0_0_30px_rgba(0,0,0,0.04)] group/sidebar ${sidebarWidthClass}`}>
+          <nav className={`fixed left-0 top-0 h-full border-r-[0.5px] border-outline-variant bg-surface z-50 hidden md:flex flex-col py-16 transition-all duration-300 ease-in-out shadow-[0_0_30px_rgba(0,0,0,0.04)] group/sidebar ${sidebarWidthClass}`}>
             
             {/* Elegant Border Chevron Toggle Toggle */}
             <button
@@ -145,7 +145,7 @@ export function LayoutShell({ children, unreadMessages, userId, profile }: Layou
           </nav>
 
           {/* ── TOP APP BAR (Responsive layout-aligned) ────────────────────────────── */}
-          <header className={`fixed top-0 right-0 left-0 transition-all duration-300 ease-in-out h-20 bg-surface/40 backdrop-blur-md border-b-[0.5px] border-outline-variant z-40 justify-between items-center px-6 md:px-16 ${contentMarginClass} ${isChatActive ? 'hidden md:flex' : 'flex'}`}>
+          <header className={`fixed top-0 right-0 left-0 transition-all duration-300 ease-in-out h-20 bg-surface/80 backdrop-blur-md border-b-[0.5px] border-outline-variant z-30 justify-between items-center px-6 md:px-16 ${contentMarginClass} ${isChatActive ? 'hidden md:flex' : 'flex'}`}>
             <div className="flex items-center space-x-4 md:space-x-8">
               <SafeWidget>
                 <MobileDrawer unreadMessages={unreadMessages} userId={userId} />
@@ -173,7 +173,7 @@ export function LayoutShell({ children, unreadMessages, userId, profile }: Layou
           </header>
 
           {/* ── MAIN CONTENT (Margin-aligned) ──────────────────────────── */}
-          <main className={`flex-1 min-w-0 min-h-screen overflow-x-hidden transition-all duration-300 ease-in-out ${isChatActive ? 'pt-0 md:pt-20' : 'pt-20'} ${contentMarginClass}`}>
+          <main className={`flex-1 min-w-0 min-h-screen overflow-x-hidden transition-all duration-300 ease-in-out ${isChatActive ? 'pt-0 md:pt-20' : 'pt-20'} ${isChatActive ? '' : 'pb-16 md:pb-0'} ${contentMarginClass}`}>
             {children}
           </main>
 

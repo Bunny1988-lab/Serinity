@@ -27,7 +27,10 @@ export function MobileNav() {
   const isChatActive = pathname.startsWith('/messages') || pathname.startsWith('/ai-friend')
 
   return (
-    <nav className="fixed bottom-0 w-full bg-background/70 backdrop-blur-2xl border-t border-border-mint/50 h-[84px] px-4 pb-safe flex justify-around items-center max-w-[800px] mx-auto z-50 rounded-t-[32px] shadow-[0_-8px_32px_rgba(0,0,0,0.04)]">
+    <nav
+      className="fixed bottom-0 left-0 right-0 w-full bg-background border-t border-outline-variant/50 flex justify-around items-center z-40 md:hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom, 8px)', height: 'calc(56px + env(safe-area-inset-bottom, 8px))' }}
+    >
       {navItems.map((item) => {
         const Icon = item.icon
         const isActive = 
@@ -39,7 +42,7 @@ export function MobileNav() {
           <Link
             key={item.name}
             href={item.href}
-            className="flex flex-col items-center justify-center w-16 h-full relative pt-2 pb-4"
+            className="flex flex-col items-center justify-center flex-1 h-full gap-1 pt-2"
           >
             <Icon 
               size={24} 

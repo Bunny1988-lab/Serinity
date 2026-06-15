@@ -96,7 +96,7 @@ export default async function MessagesPage({ searchParams }: { searchParams: Pro
   const activeFriends = validConvos.slice(0, 4).map(c => c?.partner)
 
   return (
-    <div className="flex h-[calc(100dvh-80px)] overflow-hidden w-full relative">
+    <div className="flex h-dvh md:h-[calc(100dvh-80px)] overflow-hidden w-full relative">
       {/* ── LEFT SIDEBAR ─────────────────────────────────────────── */}
       <section className={`
         flex flex-col w-full md:w-[380px] shrink-0

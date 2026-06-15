@@ -11,11 +11,11 @@ export function GlobalRealtime({ userId }: { userId: string }) {
   // Debounce router.refresh() so rapid-fire events (e.g. bulk deletes)
   // don't trigger multiple simultaneous refreshes that can crash mobile.
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null)
-  const scheduleRefresh = useCallback(() => {
+  const scheduleRefresh = useCallback((delay = 1500) => {
     if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current)
     refreshTimerRef.current = setTimeout(() => {
       router.refresh()
-    }, 300)
+    }, delay)
   }, [router])
 
   useEffect(() => {
@@ -34,9 +34,8 @@ export function GlobalRealtime({ userId }: { userId: string }) {
         if (payload.eventType === 'INSERT' && msg && msg.receiver_id === userId) {
           playNotificationSound()
         }
-        // Debounced refresh — prevents mobile "page not found" crash
-        // when bulk deletes trigger many events simultaneously.
-        scheduleRefresh()
+        // Debounced refresh — messages get 800ms delay (fast enough to feel real-time)
+        scheduleRefresh(800)
       })
       .subscribe()
 
@@ -52,8 +51,8 @@ export function GlobalRealtime({ userId }: { userId: string }) {
         if (payload.eventType === 'INSERT' && notif && notif.user_id === userId) {
           playNotificationSound()
         }
-        // Debounced refresh
-        scheduleRefresh()
+        // Debounced refresh — notifications get 800ms delay
+        scheduleRefresh(800)
       })
       .subscribe()
 
@@ -64,8 +63,9 @@ export function GlobalRealtime({ userId }: { userId: string }) {
         schema: 'public',
         table: 'posts'
       }, () => {
-        // Debounced refresh to seamlessly update the feed without reloading
-        scheduleRefresh()
+        // Posts get a longer 3000ms delay to batch multiple events together
+        // and prevent excessive re-renders while user is scrolling the feed.
+        scheduleRefresh(3000)
       })
       .subscribe()
 
