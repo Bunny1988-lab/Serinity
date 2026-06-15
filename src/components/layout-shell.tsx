@@ -13,7 +13,7 @@ import { PresenceProvider } from '@/components/presence'
 import { UnreadBadge } from '@/components/unread-badge'
 import { MobileNav } from '@/components/mobile-nav'
 import { NotificationBell } from '@/components/notification-bell'
-import { MobileDrawer } from '@/components/mobile-drawer'
+import { MobileDrawer, MobileDrawerProvider } from '@/components/mobile-drawer'
 
 // Error boundary to prevent any header widget from crashing the whole page
 class SafeWidget extends Component<{ children: ReactNode; fallback?: ReactNode }, { error: boolean }> {
@@ -74,7 +74,9 @@ export function LayoutShell({ children, unreadMessages, userId, profile }: Layou
       <VaultProvider>
         <GlobalRealtime userId={userId} />
         <PresenceProvider userId={userId} />
-        
+        {/* MobileDrawerProvider wraps everything so its panel renders OUTSIDE
+            the backdrop-blur header — fixing the z-index stacking context bug */}
+        <MobileDrawerProvider unreadMessages={unreadMessages} userId={userId}>
         <div className="flex min-h-screen bg-background relative">
           <MindfulPause />
 
@@ -182,6 +184,7 @@ export function LayoutShell({ children, unreadMessages, userId, profile }: Layou
             </Suspense>
           </div>
         </div>
+        </MobileDrawerProvider>
       </VaultProvider>
     </WallpaperProvider>
   )

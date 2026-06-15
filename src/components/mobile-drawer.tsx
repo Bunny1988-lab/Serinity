@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, Component, useEffect, type ReactNode } from 'react'
-import { createPortal } from 'react-dom'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -31,7 +30,7 @@ class DrawerErrorBoundary extends Component<
   }
 }
 
-// ── Nav items — every href must correspond to an existing app/(main) route ───
+// ── Nav items ─────────────────────────────────────────────────────────────────
 interface NavItem {
   href: string
   icon: string
@@ -43,7 +42,7 @@ const NAV_ITEMS: NavItem[] = [
   { href: '/home',          icon: 'home',              label: 'Home' },
   { href: '/discover',      icon: 'search',            label: 'Discover' },
   { href: '/profile',       icon: 'account_circle',    label: 'Profile' },
-  { href: '/messages',      icon: 'mail',              label: 'Messages',     hasBadge: true },
+  { href: '/messages',      icon: 'mail',              label: 'Messages', hasBadge: true },
   { href: '/notifications', icon: 'notifications',     label: 'Notifications' },
   { href: '/people',        icon: 'group',             label: 'People' },
   { href: '/ai',            icon: 'smart_toy',         label: 'AI Assistant' },
@@ -59,47 +58,69 @@ interface MobileDrawerProps {
   userId?: string
 }
 
-function DrawerInner({ unreadMessages = 0, userId = '' }: MobileDrawerProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [isSigningOut, setIsSigningOut] = useState(false)
+// ── Context to share open/close state between trigger and panel ───────────────
+import { createContext, useContext } from 'react'
+
+const DrawerContext = createContext<{
+  isOpen: boolean
+  open: () => void
+  close: () => void
+}>({ isOpen: false, open: () => {}, close: () => {} })
+
+// ── The drawer panel — rendered at layout root level, OUTSIDE backdrop-blur ──
+export function MobileDrawerPanel({ unreadMessages = 0, userId = '' }: MobileDrawerProps) {
+  const { isOpen, close } = useContext(DrawerContext)
   const pathname = usePathname() ?? ''
   const router = useRouter()
+  const [isSigningOut, setIsSigningOut] = useState(false)
 
-  // Client-side logout — avoids server-action redirect which can 404 on mobile
+  // Close on route change
+  useEffect(() => {
+    close()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pathname])
+
+  // Prevent body scroll when open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => { document.body.style.overflow = '' }
+  }, [isOpen])
+
   const handleLogout = async () => {
     if (isSigningOut) return
     try {
       setIsSigningOut(true)
-      setIsOpen(false)
+      close()
       const supabase = createClient()
       await supabase.auth.signOut()
       router.push('/login')
       router.refresh()
     } catch (err) {
       console.error('[MobileDrawer] Logout error:', err)
-      // Even if signout fails, still redirect
       router.push('/login')
     }
   }
 
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
-
   const safeUnread = Math.max(0, unreadMessages ?? 0)
 
-  const drawerContent = (
+  return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop — rendered directly in layout root, no portal, no backdrop-blur parent */}
           <motion.div
             key="drawer-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            onClick={() => setIsOpen(false)}
-            className="fixed inset-0 z-[9998] bg-black/50 backdrop-blur-sm md:hidden"
+            onClick={close}
+            style={{ position: 'fixed', inset: 0, zIndex: 99998, backgroundColor: 'rgba(0,0,0,0.55)' }}
+            className="md:hidden"
             aria-hidden="true"
           />
 
@@ -113,14 +134,13 @@ function DrawerInner({ unreadMessages = 0, userId = '' }: MobileDrawerProps) {
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}
             transition={{ type: 'spring', damping: 28, stiffness: 220 }}
-            className="fixed top-0 left-0 bottom-0 w-72 bg-surface border-r border-outline-variant/30 z-[9999] flex flex-col py-8 px-6 md:hidden shadow-2xl overflow-y-auto hide-scrollbar"
+            style={{ position: 'fixed', top: 0, left: 0, bottom: 0, width: '288px', zIndex: 99999 }}
+            className="bg-surface border-r border-outline-variant/30 flex flex-col py-8 px-6 md:hidden shadow-2xl overflow-y-auto hide-scrollbar"
           >
             {/* Header row */}
             <div className="flex items-center justify-between mb-8 shrink-0">
               <div>
-                <h1 className="font-display text-3xl text-primary font-semibold tracking-tight">
-                  Quiet
-                </h1>
+                <h1 className="font-display text-3xl text-primary font-semibold tracking-tight">Quiet</h1>
                 <p className="text-[10px] tracking-[0.15em] text-on-surface-variant/70 uppercase font-bold mt-0.5">
                   Premium Network
                 </p>
@@ -128,7 +148,7 @@ function DrawerInner({ unreadMessages = 0, userId = '' }: MobileDrawerProps) {
               <button
                 type="button"
                 aria-label="Close navigation menu"
-                onClick={() => setIsOpen(false)}
+                onClick={close}
                 className="p-2 -mr-2 rounded-full hover:bg-surface-container text-on-surface-variant transition-colors active:scale-95"
               >
                 <X size={20} />
@@ -143,7 +163,7 @@ function DrawerInner({ unreadMessages = 0, userId = '' }: MobileDrawerProps) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    onClick={() => setIsOpen(false)}
+                    onClick={close}
                     aria-current={isActive ? 'page' : undefined}
                     className={`flex items-center gap-4 py-3 px-3 rounded-xl transition-all duration-200 font-medium select-none ${
                       isActive
@@ -162,7 +182,6 @@ function DrawerInner({ unreadMessages = 0, userId = '' }: MobileDrawerProps) {
                     </span>
                     <span className="text-[14px] leading-none">{item.label}</span>
 
-                    {/* Unread badge on Messages */}
                     {item.hasBadge && safeUnread > 0 && userId && (
                       <span className="ml-auto min-w-[18px] h-[18px] px-1 rounded-full bg-rose-500 text-white text-[10px] font-black flex items-center justify-center leading-none">
                         {safeUnread > 9 ? '9+' : safeUnread}
@@ -190,27 +209,45 @@ function DrawerInner({ unreadMessages = 0, userId = '' }: MobileDrawerProps) {
       )}
     </AnimatePresence>
   )
+}
 
+// ── The hamburger trigger button — lives in the header ────────────────────────
+function MobileDrawerTrigger() {
+  const { open } = useContext(DrawerContext)
   return (
-    <>
-      {/* Hamburger trigger — mobile only */}
-      <button
-        type="button"
-        aria-label="Open navigation menu"
-        aria-expanded={isOpen}
-        onClick={() => setIsOpen(true)}
-        className="md:hidden text-primary p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors focus:outline-none active:scale-95"
-      >
-        <Menu size={24} />
-      </button>
-
-      {mounted ? createPortal(drawerContent, document.body) : null}
-    </>
+    <button
+      type="button"
+      aria-label="Open navigation menu"
+      onClick={open}
+      className="md:hidden text-primary p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors focus:outline-none active:scale-95"
+    >
+      <Menu size={24} />
+    </button>
   )
 }
 
-// Export wrapped in error boundary so drawer can never crash the whole page
-export function MobileDrawer(props: MobileDrawerProps) {
+// ── Provider — wraps the entire layout and shares open state ──────────────────
+export function MobileDrawerProvider({
+  children,
+  unreadMessages = 0,
+  userId = '',
+}: {
+  children: ReactNode
+  unreadMessages?: number
+  userId?: string
+}) {
+  const [isOpen, setIsOpen] = useState(false)
+  return (
+    <DrawerContext.Provider value={{ isOpen, open: () => setIsOpen(true), close: () => setIsOpen(false) }}>
+      {children}
+      {/* Panel renders here — at layout root level, outside any backdrop-blur/transform parent */}
+      <MobileDrawerPanel unreadMessages={unreadMessages} userId={userId} />
+    </DrawerContext.Provider>
+  )
+}
+
+// ── MobileDrawer = just the trigger button (used inside header) ───────────────
+export function MobileDrawer(_props: MobileDrawerProps) {
   return (
     <DrawerErrorBoundary
       fallback={
@@ -218,13 +255,12 @@ export function MobileDrawer(props: MobileDrawerProps) {
           type="button"
           aria-label="Open navigation menu"
           className="md:hidden text-primary p-2 -ml-2 rounded-full hover:bg-surface-container transition-colors"
-          onClick={() => window.location.reload()}
         >
           <Menu size={24} />
         </button>
       }
     >
-      <DrawerInner {...props} />
+      <MobileDrawerTrigger />
     </DrawerErrorBoundary>
   )
 }
