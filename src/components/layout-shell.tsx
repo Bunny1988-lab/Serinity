@@ -2,6 +2,7 @@
 
 import { useState, useEffect, Suspense, Component, type ReactNode } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { ChevronLeft, Bell } from 'lucide-react'
 import { DesktopNavItem } from '@/components/desktop-nav-item'
 import { logout } from '@/app/auth/actions'
@@ -38,6 +39,10 @@ interface LayoutShellProps {
 }
 
 export function LayoutShell({ children, unreadMessages, userId, profile }: LayoutShellProps) {
+  const pathname = usePathname()
+  // Chat active: hide top bar on mobile so chat UI gets full height
+  const isChatActive = pathname?.startsWith('/messages') || pathname?.startsWith('/ai-friend') || false
+
   // Sidebar collapsed state, load from localStorage if available to persist user preference
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMounted, setIsMounted] = useState(false)
@@ -145,7 +150,8 @@ export function LayoutShell({ children, unreadMessages, userId, profile }: Layou
           </nav>
 
           {/* ── TOP APP BAR (Responsive layout-aligned) ────────────────────────────── */}
-          <header className={`fixed top-0 right-0 left-0 transition-all duration-300 ease-in-out h-20 bg-surface/80 backdrop-blur-md border-b-[0.5px] border-outline-variant z-30 justify-between items-center px-6 md:px-16 ${contentMarginClass} ${isChatActive ? 'hidden md:flex' : 'flex'}`}>
+          {/* z-[45]: above bottom nav (z-40) and sidebar toggle (z-[60]), but well below drawer portal (z-[99999]) */}
+          <header className={`fixed top-0 right-0 left-0 transition-all duration-300 ease-in-out h-20 bg-surface/80 backdrop-blur-md border-b-[0.5px] border-outline-variant z-[45] justify-between items-center px-6 md:px-16 ${contentMarginClass} ${isChatActive ? 'hidden md:flex' : 'flex'}`}>
             <div className="flex items-center space-x-4 md:space-x-8">
               <SafeWidget>
                 <MobileDrawer unreadMessages={unreadMessages} userId={userId} />

@@ -1,8 +1,18 @@
 import { updateSession } from '@/lib/supabase/middleware'
-import { type NextRequest } from 'next/server'
+import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  return await updateSession(request)
+  try {
+    // Race the session update against a 4-second timeout.
+    // If Supabase takes too long (cold start, network hiccup), we let the
+    // request through rather than returning a 504 to the user.
+    const timeout = new Promise<NextResponse>((resolve) =>
+      setTimeout(() => resolve(NextResponse.next({ request })), 4000)
+    )
+    return await Promise.race([updateSession(request), timeout])
+  } catch {
+    return NextResponse.next({ request })
+  }
 }
 
 export const config = {
@@ -12,7 +22,6 @@ export const config = {
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
-     * Feel free to modify this pattern to include more paths.
      */
     '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],

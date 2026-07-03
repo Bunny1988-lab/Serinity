@@ -9,6 +9,7 @@ import { Loader2, Mail, CheckCircle2, AlertCircle } from 'lucide-react'
 function SignupSuccessContent() {
   const searchParams = useSearchParams()
   const email = searchParams.get('email') || ''
+  const reason = searchParams.get('reason') || ''
   const [status, setStatus] = useState<'idle' | 'success' | 'error'>('idle')
   const [errorMessage, setErrorMessage] = useState('')
   const [isPending, startTransition] = useTransition()
@@ -29,7 +30,7 @@ function SignupSuccessContent() {
   return (
     <div className="w-full space-y-8 select-none text-center">
       {/* Brand Header */}
-      <div className="space-y-2 mb-10">
+      <div className="space-y-2 mb-6">
         <span className="font-label-caps text-[9px] font-bold text-amber-600 uppercase tracking-[0.3em]">
           step complete
         </span>
@@ -40,6 +41,14 @@ function SignupSuccessContent() {
           We sent a verification link to your email.
         </p>
       </div>
+
+      {/* Unconfirmed-email warning */}
+      {reason === 'unconfirmed' && (
+        <div className="p-4 text-[11px] font-bold text-amber-700 bg-amber-500/5 border border-amber-500/25 rounded-2xl flex items-center gap-2 justify-center tracking-wide uppercase mb-4">
+          <AlertCircle size={14} className="shrink-0" />
+          <span>Your email hasn't been verified yet. Please check your inbox and click the verification link before logging in, or resend it below.</span>
+        </div>
+      )}
 
       {/* Email Indicator Card */}
       <div className="w-full bg-background/40 border border-outline-variant/30 p-5 rounded-[24px] flex items-center gap-4 text-left shadow-xs">

@@ -104,6 +104,18 @@ export function MessagesSidebar({
     }
   }
 
+  const handleDeleteSingleChat = async (partnerId: string, e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    if (window.confirm("Delete this conversation? This cannot be undone.")) {
+      await deleteChatWithUser(partnerId)
+      router.refresh()
+      if (selectedUserId === partnerId) {
+        router.push('/messages')
+      }
+    }
+  }
+
   // Filter existing conversations by search query
   const filteredConvos = useMemo(() => {
     if (!query.trim()) return conversations

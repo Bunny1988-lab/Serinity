@@ -17,9 +17,16 @@ export async function login(formData: FormData) {
   const { data: authData, error } = await supabase.auth.signInWithPassword(data)
 
   if (error) {
-    // If email is not confirmed, redirect to signup-success page
-    if (error.message === 'Email not confirmed' || (error.status === 400 && error.message.toLowerCase().includes('confirm'))) {
-      redirect('/signup-success?email=' + encodeURIComponent(data.email))
+    // If email is not confirmed, redirect to signup-success page to resend verification
+    if (
+      error.message === 'Email not confirmed' ||
+      (error.status === 400 && error.message.toLowerCase().includes('confirm'))
+    ) {
+      redirect('/signup-success?email=' + encodeURIComponent(data.email) + '&reason=unconfirmed')
+    }
+    // Show a friendly message for invalid credentials
+    if (error.status === 400 || error.message.toLowerCase().includes('invalid')) {
+      redirect('/login?error=' + encodeURIComponent('Incorrect email or password. Please try again.'))
     }
     redirect('/login?error=' + encodeURIComponent(error.message))
   }
