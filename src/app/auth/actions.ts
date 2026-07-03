@@ -7,34 +7,43 @@ import { createClient } from '@/lib/supabase/server'
 export async function login(formData: FormData) {
   const supabase = await createClient()
 
-  // type-casting here for convenience
-  // in practice, you should validate your inputs
   const data = {
     email: formData.get('email') as string,
     password: formData.get('password') as string,
   }
 
-  const { data: authData, error } = await supabase.auth.signInWithPassword(data)
+  let authData: any = null
+  let error: any = null
+
+  try {
+    const result = await supabase.auth.signInWithPassword(data)
+    authData = result.data
+    error = result.error
+  } catch (fetchErr: any) {
+    // Network-level failure (Supabase unreachable, DNS failure, etc.)
+    redirect('/login?error=' + encodeURIComponent('Unable to connect to the server. Please try again in a moment.'))
+  }
 
   if (error) {
     // If email is not confirmed, redirect to signup-success page to resend verification
     if (
       error.message === 'Email not confirmed' ||
-      (error.status === 400 && error.message.toLowerCase().includes('confirm'))
+      (error.status === 400 && error.message?.toLowerCase().includes('confirm'))
     ) {
       redirect('/signup-success?email=' + encodeURIComponent(data.email) + '&reason=unconfirmed')
     }
-    // Show a friendly message for invalid credentials
-    if (error.status === 400 || error.message.toLowerCase().includes('invalid')) {
+    // Network/connection error — status 0 means fetch failed
+    if (!error.status || error.status === 0) {
+      redirect('/login?error=' + encodeURIComponent('Unable to connect to the server. Please try again in a moment.'))
+    }
+    // Wrong credentials
+    if (error.status === 400 || error.message?.toLowerCase().includes('invalid')) {
       redirect('/login?error=' + encodeURIComponent('Incorrect email or password. Please try again.'))
     }
-    redirect('/login?error=' + encodeURIComponent(error.message))
+    redirect('/login?error=' + encodeURIComponent(error.message || 'An unexpected error occurred.'))
   }
 
   // ── Safety net: ensure public.users row exists ──────────────────────────────
-  // The DB trigger `handle_new_user` can silently fail if username metadata was
-  // missing at signup, leaving no row in public.users. This upsert guarantees
-  // the row always exists so all downstream fetches work correctly.
   if (authData?.user) {
     const userId = authData.user.id
     const meta = authData.user.user_metadata || {}
