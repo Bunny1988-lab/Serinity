@@ -594,17 +594,13 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
     setLoadingMore(false)
   }
 
+  // When vanish mode is toggled off, just refresh messages from DB
+  // (vanish messages are local-only and not stored with a DB column)
   useEffect(() => {
     if (!isVanishMode) {
-      supabase.from('messages')
-        .delete()
-        .eq('is_vanish', true)
-        .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${recipient.id}),and(sender_id.eq.${recipient.id},receiver_id.eq.${currentUserId})`)
-        .then(() => {
-          fetchMessages()
-        })
+      fetchMessages()
     }
-  }, [isVanishMode, recipient.id, currentUserId, supabase])
+  }, [isVanishMode])
 
   function handleScroll() {
     const el = scrollContainerRef.current
@@ -687,7 +683,18 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
       receiver_id: recipient.id,
       content: '🎤 Voice message',
       is_whisper: false,
-      is_vanish: isVanishMode,
+      is_vanish: isVanishMode, // local-only flag, not stored in DB
+      audio_url: data.publicUrl,
+      reply_to_id: replyingTo?.id || null,
+    }
+
+    // DB payload — exclude is_vanish (column doesn't exist in DB)
+    const dbMsg = {
+      id: messageId,
+      sender_id: currentUserId,
+      receiver_id: recipient.id,
+      content: '🎤 Voice message',
+      is_whisper: false,
       audio_url: data.publicUrl,
       reply_to_id: replyingTo?.id || null,
     }
@@ -701,7 +708,7 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
       payload: { message: { ...msg, message_reactions: [], is_optimistic: false, created_at: new Date().toISOString() } }
     })
 
-    await supabase.from('messages').insert(msg)
+    await supabase.from('messages').insert(dbMsg)
     await checkAndSendQuietReply(recipient.id)
 
     setIsSending(false)
@@ -850,7 +857,12 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
   }
 
   // Group messages by date
-  const displayedMessages = messages.filter(msg => !!msg.is_vanish === isVanishMode)
+  // is_vanish is a local-only flag set when sending in vanish mode.
+  // Fetched messages from DB won't have it, so in normal mode show all DB messages.
+  // In vanish mode show only locally-flagged vanish messages.
+  const displayedMessages = isVanishMode
+    ? messages.filter(msg => !!msg.is_vanish)
+    : messages.filter(msg => !msg.is_vanish)
   const grouped: { date: string; msgs: any[] }[] = []
   displayedMessages.forEach(msg => {
     const date = new Date(msg.created_at).toLocaleDateString(undefined, {
