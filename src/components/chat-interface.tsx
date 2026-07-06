@@ -434,6 +434,11 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
   
   const [isVanishMode, setIsVanishMode] = useState(false)
   const [sendAsViewOnce, setSendAsViewOnce] = useState(false)
+
+  const [loadingMore, setLoadingMore] = useState(false)
+  const [hasMore, setHasMore] = useState(true)
+  const offsetRef = useRef(0)
+  const PAGE_SIZE = 50
   
   const [isRecording, setIsRecording] = useState(false)
   const [audioChunks, setAudioChunks] = useState<Blob[]>([])
@@ -550,13 +555,43 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
   }, [messages, scrollToBottom, isTyping])
 
   async function fetchMessages() {
+    offsetRef.current = 0
+    const { data, count } = await supabase
+      .from('messages')
+      .select('*, message_reactions(id, emoji, user_id, resonance_type)', { count: 'exact' })
+      .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${recipient.id}),and(sender_id.eq.${recipient.id},receiver_id.eq.${currentUserId})`)
+      .order('created_at', { ascending: false })
+      .limit(PAGE_SIZE)
+    if (data) {
+      setMessages(data.reverse())
+      offsetRef.current = data.length
+      setHasMore((count ?? 0) > data.length)
+    }
+    setTimeout(() => scrollToBottom('instant' as ScrollBehavior), 250)
+  }
+
+  async function loadOlderMessages() {
+    setLoadingMore(true)
     const { data } = await supabase
       .from('messages')
       .select('*, message_reactions(id, emoji, user_id, resonance_type)')
       .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${recipient.id}),and(sender_id.eq.${recipient.id},receiver_id.eq.${currentUserId})`)
-      .order('created_at', { ascending: true })
-    if (data) setMessages(data)
-    setTimeout(() => scrollToBottom('instant' as ScrollBehavior), 250)
+      .order('created_at', { ascending: false })
+      .range(offsetRef.current, offsetRef.current + PAGE_SIZE - 1)
+    if (data && data.length > 0) {
+      const el = scrollContainerRef.current
+      const prevScrollHeight = el?.scrollHeight ?? 0
+      setMessages(prev => [...data.reverse(), ...prev])
+      offsetRef.current += data.length
+      if (data.length < PAGE_SIZE) setHasMore(false)
+      // Keep scroll position stable after prepending
+      requestAnimationFrame(() => {
+        if (el) el.scrollTop = el.scrollHeight - prevScrollHeight
+      })
+    } else {
+      setHasMore(false)
+    }
+    setLoadingMore(false)
   }
 
   useEffect(() => {
@@ -921,6 +956,23 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
         style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
       >
         <div className="max-w-2xl mx-auto w-full space-y-5">
+
+          {/* Load older messages button */}
+          {hasMore && (
+            <div className="flex justify-center pt-2 pb-4">
+              <button
+                onClick={loadOlderMessages}
+                disabled={loadingMore}
+                className="flex items-center gap-2 px-5 py-2 rounded-full text-[11px] font-bold uppercase tracking-widest border border-outline-variant/40 text-outline hover:text-primary hover:border-primary/40 transition-all disabled:opacity-50"
+              >
+                {loadingMore ? (
+                  <><Loader2 size={12} className="animate-spin" /> Loading...</>
+                ) : (
+                  'Load older messages'
+                )}
+              </button>
+            </div>
+          )}
 
           {/* Vanish mode banner */}
           {isVanishMode && (
