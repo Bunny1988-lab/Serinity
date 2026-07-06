@@ -558,7 +558,7 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
     offsetRef.current = 0
     const { data, count } = await supabase
       .from('messages')
-      .select('*, message_reactions(id, emoji, user_id, resonance_type)', { count: 'exact' })
+      .select('*, message_reactions(id, emoji, user_id)', { count: 'exact' })
       .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${recipient.id}),and(sender_id.eq.${recipient.id},receiver_id.eq.${currentUserId})`)
       .order('created_at', { ascending: false })
       .limit(PAGE_SIZE)
@@ -574,7 +574,7 @@ export function ChatInterface({ currentUserId, recipient, areFriends }: { curren
     setLoadingMore(true)
     const { data } = await supabase
       .from('messages')
-      .select('*, message_reactions(id, emoji, user_id, resonance_type)')
+      .select('*, message_reactions(id, emoji, user_id)')
       .or(`and(sender_id.eq.${currentUserId},receiver_id.eq.${recipient.id}),and(sender_id.eq.${recipient.id},receiver_id.eq.${currentUserId})`)
       .order('created_at', { ascending: false })
       .range(offsetRef.current, offsetRef.current + PAGE_SIZE - 1)
